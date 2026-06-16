@@ -1,0 +1,33 @@
+# Dependencies
+node_modules/
+
+# Z.ai sandbox skill library (not part of corpus)
+skills/
+
+# Session logs (not for public repo)
+tool-results/
+
+# Local environment (use .env.example as template)
+.env
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Build artifacts
+.next/
+dist/
+build/
+*.tsbuildinfo
+
+# Cache
+.eslintcache
+.cache/
+

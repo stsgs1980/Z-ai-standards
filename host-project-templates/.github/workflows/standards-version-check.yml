@@ -1,0 +1,83 @@
+# Standards Submodule Update Check — host project template
+#
+# Copy this file into your HOST project's .github/workflows/ directory
+# (not into the corpus repo). It runs weekly and on every push to main,
+# checking whether the pinned z-ai-standards submodule is behind upstream.
+#
+# Behavior:
+#   - If the host's pinned version matches the latest upstream release,
+#     the workflow exits 0 (green).
+#   - If the host is behind, the workflow FAILS by default. This forces
+#     a deliberate update decision. To make it advisory-only, set
+#     STANDARDS_BEHIND_OK=1 in the env block below.
+#   - If the upstream repo is unreachable or has no semver tags, the
+#     workflow exits 0 with a warning (does not block development).
+#
+# Setup:
+#   1. Add the corpus as a submodule (see STANDARDS.md in the corpus repo):
+#        git submodule add git@github.com:<owner>/z-ai-standards.git standards
+#   2. Copy this file to .github/workflows/standards-version-check.yml
+#   3. Adjust STANDARDS_CORPUS_URL below to match your fork/upstream URL.
+#   4. Optionally tune the cron schedule.
+
+name: Standards Submodule Update Check
+
+on:
+  schedule:
+    # Every Monday 09:00 UTC — adjust as needed
+    - cron: '0 9 * * 1'
+  push:
+    branches: [main, master]
+    paths:
+      - 'standards/**'
+      - '.github/workflows/standards-version-check.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: Check standards submodule freshness
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+
+    steps:
+      - name: Checkout host project (with submodules)
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run standards invariants (V01-V10)
+        working-directory: standards
+        run: node scripts/verify-standards.js
+
+      - name: Run cascade integration check (47 checks)
+        working-directory: standards
+        run: node scripts/verify-cascade.js
+
+      - name: Check for upstream updates
+        working-directory: standards
+        env:
+          # Override if your corpus lives at a different URL
+          STANDARDS_CORPUS_URL: git@github.com:<owner>/z-ai-standards.git
+          # Set to "1" to make this step advisory-only (exit 0 even if behind)
+          STANDARDS_BEHIND_OK: "0"
+        run: bash scripts/check-updates.sh
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "## Standards Submodule Health" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- Invariants V01-V10: ${{ job.status == 'success' && 'PASS' || 'CHECK LOGS' }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Cascade checks: ${{ job.status == 'success' && 'PASS' || 'CHECK LOGS' }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Local version: $(cat standards/VERSION)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "See standards/CHANGELOG.md for what changed between versions." >> $GITHUB_STEP_SUMMARY

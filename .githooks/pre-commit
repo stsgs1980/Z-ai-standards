@@ -1,0 +1,54 @@
+#!/usr/bin/env bash
+# Pre-commit hook: Standards invariants
+#
+# Runs scripts/verify-standards.js before any commit is created.
+# If any V01-V10 invariant fails, the commit is rejected.
+#
+# To skip temporarily (NOT RECOMMENDED): git commit --no-verify
+#
+# Installation (one-time, after clone):
+#   git config core.hooksPath .githooks
+#   chmod +x .githooks/pre-commit
+#
+# Or run the bootstrap script:  bash scripts/install-hooks.sh
+
+set -euo pipefail
+
+# Resolve repo root regardless of where the hook was invoked from.
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+SCRIPT="$REPO_ROOT/scripts/verify-standards.js"
+
+# Only run if the script exists (it might not yet on first commit of a new repo).
+if [ ! -f "$SCRIPT" ]; then
+  echo "[pre-commit] scripts/verify-standards.js not found, skipping"
+  exit 0
+fi
+
+# Only run if any .md file or verify-*.js is staged — saves time on unrelated commits.
+STAGED_RELEVANT=$(git diff --cached --name-only --diff-filter=ACMR \
+  | grep -E '(\.md$|scripts/verify-.*\.js$|\.github/workflows/standards\.yml$)' \
+  | head -1 || true)
+
+if [ -z "$STAGED_RELEVANT" ]; then
+  echo "[pre-commit] no .md / verify-*.js changes staged, skipping"
+  exit 0
+fi
+
+echo "[pre-commit] Running standards invariants (V01-V10)..."
+if node "$SCRIPT"; then
+  echo "[pre-commit] All invariants hold."
+  exit 0
+else
+  echo ""
+  echo "[pre-commit] FAILED: at least one invariant is violated."
+  echo "[pre-commit] The commit was rejected."
+  echo ""
+  echo "[pre-commit] Either:"
+  echo "  (a) Revert the .md change that broke the invariant, OR"
+  echo "  (b) Update the corresponding V## check in scripts/verify-standards.js"
+  echo "      to reflect an intentional change to the invariant."
+  echo ""
+  echo "[pre-commit] To bypass this hook ONCE (not recommended):"
+  echo "  git commit --no-verify"
+  exit 1
+fi
