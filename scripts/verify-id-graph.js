@@ -373,10 +373,14 @@ function globFiles(rootDir, pattern) {
 
 function matchesPattern(relPath, pattern) {
   // Convert glob to regex: ** → .*, * → [^/]*, . → \.
+  // Special case: **/  should match zero or more directories (not require at least one)
   let regex = pattern
     .replace(/\./g, '\\.')
+    .replace(/\\\*\*\\\//g, '{{DOUBLESTAR_SLASH}}')  // **/  (after . escaping, * is still *)
+    .replace(/\*\*\//g, '{{DOUBLESTAR_SLASH}}')        // **/  (raw, just in case)
     .replace(/\*\*/g, '{{DOUBLESTAR}}')
     .replace(/\*/g, '[^/]*')
+    .replace(/{{DOUBLESTAR_SLASH}}/g, '(?:.*/)?')      // **/  →  zero or more dirs
     .replace(/{{DOUBLESTAR}}/g, '.*');
   regex = '^' + regex + '$';
   return new RegExp(regex).test(relPath);
@@ -392,7 +396,24 @@ function parseYAMLFrontmatter(content) {
   if (!m) return null;
   const yaml = m[1];
   const result = {};
-  for (const line of yaml.split('\n')) {
+  const lines = yaml.split('\n');
+  let currentListKey = null;
+  for (const line of lines) {
+    // List item under a previous key (e.g., "  - VALUE")
+    const listItem = line.match(/^\s+-\s+(.*)$/);
+    if (listItem && currentListKey) {
+      if (!Array.isArray(result[currentListKey])) {
+        result[currentListKey] = [];
+      }
+      let v = listItem[1].trim();
+      // Strip quotes
+      if ((v.startsWith('"') && v.endsWith('"')) ||
+          (v.startsWith("'") && v.endsWith("'"))) {
+        v = v.slice(1, -1);
+      }
+      result[currentListKey].push(v);
+      continue;
+    }
     const kv = line.match(/^(\w+):\s*(.*)$/);
     if (kv) {
       let val = kv[2].trim();
@@ -401,9 +422,21 @@ function parseYAMLFrontmatter(content) {
           (val.startsWith("'") && val.endsWith("'"))) {
         val = val.slice(1, -1);
       }
-      result[kv[1]] = val;
+      // Empty value means: either null or a list follows — start collecting list items
+      if (val === '') {
+        result[kv[1]] = [];
+        currentListKey = kv[1];
+      } else {
+        result[kv[1]] = val;
+        currentListKey = null;
+      }
+    } else if (!line.trim()) {
+      // Blank line ends list collection
+      currentListKey = null;
     }
   }
+  // Convert empty arrays back to empty string for backward compat with `if (yaml.id)` checks
+  // (id is always a scalar, so this only affects list keys)
   return result;
 }
 
@@ -477,12 +510,30 @@ function extractDeclaration(filePath, repoName) {
     if (yaml && yaml.id) {
       // For ZAI skills with YAML frontmatter, also parse blockquote for Related:/Aligned_with:
       const bq = parseBlockquoteHeader(content);
-      const relatedIds = bq.Related
+      // Prefer YAML list (related:); fall back to blockquote Related:
+      let yamlRelated = [];
+      if (Array.isArray(yaml.related)) {
+        yamlRelated = yaml.related
+          .flatMap(v => (v.match(/\b(STD|RULE|PROC|TOOL|ZAI)-[A-Z]+-\d{3}\b/g) || []));
+      } else if (yaml.related) {
+        yamlRelated = yaml.related.match(/\b(STD|RULE|PROC|TOOL|ZAI)-[A-Z]+-\d{3}\b/g) || [];
+      }
+      let yamlAligned = [];
+      if (Array.isArray(yaml.aligned_with)) {
+        yamlAligned = yaml.aligned_with
+          .flatMap(v => (v.match(/\b(STD|RULE|PROC|TOOL|ZAI)-[A-Z]+-\d{3}\b/g) || []));
+      } else if (yaml.aligned_with) {
+        yamlAligned = yaml.aligned_with.match(/\b(STD|RULE|PROC|TOOL|ZAI)-[A-Z]+-\d{3}\b/g) || [];
+      }
+      const bqRelated = bq.Related
         ? (bq.Related.match(/\b(STD|RULE|PROC|TOOL|ZAI)-[A-Z]+-\d{3}\b/g) || [])
         : [];
-      const alignedIds = bq.Aligned_with
+      const bqAligned = bq.Aligned_with
         ? (bq.Aligned_with.match(/\b(STD|RULE|PROC|TOOL|ZAI)-[A-Z]+-\d{3}\b/g) || [])
         : [];
+      // Merge and dedupe (YAML takes precedence, blockquote fills gaps)
+      const relatedIds = [...new Set([...yamlRelated, ...bqRelated])];
+      const alignedIds = [...new Set([...yamlAligned, ...bqAligned])];
 
       decl = {
         id: yaml.id,
@@ -492,7 +543,7 @@ function extractDeclaration(filePath, repoName) {
         compatibility: yaml.compatibility || null,
         trigger: yaml.trigger ? yaml.trigger.split(',').map(s => s.trim()) : null,
         author: yaml.author || null,
-        level: null,
+        level: yaml.level ? String(yaml.level).replace(/[\[\]\*]/g, '').trim() : null,
       };
       format = 'yaml';
       // Cross-check frontmatter id vs blockquote ID
