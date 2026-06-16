@@ -31,3 +31,5 @@ build/
 .eslintcache
 .cache/
 
+upload/standards.zip
+upload/standards.7z
