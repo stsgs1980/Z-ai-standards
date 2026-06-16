@@ -281,7 +281,16 @@ function findRepos(platformRoot, opts) {
         // Skip if it's just the sandbox runtime skills (not a Z-ai-skills repo)
         // The sandbox skills/ dir is at /home/z/my-project/skills/ and contains
         // only Z.ai official skills (no ZAI- IDs). We want to skip it for now.
-        if (name === 'skills' && cand === 'skills' && !fs.existsSync(path.join(p, 'SKILLS.md')) && !fs.existsSync(path.join(p, 'skill-id-system'))) {
+        // Heuristic: a real Z-ai-skills repo has one of:
+        //   - SKILLS.md (legacy marker)
+        //   - skill-id-system/ at top level (older layout)
+        //   - skills/ subdir containing INDEX.md or skill-id-system/ (4-repo split layout,
+        //     where the submodule root contains skills/<name>/SKILL.md)
+        if (name === 'skills' && cand === 'skills' &&
+            !fs.existsSync(path.join(p, 'SKILLS.md')) &&
+            !fs.existsSync(path.join(p, 'skill-id-system')) &&
+            !fs.existsSync(path.join(p, 'skills', 'INDEX.md')) &&
+            !fs.existsSync(path.join(p, 'skills', 'skill-id-system'))) {
           // This is the sandbox runtime skills dir, not the Z-ai-skills repo.
           // Skip unless explicitly requested.
           if (!opts.repo) continue;
@@ -905,16 +914,27 @@ function phase6_detectCycles() {
 function phase7_alignedWithSymmetry(idMap) {
   // Phase 7: G15, W08
   for (const edge of results.edges.aligned_with) {
-    // G15: must have corresponding Related: edge in either direction
-    const hasRelated = results.edges.related.some(e =>
-      (e.source === edge.left && e.target === edge.right) ||
-      (e.source === edge.right && e.target === edge.left)
-    );
-    if (!hasRelated) {
-      fail('G15', `Aligned_with: ${edge.left} ↔ ${edge.right} has no corresponding Related: edge (declared by ${edge.declared_by})`);
+    // G15: must have corresponding Related: edge in either direction —
+    // BUT only for SAME-LAYER pairs (e.g. STD ↔ STD, RULE ↔ RULE).
+    // Cross-layer Aligned_with (e.g. STD ↔ ZAI) is a STANDALONE
+    // relationship per STD-META-001 §6.2 — Related is forbidden by
+    // G07 in one direction and optional in the other, so requiring it
+    // would conflict with G07 and is semantically wrong: Aligned_with
+    // IS the cross-layer relationship, not a hint to look for Related.
+    const leftPrefix = (edge.left.match(/^[A-Z]+/) || ['?'])[0];
+    const rightPrefix = (edge.right.match(/^[A-Z]+/) || ['?'])[0];
+
+    if (leftPrefix === rightPrefix) {
+      const hasRelated = results.edges.related.some(e =>
+        (e.source === edge.left && e.target === edge.right) ||
+        (e.source === edge.right && e.target === edge.left)
+      );
+      if (!hasRelated) {
+        fail('G15', `Aligned_with: ${edge.left} ↔ ${edge.right} has no corresponding Related: edge (declared by ${edge.declared_by})`);
+      }
     }
 
-    // W08: reciprocation
+    // W08: reciprocation (applies to ALL Aligned_with edges, regardless of layer)
     if (!edge.reciprocated) {
       warn('W08', `${edge.declared_by} declares Aligned_with ${edge.right === edge.declared_by ? edge.left : edge.right}; not reciprocated (in ${edge.file})`);
     }

@@ -8,7 +8,7 @@
 > Effective Date: 2026-06-17
 > Status: **APPROVED**
 > verified_by: scripts/verify-standards.js#V05, scripts/verify-id-graph.js#G01-G14
-> Related: STD-ARCH-001, STD-DOC-002, STD-SKILL-001
+> Related: (none — META is foundational)
 
 > **Status: APPROVED.** This revision supersedes draft v1 (which
 > proposed `SKILL-` prefix and a conflicting domain list). v2 preserves the
