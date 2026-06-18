@@ -1,0 +1,93 @@
+#!/usr/bin/env bash
+# ============================================================================
+# pre-commit hook — Z-ai-standards (submodule)
+# ============================================================================
+#
+# Purpose:
+#   Block commits to the standards submodule that would break content-level
+#   invariants. Runs ONLY verify-standards.js (not verify-id-graph.js)
+#   because verify-id-graph.js needs the parent Z-ai-platform context
+#   with all 3 submodules checked out — from inside this submodule it
+#   would only scan 1 repo and give a misleading result.
+#
+#   The full cross-repo check (G01-G15) runs:
+#     - In CI (Z-ai-platform/.github/workflows/verify-id-graph.yml)
+#     - In the parent repo's pre-commit hook (when committing the
+#       submodule pointer bump in Z-ai-platform)
+#
+# Install (one-time, after cloning this submodule standalone):
+#   bash install-hooks.sh
+#
+# Bypass (NOT recommended):
+#   git commit --no-verify
+#
+# ============================================================================
+
+set -euo pipefail
+
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+cd "$REPO_ROOT"
+
+if ! command -v node >/dev/null 2>&1; then
+  echo "[pre-commit] WARNING: Node.js not found in PATH — skipping verifier run."
+  echo "[pre-commit] CI will catch any regressions."
+  exit 0
+fi
+
+VERIFY_STANDARDS="scripts/verify-standards.js"
+if [ ! -f "$VERIFY_STANDARDS" ]; then
+  echo "[pre-commit] WARNING: $VERIFY_STANDARDS not found — skipping."
+  exit 0
+fi
+
+echo "[pre-commit] verify-standards.js (content-level invariants V04-V10)"
+if ! node "$VERIFY_STANDARDS" >/tmp/zai-std-precommit.log 2>&1; then
+  echo "[pre-commit] FAIL: verify-standards.js reported invariant violations."
+  echo "[pre-commit] ---- output ----"
+  cat /tmp/zai-std-precommit.log | sed 's/^/  /'
+  echo "[pre-commit] ---- end output ----"
+  echo "[pre-commit] Either fix the offending standard, or if the invariant"
+  echo "[pre-commit] itself changed, update the V## check in $VERIFY_STANDARDS."
+  echo "[pre-commit] To bypass (NOT recommended): git commit --no-verify"
+  exit 1
+fi
+echo "[pre-commit] OK: verify-standards.js PASS"
+rm -f /tmp/zai-std-precommit.log
+
+# Also run verify-id-graph.js for self-contained G-checks (it will only
+# scan THIS repo since other repos aren't visible — that's still useful
+# for catching intra-repo issues like duplicate IDs or typo-IDs).
+VERIFY_ID_GRAPH="scripts/verify-id-graph.js"
+if [ -f "$VERIFY_ID_GRAPH" ]; then
+  echo "[pre-commit] verify-id-graph.js (intra-repo subset of G01-G15)"
+  # Don't fail on cross-repo G02 (Related: refs to other repos won't resolve
+  # from inside this submodule). Capture output, only fail on HARD errors
+  # OTHER than G02 (which is expected to be partial here).
+  set +e
+  node "$VERIFY_ID_GRAPH" >/tmp/zai-std-precommit-graph.log 2>&1
+  exit_code=$?
+  set -e
+  if [ $exit_code -ne 0 ]; then
+    # Check if the only failures are G02 (Related: resolution) — those are
+    # expected when running standalone and shouldn't block submodule commits.
+    if grep -q "^  ✗ G02:" /tmp/zai-std-precommit-graph.log && \
+       ! grep -E "^  ✗ G0[1-9]:|^  ✗ G1[0-5]:" /tmp/zai-std-precommit-graph.log | grep -v "G02:" >/dev/null; then
+      echo "[pre-commit] OK: verify-id-graph.js — only G02 (cross-repo) failed (expected standalone)"
+    else
+      echo "[pre-commit] FAIL: verify-id-graph.js reported HARD check violations."
+      echo "[pre-commit] ---- output ----"
+      cat /tmp/zai-std-precommit-graph.log | sed 's/^/  /'
+      echo "[pre-commit] ---- end output ----"
+      echo "[pre-commit] Cross-repo checks also run in CI; fix here and re-commit."
+      echo "[pre-commit] To bypass (NOT recommended): git commit --no-verify"
+      rm -f /tmp/zai-std-precommit-graph.log
+      exit 1
+    fi
+  else
+    echo "[pre-commit] OK: verify-id-graph.js PASS"
+  fi
+  rm -f /tmp/zai-std-precommit-graph.log
+fi
+
+echo "[pre-commit] All checks PASS — proceeding with commit."
+exit 0

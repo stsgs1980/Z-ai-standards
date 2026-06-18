@@ -161,16 +161,15 @@ Use this map to find related standards when working in one domain:
 Every PR that touches a `.md` file in this repo MUST pass:
 
 ```bash
-node scripts/verify-standards.js   # V01-V10 per-repo invariants
+node scripts/verify-standards.js   # V04-V10 per-repo invariants
 node scripts/verify-id-graph.js    # G01-G15 cross-repo invariants (when other repos available)
 ```
 
-The pre-commit hook (installed via `Z-ai-platform/install-hooks.sh`) runs
-`verify-standards.js` automatically. Cross-repo checks run in CI.
-
-> **Note:** `verify-standards.js` currently targets the old flat layout
-> (`standards/STD-*-vX.Y.md`). After this v2.1 restructure, paths must be
-> updated to `standards/<DOMAIN>-<NNN>-*.md`. This is tracked as a follow-up task.
+The pre-commit hook (installed via `Z-ai-platform/install-hooks.sh` in the
+parent repo, or `bash install-hooks.sh` in this submodule when working
+standalone) runs `verify-standards.js` automatically. Cross-repo checks
+run in CI and in the parent repo's pre-commit hook (which runs both
+verifiers).
 
 ## Adding a New Standard
 
