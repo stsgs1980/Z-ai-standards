@@ -133,6 +133,7 @@ Before submitting, verify:
 - [ ] All mandatory sections included
 - [ ] Agent Rules section present if AGENT_RULES.md exists
 - [ ] Code blocks have language specified
+- [ ] Badges added (optional but recommended for public repos)
 
 ## 4. Example Compliance
 

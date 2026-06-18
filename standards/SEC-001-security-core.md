@@ -400,7 +400,7 @@ The variable `app` is not declared in the example. A reader unfamiliar with Expr
 
 **Problem:** §2.2 (.env File Handling) shows the .env.example with:
 
-```
+```env
 DATABASE_URL=postgresql://user:password@localhost:5432/db
 ```
 

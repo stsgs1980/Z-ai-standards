@@ -41,7 +41,7 @@ from external artifacts.
 
 ## 2. Two Layers: Required Format vs Optional Identification
 
-```
+```text
 ┌──────────────────────────────────────────────┐
 │  REQUIRED FORMAT (every SKILL.md must have)  │
 │  ─────────────────────────────────────────── │
