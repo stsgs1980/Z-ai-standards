@@ -292,7 +292,3 @@ This section documents discovered inconsistencies, missing content, and proposed
 |----------|-------------|
 | STD-ENV-001 | Reproducibility Standard: path rules (Section 1.2 mirrors §3.1 of this document; §3.1 is authoritative) |
 | STD-META-001 | Standard ID System: registry entry for STD-ENV-002 must be kept in sync with the version in this document's header |
-
----
-
-Built with: Next.js 16 + TypeScript + Tailwind CSS

@@ -347,7 +347,3 @@ Add a quality gate: "Lighthouse accessibility score MUST be >= 90 in CI for prod
 | 1.0 | 2025-05 | Initial version |
 | 1.1 | 2026-05 | Added §7 Theme Contrast Requirements table (template); added §8.2 Automated Testing placeholder |
 | 1.2 | 2026-06 | Status corrected from DEPRECATED to ACTIVE in STD-META-001 registry (see A11Y-001). Stack Signature footer updated from "WCAG 2.1 AA + WAI-ARIA 1.2" to "Next.js 16 + TypeScript + Tailwind CSS" to match convention (see A11Y-002). Added STD-DESIGN-001 to Related and Cross-References (contrast requirements delegation). Added §9A Known Issues documenting A11Y-001 through A11Y-004. |
-
----
-
-Built with: Next.js 16 + TypeScript + Tailwind CSS

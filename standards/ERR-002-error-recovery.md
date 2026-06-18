@@ -399,7 +399,3 @@ The dashboard JSON can be large; consider hosting it in a `dashboards/` director
 | STD-SEC-001 | Security error handling (sensitive data in logs) |
 | STD-GIT-002 | Sandbox git error recovery (deadlock, network failures) |
 | STD-META-001 | Standard ID System: registry entry for STD-ERR-002 must be kept in sync with the version in this document's header |
-
----
-
-Built with: Next.js 16 + TypeScript + Tailwind CSS

@@ -447,7 +447,3 @@ Add the script to the project's `scripts/` directory and reference it in the CI 
 | STD-ENV-002 | Z.ai sandbox constraints affecting subagent execution |
 | STD-ARCH-001 | Implementation order: where orchestration fits in project setup |
 | STD-META-001 | Standard ID System: registry entry for STD-AGENT-002 must be kept in sync with the version in this document's header |
-
----
-
-Built with: Next.js 16 + TypeScript + Tailwind CSS

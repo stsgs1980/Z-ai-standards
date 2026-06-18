@@ -763,7 +763,3 @@ Event-handler errors should be caught locally with try/catch and reported via th
 | STD-AGENT-001 | Subagent error contract (failure reporting) |
 | STD-AGENT-002 | Orchestration error propagation (escalation ladder) |
 | STD-META-001 | Standard ID System: registry entry for STD-ERR-001 must be kept in sync with the version in this document's header |
-
----
-
-Built with: Next.js 16 + TypeScript + Tailwind CSS

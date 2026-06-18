@@ -1,7 +1,7 @@
 # Standard: Markdown Formatting v2.3 (EN)
 
 > ID: STD-DOC-002
-> Version: 2.3.1
+> Version: 2.3.2
 > Level: **[C] Critical** (unified with STD-DOC-003 — same rule = same severity)
 > Related: STD-META-001 (ID system)
 > Note: Character rules (emoji, box-drawing, etc.) are delegated to STD-DOC-003. Per ARCH-002 install order, DOC-003 is read after DOC-002. The dependency edge is therefore DOC-003 → DOC-002 (DOC-003 depends on DOC-002's markdown scope).
@@ -250,12 +250,21 @@ When CI is configured, replace with dynamic ones.
 
 ## 8. Stack Signature
 
-Root documentation files must contain a stack signature at the end of the file.
+**Application** README files must contain a stack signature at the end of the file.
 
-**Scope:**
-- `README.md` (root)
-- `CHANGELOG.md` (root)
-- *Optional for nested `docs/` files, but not required.*
+**Scope (applies to):**
+- `README.md` at the root of an **application repository** (a repo that ships runnable code — e.g. a Next.js app, a library, a CLI tool)
+- `CHANGELOG.md` at the root of an application repository (optional but recommended)
+
+**Scope (does NOT apply to):**
+- **Standards** (`standards/standards/*.md`) — they describe rules, not "built with" anything
+- **Rules** (`guard/rules/*.md`) — same
+- **Skills** (`skills/skills/*/SKILL.md`) — same
+- **Templates** (`templates/*.md`) — meta-docs, not applications
+- **Orchestrator / meta-repos** (e.g. `Z-ai-platform`, `Z-ai-standards`, `Z-ai-guard`, `Z-ai-skills`) — they pin submodules and govern, they do not ship an application stack
+- **Nested docs** (`docs/**/*.md`) — optional, not required
+
+If a file is unclear, the test is: "Does this repo ship a runnable application whose stack a reader would care about?" If yes, the root README must have a Stack Signature. If no (governance, standards, meta-repos), the Stack Signature is forbidden — it would be cargo cult.
 
 **Format:**
 
@@ -756,6 +765,7 @@ Client          Server          Database
 | 2.2.0 | 2026-05 | Deduplication: removed 7 elements duplicated with STD-DOC-003 (prohibited elements table, allowed characters, ASCII diagram whitelist, icon library, brand logos, sanitization regex, unconditionally allowed). Replaced with cross-references. Kept .md-specific rules: typographics scope, (ref) exception, SVG insertion, badges, stack signature, formatting rules, text tags |
 | 2.3.0 | 2026-06 | Added comprehensive section 10 "ESLint Integration for Markdown Linting": flat config and legacy config examples, custom rules (code-block-language, no-emoji-in-md), nested standards mapping table, application stages with lint-staged and CI workflows, inline disable policy, manual run commands, troubleshooting; updated pre-merge checklist with ESLint items; updated references from STD-DOC-003 v2.1 to v2.2 |
 | 2.3.1 | 2026-06 | Updated in-body references from STD-DOC-003 v2.2 to v2.3 (header Related field, §3, §4.1, §4.2, §6.1, §6.2, §6.3, §7.2, §7.4, §11.1, §13 checklist). Added §14A Known Issues documenting MD-001 through MD-003. |
+| 2.3.2 | 2026-06 | §8 Stack Signature scope clarified: applies only to application repository README/CHANGELOG, NOT to standards/rules/skills/templates/meta-repos. Removed cargo-cult `Built with:` footer from this file (it is a governance doc, not an application). Project-wide cleanup documented in worklog task stack-signature-cleanup-2026-06-18. |
 
 ---
 
@@ -807,7 +817,3 @@ Until resolved, the registry keeps `[W]` (matching the registry's prior state) �
 |----------|-------------|
 | STD-DOC-003 | No-Unicode Policy: single source of truth for character rules. Sections 4-5 (prohibited elements), 6.1 (allowed characters), 6.2 (ASCII diagrams), 7 (icons/logos), 8.2-8.3 (sanitization regex), 10.1 (ESLint custom rule no-unicode-policy.js), 11.1 (unconditionally allowed) are cross-referenced from this standard |
 | STD-META-001 | Standard ID System: registry entry for STD-DOC-002 must be kept in sync with the version in this document's header. See MD-001 for the level-ambiguity issue that requires registry attention. |
-
----
-
-Built with: Next.js 16 + TypeScript + Tailwind CSS

@@ -430,7 +430,3 @@ Add a note: "The default is SQLite for Z.ai sandbox projects (per STD-ENV-001 §
 | STD-ENV-001 | Environment variable validation |
 | STD-ERR-001 | Error response security (no info leaks) |
 | STD-META-001 | Standard ID System: registry entry for STD-SEC-001 must be kept in sync with the version in this document's header |
-
----
-
-Built with: Next.js 16 + TypeScript + Tailwind CSS

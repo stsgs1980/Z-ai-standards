@@ -676,7 +676,3 @@ For unauthenticated requests, `req.user` is undefined, so `req.user?.id` is `und
 | STD-ERR-001 | Error handling patterns (this standard focuses on security-specific errors) |
 | STD-A11Y-001 | Accessibility intersects with security (Captcha alternatives, timeout warnings) |
 | STD-META-001 | Standard ID System: registry entry for STD-SEC-002 must be kept in sync with the version in this document's header |
-
----
-
-Built with: Next.js 16 + TypeScript + Tailwind CSS

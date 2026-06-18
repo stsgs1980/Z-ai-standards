@@ -485,7 +485,3 @@ However, §3.1 (CRITICAL: Never Do This) lists `git reset --hard` without backup
 | STD-AGENT-001 | Subagent commit protocol |
 | STD-FE-001 | Post-refactor commit rules |
 | STD-META-001 | Standard ID System: registry entry for STD-GIT-001 must be kept in sync with the version in this document's header |
-
----
-
-Built with: Next.js 16 + TypeScript + Tailwind CSS

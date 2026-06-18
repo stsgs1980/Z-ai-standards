@@ -1,7 +1,7 @@
-# Standard: README Template v2.2
+# Standard: README Template v2.3
 
 > ID: STD-DOC-004
-> Version: 2.2
+> Version: 2.3
 > Level: **[W] Warning**
 > Related: Markdown Standard (STD-DOC-002)
 
@@ -24,7 +24,7 @@ Every README.md must contain the following sections in order:
 | 9 | Scripts | Optional | NPM/Bun commands |
 | 10 | Development Rules | Optional | Code style, technology constraints |
 | 11 | Agent Rules | Conditional | Required if `AGENT_RULES.md` exists in project root |
-| 12 | Stack Signature | Yes | Mandatory footer |
+| 12 | Stack Signature | Optional | Mandatory footer **for application repositories only**. NOT applicable to governance documents (standards, rules, skills, templates, orchestrator meta-repos). See STD-DOC-002 §8 for the scope test. |
 
 ## 2. Template
 
@@ -119,7 +119,9 @@ See `skills/` for automated tooling.
 Built with: Next.js 16 + TypeScript + Tailwind CSS
 ````
 
-Note: The stack signature above is the default for Next.js projects. Replace with the actual project stack if using a different technology. Format: `Built with: <Framework> + <Language> + <Styling>` (see MARKDOWN_STANDARD v2.3, section 8).
+Note: The Stack Signature in the template above is shown as the canonical example, but it is **optional**. Per STD-DOC-002 §8 (v2.3.2+), the Stack Signature applies only to the root README of **application repositories** (a repo that ships runnable code — e.g. a Next.js app, a library, a CLI tool). It is **forbidden** in governance documents (standards, rules, skills, templates, orchestrator/meta-repos). The scope test: "Does this repo ship a runnable application whose stack a reader would care about?" If no, omit the footer.
+
+Format: `Built with: <project technologies>` — components separated by `+`, count is project-specific (see STD-DOC-002 v2.3.2 §8).
 
 ## 3. Checklist
 
@@ -129,11 +131,11 @@ Before submitting, verify:
 - [ ] No ASCII arrows as list markers (use `-` for unordered lists)
 - [ ] No em dash in headings or code (use hyphen `-`)
 - [ ] No pseudo-graphics for tree structures
-- [ ] Stack Signature present at end
 - [ ] All mandatory sections included
 - [ ] Agent Rules section present if AGENT_RULES.md exists
 - [ ] Code blocks have language specified
 - [ ] Badges added (optional but recommended for public repos)
+- [ ] Stack Signature present at end (application READMEs only — skip for governance docs per STD-DOC-002 §8)
 
 ## 4. Example Compliance
 
@@ -209,11 +211,11 @@ This makes it hard to verify that the template satisfies the §1 requirements by
 
 **Proposed solution:** Add the section number from §1 as a comment at the start of each section in the §2 template, e.g., `<!-- Section 6: Configuration -->`. This preserves readability while making the §1 ↔ §2 mapping verifiable. Alternatively, restructure §2 to follow §1's order strictly.
 
-### RMT-004 `[OPEN]` — Stack Signature format rule contradicts STD-DOC-002
+### RMT-004 `[RESOLVED in v2.3]` — Stack Signature format rule contradicts STD-DOC-002
 
-**Problem:** §2 note says "Format: `Built with: <Framework> + <Language> + <Styling>`". STD-DOC-002 §8 says "Format: `Built with: <project technologies>`" and adds "Content: letters, digits, `+` and `:` signs". The README_TEMPLATE format string `<Framework> + <Language> + <Styling>` implies exactly three components separated by `+`. STD-DOC-002 allows any number of components (e.g., "Next.js 16 + TypeScript + Tailwind CSS + Prisma"). The README_TEMPLATE's three-component form is more restrictive than STD-DOC-002.
+**Problem:** §2 note said "Format: `Built with: <Framework> + <Language> + <Styling>`". STD-DOC-002 §8 said "Format: `Built with: <project technologies>`" and adds "Content: letters, digits, `+` and `:` signs". The README_TEMPLATE format string `<Framework> + <Language> + <Styling>` implies exactly three components separated by `+`. STD-DOC-002 allows any number of components (e.g., "Next.js 16 + TypeScript + Tailwind CSS + Prisma"). The README_TEMPLATE's three-component form is more restrictive than STD-DOC-002.
 
-**Proposed solution:** Update the §2 note to: "Format: `Built with: <project technologies>` (see MARKDOWN_STANDARD v2.3, section 8). Components are separated by `+`; the number of components is project-specific." This aligns with STD-DOC-002 and removes the implicit three-component restriction.
+**Resolution (v2.3):** Resolved by scoping, not by reformatting. STD-DOC-002 §8 was clarified in v2.3.2: Stack Signature applies ONLY to application repository README/CHANGELOG, NOT to governance documents (standards, rules, skills, templates, orchestrator meta-repos). The format contradiction is now moot — the rule itself is scoped out for governance docs (including this template file). The template's §2 note now reads: "Format: `Built with: <project technologies>` — components separated by `+`, count is project-specific (see STD-DOC-002 v2.3.2 §8)." The 3-component restriction is removed. The trailing `Built with:` footer that this template file itself had (treating it as if it were an application README) was removed in the same project-wide cleanup (worklog task stack-signature-cleanup-2026-06-18).
 
 ---
 
@@ -224,7 +226,4 @@ This makes it hard to verify that the template satisfies the §1 requirements by
 | 2.0 | 2026-05 | Restructured: mandatory sections table, template, checklist |
 | 2.1 | 2026-05 | Added Stack Signature format note; added Agent Rules section per AGENT_RULES.md convention |
 | 2.2 | 2026-06 | Updated §2 note to cite MARKDOWN_STANDARD v2.3 §8 (was v2.1 §7). Added §5A Known Issues documenting RMT-001 through RMT-004. Added explicit Cross-References table in §5. |
-
----
-
-Built with: Next.js 16 + TypeScript + Tailwind CSS
+| 2.3 | 2026-06 | Stack Signature scope cleanup (worklog task stack-signature-cleanup-2026-06-18): §1 row #12 changed Required Yes -> Optional with scope note (applies to application READMEs only, not governance docs). §2 note rewritten to remove 3-component format restriction (was contradicting STD-DOC-002 §8). §3 checklist item qualified with scope. RMT-004 RESOLVED by scoping. Removed cargo-cult `Built with:` footer from this template file itself (it is a governance doc per new §8 scope). |

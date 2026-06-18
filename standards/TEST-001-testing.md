@@ -638,7 +638,3 @@ This section documents discovered inconsistencies, missing content, and proposed
 | 1.0 | 2025-05 | Initial version |
 | 1.1 | 2026-05 | Added §11 "Testing in Z.ai Sandbox" with sandbox-specific constraints, adjusted coverage targets, test database strategy, pre-commit test check, and E2E skip guidance |
 | 1.2 | 2026-06 | Fixed §6.2 Quality Gates to reference the §11.2 sandbox exception (Unit Coverage gate now reads ">= 80% (standard); >= 60% (Z.ai sandbox — see §11.2)"). Added §13A Known Issues documenting TST-001 through TST-004. Added STD-META-001 row to §13 Cross-References. |
-
----
-
-Built with: Next.js 16 + TypeScript + Tailwind CSS

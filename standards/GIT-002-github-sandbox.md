@@ -837,7 +837,3 @@ The `--global` scope writes to `~/.gitconfig`. In Z.ai sandbox, the home directo
 | STD-AGENT-001 | Subagent commit protocol |
 | STD-FE-001 | Post-refactor commit rules |
 | STD-META-001 | Standard ID System: registry entry for STD-GIT-002 must be kept in sync with the version in this document's header |
-
----
-
-Built with: Next.js 16 + TypeScript + Tailwind CSS

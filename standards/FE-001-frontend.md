@@ -628,7 +628,3 @@ This is the same issue as ORC-001 in `AGENT-002-orchestration.md` — the `K-NN`
 | STD-GIT-001 | Git commit format for frontend code changes |
 | STD-ENV-001 | Reproducibility: .env.example for theme tokens, path.resolve() for DB |
 | STD-META-001 | Standard ID System: registry entry for STD-FE-001 must be kept in sync with the version in this document's header |
-
----
-
-Built with: Next.js 16 + TypeScript + Tailwind CSS

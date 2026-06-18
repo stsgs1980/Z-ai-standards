@@ -831,7 +831,3 @@ This section documents discovered inconsistencies, missing content, and proposed
 **Companion file:** `DESIGN-001-profile-terminal-dashboard.md` — Terminal Dashboard example Profile (§14-§26, moved to companion in v3.1.0 for W11 CRITICAL closure). This is a reference appendix, not a separate standard; it has no `STD-` ID of its own.
 
 **Scope and applicability:** See Section 0 for the authoritative scope definition (Covers / Does NOT Cover / Boundary Rule). The design token layer applies to any DOM-based UI with CSS; React-specific constraints are governed by STD-FE-001; non-DOM environments require documented adaptation.
-
----
-
-Built with: Next.js 16 + TypeScript + Tailwind CSS

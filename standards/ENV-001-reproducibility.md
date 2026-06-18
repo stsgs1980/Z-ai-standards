@@ -205,6 +205,3 @@ This section documents discovered inconsistencies, missing content, and proposed
 | STD-FE-001 | Frontend: auto-backup (Section 10.5), deduplication (Section 10.6) |
 | STD-ENV-002 | Z.ai sandbox: project directory (Section 3), absolute path exception (Section 3.1) — authoritative source for sandbox path table; see REP-002 |
 | STD-TEST-001 | Testing: CI pipeline (Section 6), sandbox coverage (Section 11) |
-
----
-Built with: Next.js 16 + TypeScript + Tailwind CSS

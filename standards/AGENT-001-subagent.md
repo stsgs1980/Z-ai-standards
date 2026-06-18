@@ -354,7 +354,3 @@ This section documents discovered inconsistencies, missing content, and proposed
 | STD-DOC-003 | Unicode Policy: no emoji or Unicode graphics in subagent output (includes §8.4 chat dialogue rules) |
 | STD-DOC-002 | Markdown Standard: proper formatting in all .md output from subagents |
 | STD-ENV-001 | Reproducibility: no hardcoded personal paths in generated code |
-
----
-
-Built with: Next.js 16 + TypeScript + Tailwind CSS

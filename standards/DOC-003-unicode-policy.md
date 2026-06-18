@@ -791,7 +791,3 @@ This section documents discovered inconsistencies, missing content, and proposed
 | STD-DOC-002 | Markdown Standard: delegates character rules to this standard; keeps .md-specific formatting rules. Section 10 (ESLint Integration) in STD-DOC-002 references the custom rule defined in this document (section 10.1). The `eslint.config.js` examples in STD-DOC-002 section 10.3 import the `no-unicode-policy.js` rule file defined in this document. |
 | STD-META-001 | Standard ID System: registry entry for STD-DOC-003 must be kept in sync with the version in this document's header. |
 | STD-DESIGN-001 | Design System Standard: §8 (Icon and Graphics Rules) and §9 (Markdown Compliance) reference this standard's character and icon rules. |
-
----
-
-Built with: Next.js 16 + TypeScript + Tailwind CSS
