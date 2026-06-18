@@ -59,7 +59,7 @@ const path = require('path');
 // CONSTANTS
 // ============================================================================
 
-const VERSION = '1.1.2';
+const VERSION = '1.1.3';
 const EFFECTIVE_DATE = '2026-06-17';
 
 // Allowed Related: edges per STD-META-001 §6.1
@@ -1154,6 +1154,8 @@ function phase10_healthWarnings(repos) {
       'RULE-ENV-008.md',                  // bare form, see ARCH-001 §8 recovery procedures
       'INDEX.md',                         // bare INDEX.md — disambiguate via context (docs/sandbox/ or skills/)
       'skills/INDEX.md',                  // skills tree index, lives in Z-ai-skills/skills/INDEX.md (not yet shipped)
+      // v1.1.3 additions: planned companion file referenced in DESIGN-001-profile-terminal-dashboard.md TDP-002
+      'DESIGN-001-cards-reference.md',    // planned split target if companion file grows past 1200 lines (see TDP-002)
     ]);
     let m;
     const seen = new Set(); // dedupe within one file
