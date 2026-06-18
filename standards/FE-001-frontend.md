@@ -526,9 +526,11 @@ The [W+] level (Phase 2) means spacing and typography violations are logged with
 
 All color tokens defined in the Profile must meet **WCAG 2.1 AA contrast requirements**. Contrast validation is the responsibility of the Profile author; the frontend team verifies compliance during code review.
 
-- Default palettes must be verified against STD-A11Y-001 section 7 contrast requirements
-- Custom theme presets (e.g., Champagne, Cyan Night, Zinc) must document contrast ratios for all token pairs before use
-- Non-default palettes require manual contrast verification per STD-A11Y-001 section 1.1
+- Default palettes must pass the automated contrast audit (`npx stsgs a11y audit`, per STD-A11Y-001 §7)
+- Custom theme presets (e.g., Champagne, Cyan Night, Zinc) must document contrast ratios for all token pairs before use — attach the audit report as a CI artifact on the PR
+- Non-default palettes require manual contrast verification per STD-A11Y-001 §1.1
+
+**Note:** Prior to A11Y-001 v1.3, this section referenced "STD-A11Y-001 section 7 contrast requirements" which was an empty hand-maintained table. A11Y-001 v1.3 replaced that table with an automated-report reference. This section was updated in sync.
 
 ### 11.6. Anti-Fragility: Error Isolation
 
