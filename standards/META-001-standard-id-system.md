@@ -879,6 +879,74 @@ ZAI-META-001 is removed entirely.
 
 ---
 
+## 15A. Known Issues and Proposed Solutions
+
+This section documents discovered inconsistencies, missing content, and proposed corrections. Each issue has an ID, status, and proposed action. Issues resolved in the current version are marked `[RESOLVED]`; outstanding issues are marked `[OPEN]`.
+
+### META-001 `[RESOLVED in v1.2]` — Registry out of sync with actual file versions
+
+**Problem:** Prior to v1.2, the registry contained stale version numbers for many standards. The actual file versions (read from each standard's header) did not match the registry entries:
+
+| ID | Registry (old) | File (actual) | Action taken |
+|----|----------------|---------------|--------------|
+| STD-FE-001 | 1.5 | 2.3 | Updated to 2.3 |
+| STD-DOC-002 | 2.2.0 | 2.3.0 | Updated to 2.3.0 |
+| STD-DOC-003 | 2.1.3 | 2.3.0 | Updated to 2.3.0 |
+| STD-META-001 | 1.1 | 1.2 | Updated to 1.2 (this version) |
+
+**Resolution:** Registry now reflects the actual file versions. Future version bumps in any standard MUST be accompanied by a registry update in the same change set (see §8.3 Synchronization).
+
+### META-002 `[RESOLVED in v1.2]` — `FROZEN` status applied to actively maintained standards
+
+**Problem:** Eight standards were marked `FROZEN` in the registry, but their files showed recent updates (`Last Updated: 2026-05` or later) and active version bumps in their Version History. The `FROZEN` status was therefore inconsistent with the actual maintenance state.
+
+| ID | Old status | New status | Rationale |
+|----|-----------|-----------|-----------|
+| STD-A11Y-001 | DEPRECATED | ACTIVE | File v1.1 dated 2026-05, no deprecation notice in file |
+| STD-DOC-004 | FROZEN | ACTIVE | File v2.1 dated 2026-05, no freeze notice |
+| STD-DOC-005 | FROZEN | ACTIVE | File v1.1 dated 2026-05, no freeze notice |
+| STD-TEST-001 | FROZEN | ACTIVE | File v1.1 dated 2026-05, no freeze notice |
+| STD-ERR-002 | FROZEN | ACTIVE | File v1.0 dated 2026-05, no freeze notice |
+| STD-SEC-002 | FROZEN | ACTIVE | File v1.0 dated 2026-05, no freeze notice |
+| STD-AGENT-001 | FROZEN | ACTIVE | File v1.0 dated 2026-05, no freeze notice |
+| STD-AGENT-002 | FROZEN | ACTIVE | File v1.0 dated 2026-05, no freeze notice |
+
+**Resolution:** All eight entries updated to `ACTIVE`. To mark a standard as `FROZEN` in the future, the file itself MUST contain a `**STATUS: FROZEN**` line in the header, and the registry entry MUST cite the freeze date.
+
+### META-003 `[RESOLVED in v1.2]` — Missing `DESIGN` domain and `STD-DESIGN-001` entry
+
+**Problem:** The `DESIGN` domain was not listed in §3 (Reserved Domains), and `STD-DESIGN-001` (Design System Standard, file `DESIGN_SYSTEM_STANDARD.md`, v3.0.0) was absent from §4 (ID Registry) entirely. This meant a shipped, actively-maintained standard had no registered ID.
+
+**Resolution:** Added `DESIGN` to §3 domain table. Added new §4.11 "Design System (DESIGN)" subsection with the `STD-DESIGN-001` entry (v3.0.0, [C]+[W], ACTIVE). Renumbered the META subsection from §4.11 to §4.12.
+
+### META-004 `[OPEN]` — `STD-DOC-001` entry references a file that is not shipped
+
+**Problem:** §4.4 lists `STD-DOC-001 | Markdown Standard (RU) | 2.1.5 | [W] Warning | DEPRECATED`. The file `MARKDOWN_STANDARD_RU.md` is not present in the standards directory — only the English version (STD-DOC-002) is shipped. The deprecated entry therefore references a non-existent artifact.
+
+**Proposed solution:** Keep the entry as a historical record (deprecated IDs are not reassigned per §9.2), but the Status column now reads `DEPRECATED (file not shipped; superseded by STD-DOC-002)` to make the artifact's absence explicit. Alternative: remove the entry entirely and rely on git history. Current decision: keep with explicit "file not shipped" note.
+
+### META-005 `[OPEN]` — Level `[C]` vs `[W]` ambiguity for STD-DOC-002
+
+**Problem:** `MARKDOWN_STANDARD.md` (STD-DOC-002) header says `Level: **[C] Critical** (unified with STD-DOC-003 — same rule = same severity)`. Its footer says `Document complies with MARKDOWN_STANDARD v2.3 (level [W])`. The registry (this document, §4.4) lists it as `[W] Warning`. `IMPLEMENTATION_ORDER.md` §1 Group B table lists it as `[W]`. There is a three-way contradiction.
+
+**Proposed solution:** Decide authoritatively which level applies. The "same rule = same severity" principle from STD-DOC-003 argues for `[C]`. The registry and IMPLEMENTATION_ORDER argue for `[W]`. Until resolved, the registry keeps `[W]` (matching IMPLEMENTATION_ORDER), and the file header should be updated to remove the contradiction. See STD-DOC-002 Known Issues entry MD-001 for the cross-reference.
+
+### META-006 `[OPEN]` — No automation to detect registry drift
+
+**Problem:** The registry is maintained manually. There is no script that compares each standard's header version against the registry entry, so drift (as in META-001) recurs silently. The previous drift went undetected for at least one minor-version cycle.
+
+**Proposed solution:** Add a `lint-registry.js` script that:
+1. Reads each `*.md` file's header (`Version:` and `Level:` fields).
+2. Reads this document's §4 registry tables.
+3. Reports any mismatch in version, level, or status.
+4. Runs in CI on every push that touches any standard file or this registry.
+
+The script should live in `eslint-rules/` or `scripts/` per the project's tooling convention.
+
+---
+
+---
+
 ## 14. Checklist Before Publishing New ID
 
 - [ ] ID assigned from the correct registry section (§4.1–4.17)

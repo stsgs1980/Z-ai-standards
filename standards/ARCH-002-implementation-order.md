@@ -1,15 +1,102 @@
-# Standard: Implementation Order v2.3
+# Standard: Implementation Order v2.4
 
-> ID: STD-ARCH-001
-> Version: 2.3
-> Level: **[W] Warning**
-> Related: All Group B standards
+> ID: STD-ARCH-002
+> Version: 2.4
+> Previous: 2.3 (was incorrectly labeled STD-ARCH-001)
+> Level: **[C] Critical**
+> Last Updated: 2026-06-18
+> Effective Date: 2026-06-18
+> Status: **APPROVED**
+> verified_by: scripts/verify-id-graph.js#G01,G02
+> Related: STD-META-001 (ID system), STD-ARCH-001 (architecture), all other standards (this standard governs their install order)
 
-This document describes the implementation order for all project documents — from reading standards to assembling README. Each step builds on the results of the previous one. Violating the order leads to rework.
+This standard defines two distinct ordering concerns:
+
+1. **Standards Installation Order** (§1) — the order in which the 20 normative standards MUST be read and accepted when onboarding a new project or agent. Each standard depends on concepts introduced by earlier standards.
+
+2. **Project Setup Sequence** (§2-§6) — the 6-step sequence for assembling a project (read standards → deploy worklog → reproducibility → unicode policy → markdown → README). This sequence governs how the standards are *applied* to a codebase, not how they are *learned*.
+
+Violating either order leads to rework.
 
 ---
 
-## 1. Project Documents
+## 1. Standards Installation Order
+
+The 20 normative standards below MUST be installed (read, understood, and accepted) in this order. Each row cites the prerequisite standards whose concepts the current standard depends on.
+
+| # | ID | File | Prerequisites | Why this position |
+|---|---|---|---|---|
+| 1 | STD-META-001 | `META-001-standard-id-system.md` | — | Defines the ID system. Every other standard is referenced by its `STD-*` ID, so the ID system must be accepted first. |
+| 2 | STD-ARCH-001 | `ARCH-001-architecture-and-repo-layout.md` | META-001 | Defines the 4-repo split (platform + standards + guard + skills). Needed before any cross-repo work. |
+| 3 | STD-ARCH-002 | `ARCH-002-implementation-order.md` (this file) | META-001, ARCH-001 | Defines the order in which all remaining standards are installed. You are reading it. |
+| 4 | STD-DOC-002 | `DOC-002-markdown-standard.md` | META-001, ARCH-002 | Governs how every `.md` file (including other standards) is formatted. Must be accepted before reading standards whose formatting depends on it. |
+| 5 | STD-DOC-003 | `DOC-003-unicode-policy.md` | DOC-002 | Defines character rules (no emoji, no box-drawing, etc.). Pairs with DOC-002 — must be accepted alongside it. |
+| 6 | STD-SKILL-001 | `SKILL-001-skill-format.md` | META-001, DOC-002 | Defines skill format. Needed before any skill is authored or consumed. |
+| 7 | STD-ENV-001 | `ENV-001-reproducibility.md` | ARCH-001, DOC-002 | Defines L1-L4 reproducibility layers (env, code, delivery, process). Foundation for everything that runs. |
+| 8 | STD-ENV-002 | `ENV-002-zai-integration.md` | ENV-001 | Sandbox-specific rules. Builds on ENV-001 — assumes reproducibility baseline. |
+| 9 | STD-GIT-001 | `GIT-001-github.md` | ENV-001, DOC-002 | Commit/branch/push policy for production repos. Needed before any commit. |
+| 10 | STD-GIT-002 | `GIT-002-github-sandbox.md` | GIT-001, ENV-002 | Sandbox-specific git rules (deadlock prevention). Builds on GIT-001. |
+| 11 | STD-DESIGN-001 | `DESIGN-001-design-system.md` | DOC-002, DOC-003 | Design tokens (color, typography, spacing). Must be defined before frontend consumes them. |
+| 12 | STD-FE-001 | `FE-001-frontend.md` | ENV-001, DOC-002, DESIGN-001 | Frontend code rules. Consumes design tokens — requires DESIGN-001 first. |
+| 13 | STD-A11Y-001 | `A11Y-001-wcag-2-1-aa.md` | FE-001, DESIGN-001 | WCAG 2.1 AA compliance. Verified against frontend components — requires FE-001. |
+| 14 | STD-ERR-001 | `ERR-001-error-handling.md` | FE-001, DOC-002 | Error classification, try-catch, logging. Applied in API routes and frontend boundaries. |
+| 15 | STD-ERR-002 | `ERR-002-error-recovery.md` | ERR-001 | Retry, circuit breaker, fallback. Builds on error handling concepts. |
+| 16 | STD-SEC-001 | `SEC-001-security-core.md` | ENV-001, GIT-001, DOC-002 | OWASP Top 10, secrets, validation. Needs env + git for context. |
+| 17 | STD-SEC-002 | `SEC-002-security-extended.md` | SEC-001 | Auth, RBAC, rate limiting. Extended threats — builds on core security. |
+| 18 | STD-TEST-001 | `TEST-001-testing.md` | FE-001, ERR-001, DOC-002 | Coverage gates, test isolation. Tests verify everything else — installed late. |
+| 19 | STD-AGENT-001 | `AGENT-001-subagent.md` | ENV-001, GIT-001, DOC-002 | Subagent contracts. Assumes env + git + doc format already accepted. |
+| 20 | STD-AGENT-002 | `AGENT-002-orchestration.md` | AGENT-001, ERR-001 | Multi-agent patterns. Builds on subagent contracts + error propagation. |
+
+### Non-normative companions (not in install order)
+
+These two artifacts are NOT standards — they are applied as needed during project setup (§2-§6):
+
+| ID | File | Purpose |
+|---|---|---|
+| STD-DOC-004 | `templates/README_TEMPLATE.md` | Copy-and-fill-in template for project `README.md` |
+| STD-DOC-005 | `guides/CODE_EXAMPLES_GUIDE.md` | How-to guide for formatting code blocks in documentation |
+
+### Why this order — key invariants
+
+1. **META before everything.** Without an ID system, you cannot reference any other standard.
+2. **ARCH-001 before ARCH-002.** The implementation order assumes the 4-repo architecture is already understood.
+3. **DOC-002 + DOC-003 before content-heavy standards.** Every standard's `.md` file must comply with markdown + unicode rules.
+4. **ENV before GIT.** Git workflow depends on environment stability (no hardcoded paths, no leaked secrets).
+5. **DESIGN before FE.** Frontend consumes design tokens — tokens must exist first.
+6. **FE before A11Y.** Accessibility is verified against frontend components.
+7. **ERR-001 before ERR-002.** Recovery builds on classification.
+8. **SEC-001 before SEC-002.** Extended threats extend core security.
+9. **TEST after ERR + FE.** Tests verify error handling and frontend behavior.
+10. **AGENT-001 before AGENT-002.** Orchestration coordinates subagents — subagent contract must exist first.
+
+### Dependency graph
+
+```text
+META-001 (1)
+  └── ARCH-001 (2)
+        └── ARCH-002 (3) [this file]
+              ├── DOC-002 (4)
+              │     └── DOC-003 (5)
+              ├── SKILL-001 (6)
+              ├── ENV-001 (7)
+              │     └── ENV-002 (8)
+              ├── GIT-001 (9)  ← needs ENV-001
+              │     └── GIT-002 (10)  ← needs ENV-002
+              ├── DESIGN-001 (11)  ← needs DOC-002, DOC-003
+              │     └── FE-001 (12)  ← needs ENV-001, DESIGN-001
+              │           └── A11Y-001 (13)
+              ├── ERR-001 (14)  ← needs FE-001
+              │     └── ERR-002 (15)
+              ├── SEC-001 (16)  ← needs ENV-001, GIT-001
+              │     └── SEC-002 (17)
+              ├── TEST-001 (18)  ← needs FE-001, ERR-001
+              └── AGENT-001 (19)  ← needs ENV-001, GIT-001
+                    └── AGENT-002 (20)  ← needs AGENT-001, ERR-001
+```
+
+---
+
+## 2. Project Documents
 
 ### Group B: Standards (governance)
 
@@ -19,27 +106,28 @@ Define rules. Not modified when starting a new project — only read and accepte
 
 | ID | Document | Level | Scope |
 |----|----------|-------|-------|
-| STD-ENV-001 | REPRODUCIBILITY_STANDARD.md | [C] | Infrastructure, env, DB |
-| STD-FE-001 | FRONTEND_STANDARD.md | [C] | React, Next.js, FSD |
-| STD-DESIGN-001 | DESIGN_SYSTEM_STANDARD.md | [C]+[W] | Design tokens, typography, color, spacing, card archetypes |
-| STD-GIT-001 | GITHUB_STANDARD.md | [C] | Commits, branches, push policy |
-| STD-GIT-002 | GITHUB_SANDBOX_STANDARD.md | [C] | Sandbox deadlock, recovery, network failures |
-| STD-A11Y-001 | WCAG_2.1_AA_STANDARD.md | [C] | WCAG, ARIA, contrast |
-| STD-TEST-001 | TESTING_STANDARD.md | [C] | Unit, integration, E2E testing |
-| STD-ERR-001 | ERROR_HANDLING_STANDARD.md | [C] | Error types, logging, response patterns |
-| STD-ERR-002 | ERROR_RECOVERY_STANDARD.md | [C] | Retry, circuit breaker, fallback, monitoring |
-| STD-SEC-001 | SECURITY_STANDARD.md | [C] | Core security: secrets, validation, headers |
-| STD-SEC-002 | SECURITY_EXTENDED_STANDARD.md | [C] | Extended: auth, RBAC, rate limiting, compliance |
-| STD-DOC-001 | MARKDOWN_STANDARD.md (RU) | [W] | [DEPRECATED — file not shipped] Use STD-DOC-002 |
-| STD-DOC-002 | MARKDOWN_STANDARD.md | [W] | README, project documentation |
-| STD-DOC-003 | UNICODE_POLICY.md | [C]+[W]+[I] | UI, production code, AI-chat |
-| STD-DOC-004 | README_TEMPLATE.md | [W] | README.md structure |
-| STD-DOC-005 | CODE_EXAMPLES_GUIDE.md | [W] | Code examples in documentation |
-| STD-ARCH-001 | IMPLEMENTATION_ORDER.md | [W] | Implementation sequence |
-| STD-META-001 | STANDARD_ID_SYSTEM.md | [W] | Standard ID system |
-| STD-ENV-002 | ZAI_INTEGRATION_STANDARD.md | [C] | Z.ai sandbox integration |
-| STD-AGENT-001 | SUBAGENT_STANDARD.md | [C] | Subagent types, contract, lifecycle, constraints |
-| STD-AGENT-002 | ORCHESTRATION_STANDARD.md | [C] | Multi-agent coordination, dependencies, state |
+| STD-ENV-001 | ENV-001-reproducibility.md | [C] | Infrastructure, env, DB |
+| STD-FE-001 | FE-001-frontend.md | [C] | React, Next.js, FSD |
+| STD-DESIGN-001 | DESIGN-001-design-system.md | [C]+[W] | Design tokens, typography, color, spacing, card archetypes |
+| STD-GIT-001 | GIT-001-github.md | [C] | Commits, branches, push policy |
+| STD-GIT-002 | GIT-002-github-sandbox.md | [C] | Sandbox deadlock, recovery, network failures |
+| STD-A11Y-001 | A11Y-001-wcag-2-1-aa.md | [C] | WCAG, ARIA, contrast |
+| STD-TEST-001 | TEST-001-testing.md | [C] | Unit, integration, E2E testing |
+| STD-ERR-001 | ERR-001-error-handling.md | [C] | Error types, logging, response patterns |
+| STD-ERR-002 | ERR-002-error-recovery.md | [C] | Retry, circuit breaker, fallback, monitoring |
+| STD-SEC-001 | SEC-001-security-core.md | [C] | Core security: secrets, validation, headers |
+| STD-SEC-002 | SEC-002-security-extended.md | [C] | Extended: auth, RBAC, rate limiting, compliance |
+| STD-DOC-001 | (RU version, not shipped) | [W] | [DEPRECATED — file not shipped] Use STD-DOC-002 |
+| STD-DOC-002 | DOC-002-markdown-standard.md | [W] | README, project documentation |
+| STD-DOC-003 | DOC-003-unicode-policy.md | [C]+[W]+[I] | UI, production code, AI-chat |
+| STD-DOC-004 | templates/README_TEMPLATE.md | [W] | README.md structure (non-normative template) |
+| STD-DOC-005 | guides/CODE_EXAMPLES_GUIDE.md | [W] | Code examples in documentation (non-normative guide) |
+| STD-ARCH-001 | ARCH-001-architecture-and-repo-layout.md | [C] | 4-repo split, submodule topology, layer model |
+| STD-ARCH-002 | ARCH-002-implementation-order.md | [C] | Standards installation order (this file) |
+| STD-META-001 | META-001-standard-id-system.md | [C] | Standard ID system |
+| STD-ENV-002 | ENV-002-zai-integration.md | [C] | Z.ai sandbox integration |
+| STD-AGENT-001 | AGENT-001-subagent.md | [C] | Subagent types, contract, lifecycle, constraints |
+| STD-AGENT-002 | AGENT-002-orchestration.md | [C] | Multi-agent coordination, dependencies, state |
 
 ### Group A: Operational System (worklog)
 

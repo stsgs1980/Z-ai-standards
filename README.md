@@ -16,134 +16,128 @@ Z-ai-standards/
 ├── README.md                              # This file — start here
 ├── MIGRATIONS.md                          # ID migration log (read by verify-id-graph.js)
 │
-├── standards/                             # Normative standards (STD-* IDs)
-│   ├── architecture/                      # STD-ARCH — repo layout, install order
-│   ├── documentation/                     # STD-DOC — markdown, unicode policy
-│   ├── design/                            # STD-DESIGN — design system
-│   ├── frontend/                          # STD-FE — React/Next.js frontend
-│   ├── accessibility/                     # STD-A11Y — WCAG 2.1 AA
-│   ├── errors/                            # STD-ERR — handling + recovery
-│   ├── security/                          # STD-SEC — core + extended
-│   ├── github/                            # STD-GIT — production + sandbox
-│   ├── testing/                           # STD-TEST — coverage, gates
-│   ├── agents/                            # STD-AGENT — subagent + orchestration
-│   ├── environment/                       # STD-ENV — reproducibility + Z.ai integration
-│   ├── meta/                              # STD-META — standard ID system
-│   └── skills/                            # STD-SKILL — skill format
+├── standards/                             # 20 normative standards, flat layout
+│   # Naming convention: <DOMAIN>-<NNN>-<name>.md
+│   # Sorted alphabetically = grouped by domain automatically
+│   │
+│   # Architecture (install first)
+│   ├── META-001-standard-id-system.md         # 1. ID system (foundation)
+│   ├── ARCH-001-architecture-and-repo-layout.md  # 2. 4-repo split
+│   ├── ARCH-002-implementation-order.md       # 3. THIS defines install order for all 20
+│   │
+│   # Documentation
+│   ├── DOC-002-markdown-standard.md           # 4. Markdown formatting
+│   ├── DOC-003-unicode-policy.md              # 5. No-emoji / no-box-drawing
+│   │
+│   # Skills
+│   ├── SKILL-001-skill-format.md              # 6. Skill file format
+│   │
+│   # Environment
+│   ├── ENV-001-reproducibility.md             # 7. L1-L4 reproducibility
+│   ├── ENV-002-zai-integration.md             # 8. Z.ai sandbox integration
+│   │
+│   # GitHub
+│   ├── GIT-001-github.md                      # 9. Production git workflow
+│   ├── GIT-002-github-sandbox.md              # 10. Sandbox git rules
+│   │
+│   # Design + Frontend + Accessibility
+│   ├── DESIGN-001-design-system.md            # 11. Design tokens
+│   ├── FE-001-frontend.md                     # 12. React/Next.js frontend
+│   ├── A11Y-001-wcag-2-1-aa.md                # 13. WCAG 2.1 AA
+│   │
+│   # Errors
+│   ├── ERR-001-error-handling.md              # 14. Error classification
+│   ├── ERR-002-error-recovery.md              # 15. Retry, circuit breaker
+│   │
+│   # Security
+│   ├── SEC-001-security-core.md               # 16. OWASP Top 10, secrets
+│   ├── SEC-002-security-extended.md           # 17. Auth, RBAC, rate limiting
+│   │
+│   # Testing
+│   ├── TEST-001-testing.md                    # 18. Coverage gates
+│   │
+│   # Agents
+│   ├── AGENT-001-subagent.md                  # 19. Subagent contracts
+│   └── AGENT-002-orchestration.md             # 20. Multi-agent patterns
 │
-├── templates/                             # Copy-and-fill-in artifacts (NOT standards)
-│   └── README_TEMPLATE.md                 # STD-DOC-004 — README template
+├── templates/                             # Non-normative copy-and-fill-in artifacts
+│   └── README_TEMPLATE.md                     # STD-DOC-004 — README template
 │
-├── guides/                                # How-to instructions (NOT normative)
-│   └── CODE_EXAMPLES_GUIDE.md             # STD-DOC-005 — code block formatting guide
+├── guides/                                # Non-normative how-to guides
+│   └── CODE_EXAMPLES_GUIDE.md                 # STD-DOC-005 — code block formatting
 │
 ├── scripts/                               # Verification tools (TOOL-* IDs)
-│   ├── verify-standards.js                # TOOL-VERIFY-002 — V01-V10 per-repo invariants
-│   ├── verify-cascade.js                  # TOOL-VERIFY-003 — historical cascade checks
-│   ├── verify-id-graph.js                 # TOOL-VERIFY-004 — cross-repo ID graph (G01-G15)
-│   └── cross-doc-consistency-check.js     # Block 1.2 inter-draft check
+│   ├── verify-standards.js                    # V01-V10 per-repo invariants
+│   ├── verify-cascade.js                      # historical cascade checks
+│   ├── verify-id-graph.js                     # G01-G15 cross-repo ID graph
+│   └── cross-doc-consistency-check.js         # inter-draft consistency
 │
 └── docs/                                  # Specifications for tools
     └── verify-id-graph-spec-v1.0.md
 ```
 
-## Standards Index
+## Standards Installation Order
 
-Each domain folder in `standards/` contains both **formalized** files
-(named `STD-<DOMAIN>-<NNN>-v<X.Y>.md` per STD-META-001 v2.0) and **working drafts**
-(named by semantic convention, e.g. `MARKDOWN_STANDARD.md`). Working drafts are
-the authoritative source of content; formalized files are the canonical ID anchors.
+When onboarding a new project or agent, install (read + accept) the 20 standards
+in this exact order. Each standard depends on concepts introduced by earlier
+standards. The authoritative spec is **`standards/ARCH-002-implementation-order.md`**.
 
-### STD-ARCH — Architecture & Repo Layout
-
-| File | ID | Version | Status |
+| # | ID | File | Prerequisites |
 |---|---|---|---|
-| `architecture/STD-ARCH-001-v1.0.md` | STD-ARCH-001 | 1.0.0 | APPROVED |
-| `architecture/IMPLEMENTATION_ORDER.md` | STD-ARCH-001 | (legacy form) | Working draft |
+| 1 | STD-META-001 | `META-001-standard-id-system.md` | — |
+| 2 | STD-ARCH-001 | `ARCH-001-architecture-and-repo-layout.md` | META-001 |
+| 3 | STD-ARCH-002 | `ARCH-002-implementation-order.md` | META-001, ARCH-001 |
+| 4 | STD-DOC-002 | `DOC-002-markdown-standard.md` | META-001, ARCH-002 |
+| 5 | STD-DOC-003 | `DOC-003-unicode-policy.md` | DOC-002 |
+| 6 | STD-SKILL-001 | `SKILL-001-skill-format.md` | META-001, DOC-002 |
+| 7 | STD-ENV-001 | `ENV-001-reproducibility.md` | ARCH-001, DOC-002 |
+| 8 | STD-ENV-002 | `ENV-002-zai-integration.md` | ENV-001 |
+| 9 | STD-GIT-001 | `GIT-001-github.md` | ENV-001, DOC-002 |
+| 10 | STD-GIT-002 | `GIT-002-github-sandbox.md` | GIT-001, ENV-002 |
+| 11 | STD-DESIGN-001 | `DESIGN-001-design-system.md` | DOC-002, DOC-003 |
+| 12 | STD-FE-001 | `FE-001-frontend.md` | ENV-001, DOC-002, DESIGN-001 |
+| 13 | STD-A11Y-001 | `A11Y-001-wcag-2-1-aa.md` | FE-001, DESIGN-001 |
+| 14 | STD-ERR-001 | `ERR-001-error-handling.md` | FE-001, DOC-002 |
+| 15 | STD-ERR-002 | `ERR-002-error-recovery.md` | ERR-001 |
+| 16 | STD-SEC-001 | `SEC-001-security-core.md` | ENV-001, GIT-001, DOC-002 |
+| 17 | STD-SEC-002 | `SEC-002-security-extended.md` | SEC-001 |
+| 18 | STD-TEST-001 | `TEST-001-testing.md` | FE-001, ERR-001, DOC-002 |
+| 19 | STD-AGENT-001 | `AGENT-001-subagent.md` | ENV-001, GIT-001, DOC-002 |
+| 20 | STD-AGENT-002 | `AGENT-002-orchestration.md` | AGENT-001, ERR-001 |
 
-### STD-DOC — Documentation Format
+### Non-normative companions (not in install order)
 
-| File | ID | Version | Status |
-|---|---|---|---|
-| `documentation/STD-DOC-002-v0.1.md` | STD-DOC-002 | 0.1.0 | STUB |
-| `documentation/MARKDOWN_STANDARD.md` | STD-DOC-002 | 2.3.1 | Working draft (full content) |
-| `documentation/UNICODE_POLICY.md` | STD-DOC-003 | 2.3.0 | Working draft (no formalized counterpart yet) |
-| `templates/README_TEMPLATE.md` | STD-DOC-004 | 2.2.0 | Template (not a normative file) |
-| `guides/CODE_EXAMPLES_GUIDE.md` | STD-DOC-005 | 1.3.0 | Guide (not a normative file) |
+| ID | File | Purpose |
+|---|---|---|
+| STD-DOC-004 | `templates/README_TEMPLATE.md` | README template — applied during project setup step 6 |
+| STD-DOC-005 | `guides/CODE_EXAMPLES_GUIDE.md` | Code block formatting guide — applied throughout steps 3-6 |
 
-### STD-DESIGN — Design System
+## Currently Released Standards
 
-| File | ID | Version | Status |
-|---|---|---|---|
-| `design/DESIGN_SYSTEM_STANDARD.md` | STD-DESIGN-001 | 3.0.1 | Working draft (no formalized counterpart yet) |
-
-### STD-FE — Frontend Development
-
-| File | ID | Version | Status |
-|---|---|---|---|
-| `frontend/FRONTEND_STANDARD.md` | STD-FE-001 | 2.4.0 | Working draft (no formalized counterpart yet) |
-
-### STD-A11Y — Accessibility
-
-| File | ID | Version | Status |
-|---|---|---|---|
-| `accessibility/WCAG_2.1_AA_STANDARD.md` | STD-A11Y-001 | 1.2.0 | Working draft (no formalized counterpart yet) |
-
-### STD-ERR — Error Handling & Recovery
-
-| File | ID | Version | Status |
-|---|---|---|---|
-| `errors/ERROR_HANDLING_STANDARD.md` | STD-ERR-001 | 2.1.0 | Working draft (no formalized counterpart yet) |
-| `errors/ERROR_RECOVERY_STANDARD.md` | STD-ERR-002 | 1.1.0 | Working draft (no formalized counterpart yet) |
-
-### STD-SEC — Security
-
-| File | ID | Version | Status |
-|---|---|---|---|
-| `security/SECURITY_STANDARD.md` | STD-SEC-001 | 2.1.0 | Working draft (no formalized counterpart yet) |
-| `security/SECURITY_EXTENDED_STANDARD.md` | STD-SEC-002 | 1.1.0 | Working draft (no formalized counterpart yet) |
-
-### STD-GIT — GitHub Workflow
-
-| File | ID | Version | Status |
-|---|---|---|---|
-| `github/GITHUB_STANDARD.md` | STD-GIT-001 | 2.1.0 | Working draft (no formalized counterpart yet) |
-| `github/GITHUB_SANDBOX_STANDARD.md` | STD-GIT-002 | 1.1.0 | Working draft (no formalized counterpart yet) |
-
-### STD-TEST — Testing
-
-| File | ID | Version | Status |
-|---|---|---|---|
-| `testing/TESTING_STANDARD.md` | STD-TEST-001 | 1.2.0 | Working draft (no formalized counterpart yet) |
-
-### STD-AGENT — Multi-Agent Coordination
-
-| File | ID | Version | Status |
-|---|---|---|---|
-| `agents/SUBAGENT_STANDARD.md` | STD-AGENT-001 | 1.1.0 | Working draft (no formalized counterpart yet) |
-| `agents/ORCHESTRATION_STANDARD.md` | STD-AGENT-002 | 1.1.0 | Working draft (no formalized counterpart yet) |
-
-### STD-ENV — Environment & Reproducibility
-
-| File | ID | Version | Status |
-|---|---|---|---|
-| `environment/STD-ENV-001-v0.1.md` | STD-ENV-001 | 0.1.0 | STUB |
-| `environment/REPRODUCIBILITY_STANDARD.md` | STD-ENV-001 | 2.1.0 | Working draft (full content) |
-| `environment/STD-ENV-002-v0.1.md` | STD-ENV-002 | 0.1.0 | STUB |
-| `environment/ZAI_INTEGRATION_STANDARD.md` | STD-ENV-002 | 1.2.0 | Working draft (full content) |
-
-### STD-META — Meta (Standards About Standards)
-
-| File | ID | Version | Status |
-|---|---|---|---|
-| `meta/STD-META-001-v2.0.md` | STD-META-001 | 2.0.0 | APPROVED |
-| `meta/STANDARD_ID_SYSTEM.md` | STD-META-001 | 1.2.0 | Working draft (older form — content partially migrated to v2.0) |
-
-### STD-SKILL — Skill Format
-
-| File | ID | Version | Status |
-|---|---|---|---|
-| `skills/STD-SKILL-001-v1.0.md` | STD-SKILL-001 | 1.0.0 | APPROVED |
+| ID | Name | Version | Effective Date | Level |
+|---|---|---|---|---|
+| STD-META-001 | Standard ID System | 2.0.0 | 2026-06-17 | [C] Critical |
+| STD-ARCH-001 | Architecture & Repo Layout | 1.0.0 | 2026-06-17 | [C] Critical |
+| STD-ARCH-002 | Implementation Order | 2.4.0 | 2026-06-18 | [C] Critical |
+| STD-SKILL-001 | Skill Format & Identification | 1.0.0 | 2026-06-17 | [B] Recommended |
+| STD-DOC-002 | Markdown Formatting | 2.3.1 | 2026-06-18 | [W] Warning |
+| STD-DOC-003 | No-Unicode Policy | 2.3.0 | 2026-06-18 | [C]+[W]+[I] |
+| STD-DOC-004 | README Template | 2.2.0 | 2026-06-18 | [W] (non-normative) |
+| STD-DOC-005 | Code Examples Guide | 1.3.0 | 2026-06-18 | [W] (non-normative) |
+| STD-ENV-001 | Reproducibility | 2.1.0 | 2026-06-18 | [C] Critical |
+| STD-ENV-002 | Z.ai Integration | 1.2.0 | 2026-06-18 | [C] Critical |
+| STD-GIT-001 | GitHub Core | 2.1.0 | 2026-06-18 | [C] Critical |
+| STD-GIT-002 | GitHub Sandbox | 1.1.0 | 2026-06-18 | [C] Critical |
+| STD-DESIGN-001 | Design System | 3.0.1 | 2026-06-18 | [C]+[W] |
+| STD-FE-001 | Frontend Development | 2.4.0 | 2026-06-18 | [C] Critical |
+| STD-A11Y-001 | WCAG 2.1 AA Accessibility | 1.2.0 | 2026-06-18 | [C] Critical |
+| STD-ERR-001 | Error Handling Core | 2.1.0 | 2026-06-18 | [C] Critical |
+| STD-ERR-002 | Error Recovery | 1.1.0 | 2026-06-18 | [C] Critical |
+| STD-SEC-001 | Security Core | 2.1.0 | 2026-06-18 | [C] Critical |
+| STD-SEC-002 | Security Extended | 1.1.0 | 2026-06-18 | [C] Critical |
+| STD-TEST-001 | Testing | 1.2.0 | 2026-06-18 | [C] Critical |
+| STD-AGENT-001 | Subagent | 1.1.0 | 2026-06-18 | [C] Critical |
+| STD-AGENT-002 | Orchestration | 1.1.0 | 2026-06-18 | [C] Critical |
 
 ## Cross-Domain Navigation
 
@@ -151,15 +145,16 @@ Use this map to find related standards when working in one domain:
 
 | When working on... | Also check... |
 |---|---|
-| **Frontend** (`standards/frontend/`) | `accessibility/` (WCAG), `design/` (tokens), `errors/` (boundary patterns) |
-| **Errors** (`standards/errors/`) | `agents/` (error propagation in orchestration), `frontend/` (Error Boundary) |
-| **Security** (`standards/security/`) | `environment/` (secrets, env), `github/` (push protection) |
-| **GitHub** (`standards/github/`) | `testing/` (CI gates), `environment/` (sandbox git rules) |
-| **Documentation** (`standards/documentation/`) | `templates/`, `guides/` — apply rules via these artifacts |
-| **Design** (`standards/design/`) | `frontend/` (token consumption), `accessibility/` (contrast) |
-| **Agents** (`standards/agents/`) | `errors/` (recovery), `testing/` (subagent test isolation) |
-| **Environment** (`standards/environment/`) | `github/` (sandbox git ops), `security/` (secrets) |
-| **Meta** (`standards/meta/`) | Every other folder — meta defines the ID system all use |
+| **Frontend** (`FE-001`) | `A11Y-001` (WCAG), `DESIGN-001` (tokens), `ERR-001` (boundary patterns) |
+| **Errors** (`ERR-001`, `ERR-002`) | `AGENT-002` (error propagation), `FE-001` (Error Boundary) |
+| **Security** (`SEC-001`, `SEC-002`) | `ENV-001` (secrets, env), `GIT-001` (push protection) |
+| **GitHub** (`GIT-001`, `GIT-002`) | `TEST-001` (CI gates), `ENV-002` (sandbox git rules) |
+| **Documentation** (`DOC-002`, `DOC-003`) | `templates/`, `guides/` — apply rules via these artifacts |
+| **Design** (`DESIGN-001`) | `FE-001` (token consumption), `A11Y-001` (contrast) |
+| **Agents** (`AGENT-001`, `AGENT-002`) | `ERR-001` (recovery), `TEST-001` (subagent test isolation) |
+| **Environment** (`ENV-001`, `ENV-002`) | `GIT-001` (sandbox git ops), `SEC-001` (secrets) |
+| **Meta** (`META-001`) | Every other file — meta defines the ID system all use |
+| **Architecture** (`ARCH-001`, `ARCH-002`) | Every other file — `ARCH-002` defines the install order |
 
 ## Verification
 
@@ -174,17 +169,18 @@ The pre-commit hook (installed via `Z-ai-platform/install-hooks.sh`) runs
 `verify-standards.js` automatically. Cross-repo checks run in CI.
 
 > **Note:** `verify-standards.js` currently targets the old flat layout
-> (`standards/STD-*-vX.Y.md`). After this restructure, paths must be updated to
-> `standards/<domain>/STD-*-vX.Y.md`. This is tracked as a follow-up task.
+> (`standards/STD-*-vX.Y.md`). After this v2.1 restructure, paths must be
+> updated to `standards/<DOMAIN>-<NNN>-*.md`. This is tracked as a follow-up task.
 
 ## Adding a New Standard
 
 1. Pick the next available ID in the appropriate domain (see STD-META-001 §4)
-2. Identify the target folder: `standards/<domain>/`
-3. Create `standards/<domain>/STD-<DOMAIN>-<NNN>-v1.0.md` with proper header
-4. Add entry to the relevant domain table in this README
-5. Run `node scripts/verify-standards.js` — must pass
-6. Commit with message: `feat(std): STD-<DOMAIN>-<NNN> v1.0 <name>`
+2. Determine install position from ARCH-002-implementation-order.md §1
+3. Create `standards/<DOMAIN>-<NNN>-<name>.md` with proper header (ID, Version, Level, Status, verified_by, Related)
+4. Add entry to the "Standards Installation Order" table above
+5. Add entry to the "Currently Released Standards" table above
+6. Run `node scripts/verify-standards.js` — must pass
+7. Commit with message: `feat(std): STD-<DOMAIN>-<NNN> v1.0 <name>`
 
 ## Migration Window
 
@@ -192,11 +188,13 @@ Active migrations are tracked in `MIGRATIONS.md`. The current window:
 
 - **M001**: `ZAI-META-001` → `STD-SKILL-001` (superseded) — window open until Z-ai-skills v2.0.0
 - **M002**: `RULE-001..RULE-017` → `RULE-<DOMAIN>-NNN` (renamed) — window NOT YET OPEN (pending Z-ai-guard creation)
-- **M003**: `legacy/` flat layout → domain-folder layout (this restructure, 2026-06-18) — completed in commit `Restructure standards by domain`
+- **M003**: `legacy/` flat layout → `standards/` flat layout with `<DOMAIN>-<NNN>-<name>.md` naming — completed 2026-06-18
+- **M004**: `IMPLEMENTATION_ORDER.md` (was STD-ARCH-001) → `ARCH-002-implementation-order.md` (new ID STD-ARCH-002) — completed 2026-06-18
 
 ## Changelog
 
 | Version | Date | Change |
 |---|---|---|
-| 2.0.1 | 2026-06-18 | Restructured `standards/` into per-domain subfolders. Moved `README_TEMPLATE.md` to `templates/`. Moved `CODE_EXAMPLES_GUIDE.md` to `guides/`. Removed `legacy/` subfolder (files integrated into domain folders). Updated README with full standards index and cross-domain navigation. |
+| 2.1.0 | 2026-06-18 | Flat layout: renamed all 20 standards to `<DOMAIN>-<NNN>-<name>.md` convention. Merged 3 STUBs (DOC-002, ENV-001, ENV-002) with their working drafts — full content now in formalized file. Merged `STANDARD_ID_SYSTEM.md` (v1.2 working draft) into `META-001-standard-id-system.md` (v2.0 formalized) — §XA Known Issues preserved. Split ARCH into ARCH-001 (architecture) + ARCH-002 (implementation order, new ID). Updated README with install order table for all 20 standards. |
+| 2.0.1 | 2026-06-18 | Restructured `standards/` into per-domain subfolders. Moved `README_TEMPLATE.md` to `templates/`. Moved `CODE_EXAMPLES_GUIDE.md` to `guides/`. Removed `legacy/` subfolder. |
 | 2.0.0 | 2026-06-17 | Initial formalized release. 6 standards formalized as `STD-*-vX.Y.md`. |
