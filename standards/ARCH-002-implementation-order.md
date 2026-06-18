@@ -1,11 +1,11 @@
-# Standard: Implementation Order v2.4
+# Standard: Implementation Order v2.5
 
 > ID: STD-ARCH-002
-> Version: 2.4
+> Version: 2.5
 > Previous: 2.3 (was incorrectly labeled STD-ARCH-001)
 > Level: **[C] Critical**
-> Last Updated: 2026-06-18
-> Effective Date: 2026-06-18
+> Last Updated: 2026-06-19
+> Effective Date: 2026-06-19
 > Status: **APPROVED**
 > verified_by: scripts/verify-id-graph.js#G01,G02
 > Related: STD-META-001 (ID system), STD-ARCH-001 (architecture)
@@ -118,7 +118,7 @@ Define rules. Not modified when starting a new project — only read and accepte
 | STD-SEC-001 | SEC-001-security-core.md | [C] | Core security: secrets, validation, headers |
 | STD-SEC-002 | SEC-002-security-extended.md | [C] | Extended: auth, RBAC, rate limiting, compliance |
 | STD-DOC-001 | (RU version, not shipped) | [W] | [DEPRECATED — file not shipped] Use STD-DOC-002 |
-| STD-DOC-002 | DOC-002-markdown-standard.md | [W] | README, project documentation |
+| STD-DOC-002 | DOC-002-markdown-standard.md | [C] | README, project documentation (markdown formatting — same rule = same severity as STD-DOC-003) |
 | STD-DOC-003 | DOC-003-unicode-policy.md | [C]+[W]+[I] | UI, production code, AI-chat |
 | STD-DOC-004 | templates/README_TEMPLATE.md | [W] | README.md structure (non-normative template) |
 | STD-DOC-005 | guides/CODE_EXAMPLES_GUIDE.md | [W] | Code examples in documentation (non-normative guide) |

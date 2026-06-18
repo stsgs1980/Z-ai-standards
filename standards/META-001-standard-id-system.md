@@ -1,11 +1,11 @@
 # Standard: Standard ID System v2.0 (EN)
 
 > ID: STD-META-001
-> Version: 2.0.0
+> Version: 2.0.1
 > Previous: 1.2 (single-layer, STD- only)
 > Level: **[C] Critical**
-> Last Updated: 2026-06-17
-> Effective Date: 2026-06-17
+> Last Updated: 2026-06-19
+> Effective Date: 2026-06-19
 > Status: **APPROVED**
 > verified_by: scripts/verify-standards.js#V05, scripts/verify-id-graph.js#G01-G14
 > Related: (none — META is foundational)
@@ -925,11 +925,20 @@ This section documents discovered inconsistencies, missing content, and proposed
 
 **Proposed solution:** Keep the entry as a historical record (deprecated IDs are not reassigned per §9.2), but the Status column now reads `DEPRECATED (file not shipped; superseded by STD-DOC-002)` to make the artifact's absence explicit. Alternative: remove the entry entirely and rely on git history. Current decision: keep with explicit "file not shipped" note.
 
-### META-005 `[OPEN]` — Level `[C]` vs `[W]` ambiguity for STD-DOC-002
+### META-005 `[RESOLVED in DOC-002 v2.4.0]` — Level `[C]` vs `[W]` ambiguity for STD-DOC-002
 
-**Problem:** `DOC-002-markdown-standard.md` (STD-DOC-002) header says `Level: **[C] Critical** (unified with STD-DOC-003 — same rule = same severity)`. Its footer says `Document complies with MARKDOWN_STANDARD v2.3 (level [W])`. The registry (this document, §4.4) lists it as `[W] Warning`. `ARCH-002-implementation-order.md` §1 Group B table lists it as `[W]`. There is a three-way contradiction.
+**Problem:** `DOC-002-markdown-standard.md` (STD-DOC-002) header said `Level: **[C] Critical** (unified with STD-DOC-003 — same rule = same severity)`. Its footer said `Document complies with MARKDOWN_STANDARD v2.3 (level [W])`. `ARCH-002-implementation-order.md` §1 Group B table listed it as `[W]`. There was a three-way contradiction.
 
-**Proposed solution:** Decide authoritatively which level applies. The "same rule = same severity" principle from STD-DOC-003 argues for `[C]`. The registry and IMPLEMENTATION_ORDER argue for `[W]`. Until resolved, the registry keeps `[W]` (matching IMPLEMENTATION_ORDER), and the file header should be updated to remove the contradiction. See STD-DOC-002 Known Issues entry MD-001 for the cross-reference.
+**Resolution (DOC-002 v2.4.0, 2026-06):** Adopted `[C] Critical` as the authoritative level — matching the v2.3.0 design intent of "same rule = same severity" with STD-DOC-003. All visible contradictions are now closed:
+
+1. DOC-002 header (§0) — was already `[C]`, unchanged.
+2. DOC-002 footer — updated from `(level [W])` to `(level [C])`.
+3. DOC-002 §9.1 — rewritten from `[W] non-blocking` to `[C] blocking` policy with `eslint-disable` + Tech Lead approval workflow.
+4. ARCH-002 §1 Group B table — updated from `[W]` to `[C]`.
+5. DOC-002 §10.3 and §10.4 ESLint configs — `no-emoji-in-md` and `no-unicode-graphics-in-md` changed from `"warn"` to `"error"` (closes MD-003 too).
+6. META-001 §4.1–4.12 — collapsed table; the historical `[W]` was carried forward from v1.2 but is no longer visible. No literal row to update; the canonical level is now `[C]` per DOC-002 header and ARCH-002 §1 Group B.
+
+See STD-DOC-002 Known Issues entry MD-001 for the cross-reference.
 
 ### META-006 `[OPEN]` — No automation to detect registry drift
 
