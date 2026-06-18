@@ -4,7 +4,7 @@
 > Version: 1.1
 > Level: **[C] Critical**
 > Last Updated: 2026-06
-> Related: STD-AGENT-002, STD-META-001, STD-ENV-002
+> Related: STD-ENV-001 (environment), STD-GIT-001 (github), STD-DOC-002 (markdown), STD-META-001 (ID system)
 
 ---
 

@@ -3,7 +3,7 @@
 > ID: STD-DESIGN-001
 > Version: 3.0.1
 > Level: **[C] Critical** + **[W] Warning**
-> Related: Frontend Development (STD-FE-001), Markdown Standard v2.3 (STD-DOC-002), No-Unicode Policy v2.3 (STD-DOC-003)
+> Related: Markdown Standard v2.3 (STD-DOC-002), No-Unicode Policy v2.3 (STD-DOC-003), STD-META-001 (ID system)
 
 This standard consists of two layers: **Core** (framework-agnostic, design-language-agnostic rules that apply to any project) and **Profile** (product-specific token values, component maps, and design language choices). The Core is universal; the Profile is a concrete instantiation that is swapped per project.
 

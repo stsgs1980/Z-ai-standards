@@ -4,7 +4,7 @@
 > Version: 2.4
 > Level: **[C] Critical**
 > Last Updated: 2026-06
-> Related: Design System Standard (STD-DESIGN-001), Anti-Monolith Skill (ZAI-ARCH-002), WCAG 2.1 AA (STD-A11Y-001), GitHub Standard (STD-GIT-001), Error Handling (STD-ERR-001), Standard ID System (STD-META-001)
+> Related: Design System Standard (STD-DESIGN-001), Environment (STD-ENV-001), Markdown (STD-DOC-002), Standard ID System (STD-META-001)
 
 ## 1. Scope
 

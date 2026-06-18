@@ -3,7 +3,7 @@
 > ID: STD-ENV-001
 > Version: 2.1
 > Level: **[C] Critical**
-> Related: STD-ENV-002 (Z.ai Integration), STD-GIT-001 (GitHub), STD-SEC-001 (Security)
+> Related: STD-ARCH-001 (architecture), STD-DOC-002 (markdown), STD-META-001 (ID system)
 
 **`git clone` + `bun install` + `npx next dev -p 3000` = working application.**
 Always. Everywhere. On any machine. Without exceptions.

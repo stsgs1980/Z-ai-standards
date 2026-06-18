@@ -4,7 +4,7 @@
 > Version: 1.2
 > Level: **[C] Critical**
 > Last Updated: 2026-06
-> Related: STD-FE-001, STD-TEST-001, STD-DESIGN-001, https://www.w3.org/TR/WCAG21/
+> Related: STD-FE-001 (frontend), STD-DESIGN-001 (design system), STD-META-001 (ID system), https://www.w3.org/TR/WCAG21/
 
 ---
 

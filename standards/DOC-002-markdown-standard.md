@@ -3,7 +3,8 @@
 > ID: STD-DOC-002
 > Version: 2.3.1
 > Level: **[C] Critical** (unified with STD-DOC-003 — same rule = same severity)
-> Related: No-Unicode Policy v2.3 (STD-DOC-003) — character rules delegated to this standard
+> Related: STD-META-001 (ID system)
+> Note: Character rules (emoji, box-drawing, etc.) are delegated to STD-DOC-003. Per ARCH-002 install order, DOC-003 is read after DOC-002. The dependency edge is therefore DOC-003 → DOC-002 (DOC-003 depends on DOC-002's markdown scope).
 
 ---
 

@@ -4,7 +4,7 @@
 > Version: 1.1
 > Level: **[C] Critical**
 > Last Updated: 2026-06
-> Related: STD-GIT-001, STD-ENV-002, STD-AGENT-001, STD-META-001
+> Related: STD-GIT-001 (github core), STD-ENV-002 (zai integration), STD-META-001 (ID system)
 
 ---
 

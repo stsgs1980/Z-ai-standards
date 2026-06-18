@@ -8,7 +8,7 @@
 > Effective Date: 2026-06-18
 > Status: **APPROVED**
 > verified_by: scripts/verify-id-graph.js#G01,G02
-> Related: STD-META-001 (ID system), STD-ARCH-001 (architecture), all other standards (this standard governs their install order)
+> Related: STD-META-001 (ID system), STD-ARCH-001 (architecture)
 
 This standard defines two distinct ordering concerns:
 

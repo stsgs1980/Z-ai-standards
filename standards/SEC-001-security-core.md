@@ -4,7 +4,7 @@
 > Version: 2.1
 > Level: **[C] Critical**
 > Last Updated: 2026-06
-> Related: STD-SEC-002, STD-ENV-001, STD-META-001
+> Related: STD-ENV-001 (environment), STD-GIT-001 (github), STD-DOC-002 (markdown), STD-META-001 (ID system)
 
 ---
 

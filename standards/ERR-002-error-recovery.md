@@ -4,7 +4,7 @@
 > Version: 1.1
 > Level: **[C] Critical**
 > Last Updated: 2026-06
-> Related: STD-ERR-001, STD-AGENT-002, STD-SEC-001, STD-META-001
+> Related: STD-ERR-001 (error handling), STD-META-001 (ID system)
 
 ---
 

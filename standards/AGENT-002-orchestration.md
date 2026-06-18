@@ -4,7 +4,7 @@
 > Version: 1.1
 > Level: **[C] Critical**
 > Last Updated: 2026-06
-> Related: STD-AGENT-001, STD-ARCH-001, STD-GIT-001, STD-ENV-002, STD-META-001
+> Related: STD-AGENT-001 (subagent), STD-ERR-001 (error handling), STD-META-001 (ID system)
 
 ---
 

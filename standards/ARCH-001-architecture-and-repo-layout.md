@@ -8,7 +8,7 @@
 > Effective Date: 2026-06-17
 > Status: **APPROVED**
 > verified_by: scripts/verify-id-graph.js#G02,G03,G04,G07
-> Related: STD-META-001, STD-DOC-002
+> Related: STD-META-001 (ID system)
 
 > **Status: APPROVED.** This revision replaces the v0.1 stub with a full
 > normative standard governing the four-repository split of the Z-ai

@@ -4,7 +4,7 @@
 > Version: 1.2
 > Level: **[C] Critical**
 > Last Updated: 2026-06
-> Related: STD-ERR-001, STD-SEC-001, STD-ENV-001, STD-ERR-002
+> Related: STD-FE-001 (frontend), STD-ERR-001 (error handling), STD-DOC-002 (markdown), STD-META-001 (ID system)
 
 ---
 
