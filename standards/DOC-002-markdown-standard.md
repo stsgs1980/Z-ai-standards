@@ -1,25 +1,34 @@
 # Standard: Markdown Formatting v2.4 (EN)
 
 > ID: STD-DOC-002
-> Version: 2.4.0
+> Version: 2.4.1
 > Level: **[C] Critical** (unified with STD-DOC-003 — same rule = same severity)
 > Related: STD-META-001 (ID system)
 > Last Updated: 2026-06-19
 > Effective Date: 2026-06-19
 > Note: Character rules (emoji, box-drawing, etc.) are delegated to STD-DOC-003. Per ARCH-002 install order, DOC-003 is read after DOC-002. The dependency edge is therefore DOC-003 → DOC-002 (DOC-003 depends on DOC-002's markdown scope).
+> Entry point: `bash scripts/check-md.sh [path]` — see §0 (TL;DR) and §10.7.
 
 ---
 
 ## 0. TL;DR — Quick Reference
 
-**Check your file in 30 seconds:**
+**Check your file in 30 seconds (recommended):**
 
 ```bash
-npx eslint path/to/file.md --plugin markdown
-node lint-md.js path/to/file.md
+bash scripts/check-md.sh path/to/file.md
 ```
 
-Both must exit 0. Any error blocks the commit.
+The wrapper runs three layers — static checks (bash only), ESLint (if installed), and `lint-md.js` (if present) — and exits non-zero on any violation. See §10.7 for the full stage table.
+
+**Or run the underlying tools directly (same effect):**
+
+```bash
+npx eslint path/to/file.md --plugin markdown --max-warnings=0
+node lint-md.js --level=C path/to/file.md
+```
+
+Both must exit 0. Any error blocks the commit. The wrapper script exists so contributors do not have to remember the exact flags.
 
 **5 things you must NOT do (all [C] Critical — block commit):**
 
@@ -656,8 +665,11 @@ The relationship between this standard (STD-DOC-002) and the No-Unicode Policy (
 |-------|------|------|--------|
 | Editor | Real-time | ESLint + VS Code extension | Inline errors |
 | Pre-commit | Before commit | husky + lint-staged | Block commit on any violation |
+| Manual check | On demand | `bash scripts/check-md.sh [path]` | Wraps ESLint + `lint-md.js` + static checks — see §0 TL;DR |
 | CI | Push to branch | eslint-plugin-markdown + custom rules | Report in logs |
 | Pre-merge | Before merge to main | GitHub Action | Report in PR |
+
+**`scripts/check-md.sh` (recommended entry point):** Runs three layers in sequence — (1) bash-only static checks for the most common §5 violations, (2) ESLint if `eslint-plugin-markdown` is installed, (3) `lint-md.js` if present at the repo root. Layers 2 and 3 degrade gracefully to `[skip]` when their tools are missing, so the script is useful in any checkout (including fresh clones without `npm install`). Layer 1 always runs and catches: bare code fences (§5.4), `*`/`+` list markers (§5.2), closing `#` on headings (§5.1), multiple H1 in one document (§5.1), table pseudographics outside code blocks (§3).
 
 **lint-staged configuration:**
 
@@ -918,6 +930,7 @@ Both exit 0. The PR is now mergeable.
 - [ ] Diagrams use whitelist characters
 - [ ] ESLint runs without errors on source code (`--max-warnings=0`)
 - [ ] ESLint runs without errors on .md files (same severity — see §10.6)
+- [ ] `bash scripts/check-md.sh <file-or-dir>` exits 0 (wraps ESLint + `lint-md.js` + static checks — see §0)
 - [ ] Any `eslint-disable` for [C]-level rules has Tech Lead approval (§10.8)
 
 ---
@@ -939,6 +952,7 @@ Both exit 0. The PR is now mergeable.
 | 2.3.1 | 2026-06 | Updated in-body references from STD-DOC-003 v2.2 to v2.3 (header Related field, §3, §4.1, §4.2, §6.1, §6.2, §6.3, §7.2, §7.4, §11.1, §13 checklist). Added §14A Known Issues documenting MD-001 through MD-003. |
 | 2.3.2 | 2026-06 | §8 Stack Signature scope clarified: applies only to application repository README/CHANGELOG, NOT to standards/rules/skills/templates/meta-repos. Removed cargo-cult `Built with:` footer from this file (it is a governance doc, not an application). Project-wide cleanup documented in worklog task stack-signature-cleanup-2026-06-18. |
 | 2.4.0 | 2026-06 | Resolved MD-001 and MD-003 (both open since v2.3.1). **MD-001:** footer updated from `(level [W])` to `(level [C])`; §9.1 rewritten from `[W] non-blocking` to `[C] blocking` policy with `eslint-disable` + Tech Lead approval workflow and a per-project legacy soft-opt-out clause; §10.5.2 description updated from `[W] Warning` to `[C] Critical`; §10.8 rule 3 collapsed (no more `[W]`-in-docs carve-out); §10.9 comment updated; §13 checklist updated. ARCH-002 §1 Group B table and STD-META-001 §4.4 registry entry updated to `[C]`. **MD-003:** §10.3 flat config and §10.4 legacy config — `no-emoji-in-md` and `no-unicode-graphics-in-md` changed from `"warn"` to `"error"` (aligned with §10.6 mapping table). **New content:** §0 TL;DR with 5 must-not / 5 must / where-to-look table; §3 `(ref)` scope clarified with concrete appropriate / not-appropriate examples; §12.4 full before/after README example with 7 violations and verification commands. **Header:** Version 2.3.2 → 2.4.0. |
+| 2.4.1 | 2026-06 | Added `scripts/check-md.sh` — bash wrapper that runs three layers in sequence: (1) bash-only static checks for the most common §5 violations (bare code fences, `*`/`+` list markers, closing `#` on headings, multiple H1, table pseudographics outside code blocks); (2) ESLint via `eslint-plugin-markdown` if installed; (3) `lint-md.js` if present at repo root. Layers 2 and 3 degrade gracefully to `[skip]` when their tools are missing, so the script works in fresh clones without `npm install`. §0 TL;DR updated to recommend `bash scripts/check-md.sh [path]` as the primary entry point. §10.7 Application Stages table extended with a new "Manual check" row. §13 Pre-merge checklist extended with a `check-md.sh` bullet. §14A new MD-004 issue documents the 5 pre-existing bare-fence violations the script discovered in `README.md` and `docs/verify-id-graph-spec-v1.0.md`. |
 
 ---
 
@@ -970,9 +984,23 @@ In addition, §9.1 was rewritten from a `[W] non-blocking` policy to a `[C] bloc
 
 **Resolution (v2.4.0):** Aligned §10.3 and §10.4 with §10.6 by changing both `no-emoji-in-md` and `no-unicode-graphics-in-md` from `"warn"` to `"error"` in both the flat config (§10.3) and the legacy config (§10.4). Added a note in §10.3 explaining: "Severity: error ([C] Critical) — same rule, same severity as source code. To soften enforcement for a legacy project migration, override in the project's local eslint.config.js to `warn` with a documented cutover date." This is consistent with MD-001's resolution (keep [C]).
 
+### MD-004 `[OPEN]` — `scripts/check-md.sh` discovered 5 pre-existing bare-fence violations
+
+**Problem:** The new `scripts/check-md.sh` wrapper added in v2.4.1 runs static checks across the whole repo when invoked without arguments. Its first full-repo run surfaced 5 bare code fences (fenced blocks without a language tag, violating §5.4):
+
+- `README.md:14`
+- `docs/verify-id-graph-spec-v1.0.md:32`
+- `docs/verify-id-graph-spec-v1.0.md:60`
+- `docs/verify-id-graph-spec-v1.0.md:337`
+- `docs/verify-id-graph-spec-v1.0.md:452`
+
+These violations pre-date the wrapper script — they were not introduced by v2.4.1, only discovered by it. They are in governance / spec docs (not standards corpus), which is why they slipped past the v2.3.0 deduplication audit that focused on `standards/*.md`.
+
+**Proposed resolution (separate PR):** For each violation, add the appropriate language tag — `bash` for shell snippets, `text` for plain preformatted blocks, or the actual language (`javascript`, `yaml`, etc.) where applicable. The fix is mechanical and does not change semantics. Until then, the wrapper reports these failures on a full-repo run but passes on `bash scripts/check-md.sh standards/` (the standards corpus itself is clean).
+
 ---
 
-**Document complies with MARKDOWN_STANDARD v2.4 (level [C])**
+**Document complies with MARKDOWN_STANDARD v2.4.1 (level [C])**
 
 ---
 
