@@ -164,7 +164,7 @@ Everything violating this formula is a bug.
 | 2.0 | 2026-05-18 | Major restructuring: removed rules not directly ensuring reproducibility (dark theme, color palette, error handling, anti-fragility, dedup, push policy, deletion UI). These rules relocated to their domain-specific standards (STD-FE-001, STD-ERR-001, STD-GIT-001). Added Cross-References section. Renumbered sections. |
 | 1.1 | 2026-05-18 | K-01 fix: replaced categorical absolute path ban with nuanced rule. Added Z.ai sandbox exception. |
 | 1.0 | 2025-01 | Initial standard |
-| 2.1 | 2026-06 | File renamed from `REPRODUCIBILITY-STANDARD.md` to `REPRODUCIBILITY_STANDARD.md` (hyphen → underscore) to match the naming convention used by all other standards. Added §6A Known Issues documenting REP-001 through REP-003. |
+| 2.1 | 2026-06 | File renamed from `ENV-001-reproducibility.md` to `ENV-001-reproducibility.md` (hyphen → underscore) to match the naming convention used by all other standards. Added §6A Known Issues documenting REP-001 through REP-003. |
 
 ---
 
@@ -174,21 +174,21 @@ This section documents discovered inconsistencies, missing content, and proposed
 
 ### REP-001 `[RESOLVED in v2.1]` — Filename used hyphen instead of underscore
 
-**Problem:** Prior to v2.1, the file was named `REPRODUCIBILITY-STANDARD.md` (with a hyphen). Every other standard file in the directory uses underscore separators (`GITHUB_STANDARD.md`, `MARKDOWN_STANDARD.md`, `ERROR_HANDLING_STANDARD.md`, etc.). The single hyphenated filename was an outlier that broke grep/glob patterns assuming the underscore convention.
+**Problem:** Prior to v2.1, the file was named `ENV-001-reproducibility.md` (with a hyphen). Every other standard file in the directory uses underscore separators (`GIT-001-github.md`, `DOC-002-markdown-standard.md`, `ERR-001-error-handling.md`, etc.). The single hyphenated filename was an outlier that broke grep/glob patterns assuming the underscore convention.
 
-**Resolution:** File renamed to `REPRODUCIBILITY_STANDARD.md`. References in other standards updated:
-- `IMPLEMENTATION_ORDER.md` Group B table: `REPRODUCIBILITY-STANDARD.md` → `REPRODUCIBILITY_STANDARD.md` (see ARCH-004).
-- `ZAI_INTEGRATION_STANDARD.md` §6 Related field: `REPRODUCIBILITY-STANDARD (STD-ENV-001)` → `REPRODUCIBILITY_STANDARD (STD-ENV-001)` (see ZAI-001 in that file's Known Issues).
+**Resolution:** File renamed to `ENV-001-reproducibility.md`. References in other standards updated:
+- `ARCH-002-implementation-order.md` Group B table: `ENV-001-reproducibility.md` → `ENV-001-reproducibility.md` (see ARCH-004).
+- `ENV-002-zai-integration.md` §6 Related field: `REPRODUCIBILITY-STANDARD (STD-ENV-001)` → `REPRODUCIBILITY_STANDARD (STD-ENV-001)` (see ZAI-001 in that file's Known Issues).
 
 ### REP-002 `[OPEN]` — §1.2 "Exception for Z.ai Sandbox" table duplicates STD-ENV-002 §3.1
 
-**Problem:** §1.2 contains a table listing allowed sandbox paths (`/home/z/my-project/`, `/home/z/my-project/download/`, `/tmp/zdev.log`, `/tmp/`). The same table appears verbatim in `ZAI_INTEGRATION_STANDARD.md` (STD-ENV-002) §3.1 "Absolute Path Exception". Neither document explicitly states which is the authoritative source. If one is updated and the other is not, they will silently drift.
+**Problem:** §1.2 contains a table listing allowed sandbox paths (`/home/z/my-project/`, `/home/z/my-project/download/`, `/tmp/zdev.log`, `/tmp/`). The same table appears verbatim in `ENV-002-zai-integration.md` (STD-ENV-002) §3.1 "Absolute Path Exception". Neither document explicitly states which is the authoritative source. If one is updated and the other is not, they will silently drift.
 
 **Proposed solution:** Designate one as authoritative and have the other cross-reference it. Recommendation: STD-ENV-002 §3.1 is the authoritative source (because the sandbox is STD-ENV-002's domain). STD-ENV-001 §1.2 should keep the table for self-contained readability but add a note: "Authoritative source: STD-ENV-002 §3.1. If the two tables diverge, STD-ENV-002 is correct." Alternatively, replace the STD-ENV-001 §1.2 table with a one-line cross-reference and remove the duplication entirely.
 
 ### REP-003 `[OPEN]` — Version reference to STD-ENV-002 in §1.2 is stale
 
-**Problem:** §1.2 says "(see STD-ENV-002 section 3.1)". `ZAI_INTEGRATION_STANDARD.md` is at v1.1, but this standard's §1.2 was written when STD-ENV-002 was at v1.1 already — so the reference is technically current. However, the table itself in STD-ENV-002 §3.1 says "REPRODUCIBILITY-STANDARD (STD-ENV-001 v1.1, L1 Path Rules)" — citing v1.1 for this standard, which is now v2.1. The cross-references between the two standards are therefore asymmetric.
+**Problem:** §1.2 says "(see STD-ENV-002 section 3.1)". `ENV-002-zai-integration.md` is at v1.1, but this standard's §1.2 was written when STD-ENV-002 was at v1.1 already — so the reference is technically current. However, the table itself in STD-ENV-002 §3.1 says "REPRODUCIBILITY-STANDARD (STD-ENV-001 v1.1, L1 Path Rules)" — citing v1.1 for this standard, which is now v2.1. The cross-references between the two standards are therefore asymmetric.
 
 **Proposed solution:** Update STD-ENV-002 §3.1 to reference STD-ENV-001 v2.1 (see ZAI-002 in that file's Known Issues). After both files are updated, the cross-references will be symmetric.
 

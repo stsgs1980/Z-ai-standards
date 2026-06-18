@@ -731,7 +731,7 @@ const emailSubject = "Welcome to our platform!";
 - Allowed: Latin, Cyrillic, digits, + and : characters
 - Prohibited: emoji, Unicode graphics
 
-**Note:** The standard defines the format (structure), not specific technologies. Default value for projects of this stack see in `README_TEMPLATE.md`.
+**Note:** The standard defines the format (structure), not specific technologies. Default value for projects of this stack see in `templates/README_TEMPLATE.md`.
 
 ---
 
@@ -770,15 +770,15 @@ This section documents discovered inconsistencies, missing content, and proposed
 
 **Proposed solution:** Implement a chat-output linter as a separate tool (e.g., `lint-chat.js`) that takes agent responses from the chat log and runs the same Unicode checks. Integrate into the agent's post-response hook. Until then, §8.4.5 documents the manual enforcement policy.
 
-### UNI-003 `[OPEN]` — Version reference in `DESIGN_SYSTEM_STANDARD.md` is stale
+### UNI-003 `[OPEN]` — Version reference in `DESIGN-001-design-system.md` is stale
 
-**Problem:** `DESIGN_SYSTEM_STANDARD.md` (STD-DESIGN-001) header and §8 reference "No-Unicode Policy v2.1". The actual version of this standard is v2.3.0.
+**Problem:** `DESIGN-001-design-system.md` (STD-DESIGN-001) header and §8 reference "No-Unicode Policy v2.1". The actual version of this standard is v2.3.0.
 
-**Proposed solution:** Update `DESIGN_SYSTEM_STANDARD.md` header and §8 to reference "No-Unicode Policy v2.3". See STD-DESIGN-001 Known Issues entry DES-001 for the cross-reference.
+**Proposed solution:** Update `DESIGN-001-design-system.md` header and §8 to reference "No-Unicode Policy v2.3". See STD-DESIGN-001 Known Issues entry DES-001 for the cross-reference.
 
-### UNI-004 `[OPEN]` — Registry version mismatch in `STANDARD_ID_SYSTEM.md`
+### UNI-004 `[OPEN]` — Registry version mismatch in `META-001-standard-id-system.md`
 
-**Problem:** The registry in `STANDARD_ID_SYSTEM.md` (STD-META-001 §4) lists STD-DOC-003 as v2.1.3. The actual version of this standard is v2.3.0.
+**Problem:** The registry in `META-001-standard-id-system.md` (STD-META-001 §4) lists STD-DOC-003 as v2.1.3. The actual version of this standard is v2.3.0.
 
 **Proposed solution:** Update STD-META-001 §4.4 to reflect v2.3.0 for STD-DOC-003. See STD-META-001 Known Issues entry META-002 for the cross-reference.
 

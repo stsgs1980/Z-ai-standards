@@ -389,8 +389,8 @@ This section documents discovered inconsistencies, missing content, and proposed
 ### ORC-001 `[OPEN]` — `K-NN` contradiction notation is used in §7.2 example but never defined
 
 **Problem:** §7.2 (Audit and Restructuring Workflow) shows an example workflow with tasks labeled "Fix contradiction K-01", "Fix contradiction K-02", etc. The `K-NN` notation also appears in the Version History of several other standards:
-- `REPRODUCIBILITY_STANDARD.md` v1.1: "K-01 fix: replaced categorical absolute path ban..."
-- `FRONTEND_STANDARD.md` v1.5: "K-06/K-07: replaced duplicated error handling... K-08: added autoBackup()... K-09: added custom theme preset validation rule..."
+- `ENV-001-reproducibility.md` v1.1: "K-01 fix: replaced categorical absolute path ban..."
+- `FE-001-frontend.md` v1.5: "K-06/K-07: replaced duplicated error handling... K-08: added autoBackup()... K-09: added custom theme preset validation rule..."
 
 However, no standard in the project defines what the `K-NN` notation is, who assigns the numbers, where they are tracked, or what their lifecycle is. The notation is used as if it were a well-known convention, but it has no governing document. New contributors encountering "K-01" cannot look it up anywhere.
 

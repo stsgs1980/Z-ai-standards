@@ -575,7 +575,7 @@ print(result)  # 8
 - Code example formatting standard in your project
 - Checklist for documentation code review
 
-**File is fully ready to use.** Save as `code-examples-guide.md`.
+**File is fully ready to use.** Save as `guides/CODE_EXAMPLES_GUIDE.md`.
 
 ---
 ## 16. Cross-References

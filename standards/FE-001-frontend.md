@@ -604,7 +604,7 @@ This section documents discovered inconsistencies, missing content, and proposed
 
 **Problem:** The v1.5 entry in §12 Version History says "K-06/K-07: replaced duplicated error handling... K-08: added autoBackup()... K-09: added custom theme preset validation rule". The `K-NN` notation is used as if it were a well-known convention, but no standard in the project defines it. New contributors encountering "K-06" cannot look it up.
 
-This is the same issue as ORC-001 in `ORCHESTRATION_STANDARD.md` — the `K-NN` notation is used across multiple standards but never defined.
+This is the same issue as ORC-001 in `AGENT-002-orchestration.md` — the `K-NN` notation is used across multiple standards but never defined.
 
 **Proposed solution:** Adopt the resolution chosen for ORC-001. If option 2 (replace K-NN with `<PREFIX>-NN`) is chosen, update this Version History entry to: "FE-001: replaced duplicated error handling (10.4) and Zod validation (10.3) with cross-references to STD-ERR-001 and STD-SEC-001. FE-002: added autoBackup() specification (10.5). FE-003: added custom theme preset validation rule (11.2)." The substantive content is preserved; only the notation changes.
 

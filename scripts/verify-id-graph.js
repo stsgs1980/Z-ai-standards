@@ -59,7 +59,7 @@ const path = require('path');
 // CONSTANTS
 // ============================================================================
 
-const VERSION = '1.1.0';
+const VERSION = '1.1.2';
 const EFFECTIVE_DATE = '2026-06-17';
 
 // Allowed Related: edges per STD-META-001 §6.1
@@ -1114,6 +1114,47 @@ function phase10_healthWarnings(repos) {
     // Matches `path/to/file.md` or `path/to/file.sh` in inline code.
     // Skips: URLs, absolute paths, .ts/.js/.json imports, version-history fragments.
     const refPattern = /`([a-zA-Z0-9_\-\/]+\.(md|sh))`/g;
+    // Whitelist (v1.1.2): known historical / generic / planned references that
+    // are not expected to resolve to a real file. These are documented in the
+    // standard bodies themselves as "historical" or "planned" mentions.
+    const W13_WHITELIST = new Set([
+      'AGENT_RULES.md',           // historical extraction source (referenced in ENV-002 v1.0 changelog)
+      'STANDARDS.md',             // historical root index, replaced by README.md
+      'SKILL.md',                 // generic skill-format filename (not a specific file)
+      'CHANGELOG.md',             // replaced by MIGRATIONS.md in this repo
+      'init-fullstack_1775040338514.sh',  // historical timestamp-pinned Z.ai infra script
+      'init-fullstack_*.sh',      // glob form of same
+      'validate.sh',              // planned script (tracked in ARCH-001-002)
+      'install.sh',               // planned script
+      'doctor.sh',                // planned script
+      'install-hooks.sh',         // planned script (githooks setup)
+      'line-count-check.sh',      // planned script (size guard)
+      'scripts/setup-git.sh',     // planned script (git config bootstrap)
+      // Cross-repo MIGRATIONS.md — each repo MAY have one but not required
+      'Z-ai-platform/MIGRATIONS.md',
+      'Z-ai-guard/MIGRATIONS.md',
+      'Z-ai-skills/MIGRATIONS.md',
+      // Skills tree paths referenced for documentation but not required to exist
+      'Z-ai-skills/skills/INDEX.md',
+      'Z-ai-skills/skills/skill-id-system/SKILL.md',
+      'Z-ai-skills/skills/skill-creator/SKILL.md',
+      // Templates referenced for context but not yet shipped
+      'agents/templates/context-handoff-template.md',
+      // Pre-restructure filename still referenced in historical context
+      'Z-ai-standards/standards/SKILL_ID_SYSTEM_STANDARD.md',
+      'Z-ai-standards/known-issues.md',
+      // RULE-MONOLITH-016 lives in Z-ai-guard/rules/, not Z-ai-platform/
+      'Z-ai-platform/RULE-MONOLITH-016.md',
+      // skill-creator.md is a planning reference, not yet shipped
+      'Z-ai-platform/skill-creator.md',
+      // v1.1.2 additions: planned/historical refs surfaced by ARCH-001 §5A cascade section
+      'Z-ai-platform/doctor.sh',          // planned diagnostics script (referenced in verify-id-graph-spec)
+      'Z-ai-guard/rules/RULE-ENV-008.md', // planned rule for bootstrap enforcement (see ARCH-001 §5A.4)
+      'guard/rules/RULE-ENV-008.md',      // same, relative form
+      'RULE-ENV-008.md',                  // bare form, see ARCH-001 §8 recovery procedures
+      'INDEX.md',                         // bare INDEX.md — disambiguate via context (docs/sandbox/ or skills/)
+      'skills/INDEX.md',                  // skills tree index, lives in Z-ai-skills/skills/INDEX.md (not yet shipped)
+    ]);
     let m;
     const seen = new Set(); // dedupe within one file
     while ((m = refPattern.exec(content)) !== null) {
@@ -1124,14 +1165,31 @@ function phase10_healthWarnings(repos) {
       if (refPath.startsWith('http://') || refPath.startsWith('https://')) continue;
       if (refPath.startsWith('/home/') || refPath.startsWith('/tmp/') ||
           refPath.startsWith('/usr/') || refPath.startsWith('/etc/')) continue;
-      // Resolve against multiple candidate roots
+      // Skip whitelisted historical/generic/planned references (v1.1.2)
+      if (W13_WHITELIST.has(refPath)) continue;
+      // Resolve against multiple candidate roots (v1.1.1: added cross-repo)
+      // Cross-repo refs are paths starting with Z-ai-platform/, Z-ai-guard/,
+      // Z-ai-skills/, or plain docs/session/worklog.md, MIGRATIONS.md, etc.
+      // that point to artifacts in other repos of the 4-repo split.
+      const platformRoot = path.dirname(standardsTreeRoot); // Z-ai-platform/
       const candidates = [
         path.join(standardsTreeRoot, refPath),                       // from repo root (e.g. standards/docs/sandbox/x.md)
         path.join(standardsTreeRoot, 'standards', refPath),          // from standards/ subdir
         path.join(standardsTreeRoot, 'docs', refPath),               // from docs/
         path.join(standardsTreeRoot, 'scripts', refPath),            // from scripts/
         path.join(standardsTreeRoot, 'templates', refPath),          // from templates/
+        path.join(standardsTreeRoot, 'guides', refPath),             // from guides/
         path.join(path.dirname(filePath), refPath),                  // from current file's dir
+        // Cross-repo resolution (v1.1.1)
+        path.join(platformRoot, refPath),                            // Z-ai-platform/<refpath>
+        path.join(platformRoot, refPath.replace(/^Z-ai-platform\//, '')),    // strip prefix
+        path.join(platformRoot, refPath.replace(/^Z-ai-standards\//, 'standards/')),
+        path.join(platformRoot, refPath.replace(/^Z-ai-guard\//, '../Z-ai-guard/')),
+        path.join(platformRoot, refPath.replace(/^Z-ai-skills\//, '../Z-ai-skills/')),
+        // Special: worklog.md -> docs/session/worklog.md
+        path.join(platformRoot, 'docs', 'session', refPath),
+        // Special: MIGRATIONS.md -> can be in any repo
+        path.join(platformRoot, refPath.replace(/^MIGRATIONS\.md$/, 'standards/MIGRATIONS.md')),
       ];
       const exists = candidates.some(p => {
         try { return fs.existsSync(p); } catch (e) { return false; }

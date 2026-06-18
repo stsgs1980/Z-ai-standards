@@ -238,7 +238,7 @@ This section documents discovered inconsistencies, missing content, and proposed
 
 ### ZAI-001 `[RESOLVED in v1.2]` — §6 Related field referenced old filename `REPRODUCIBILITY-STANDARD`
 
-**Problem:** Prior to v1.2, the §6 Related field said "REPRODUCIBILITY-STANDARD (STD-ENV-001)" — using the hyphenated filename. The file has been renamed to `REPRODUCIBILITY_STANDARD.md` (underscore) to match the convention used by all other standards.
+**Problem:** Prior to v1.2, the §6 Related field said "REPRODUCIBILITY-STANDARD (STD-ENV-001)" — using the hyphenated filename. The file has been renamed to `ENV-001-reproducibility.md` (underscore) to match the convention used by all other standards.
 
 **Resolution:** §6 Related field updated to "REPRODUCIBILITY_STANDARD (STD-ENV-001)". The cross-reference is now symmetric with STD-ENV-001's §7 entry for STD-ENV-002.
 

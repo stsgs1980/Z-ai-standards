@@ -1,10 +1,10 @@
-# Standard: Architecture & Repo Layout v1.0 (EN)
+# Standard: Architecture & Repo Layout v1.1.1 (EN)
 
 > ID: STD-ARCH-001
-> Version: 1.0.0
-> Previous: 0.1.0 (stub)
+> Version: 1.1.1
+> Previous: 1.1.0
 > Level: **[C] Critical**
-> Last Updated: 2026-06-17
+> Last Updated: 2026-06-18
 > Effective Date: 2026-06-17
 > Status: **APPROVED**
 > verified_by: scripts/verify-id-graph.js#G02,G03,G04,G07
@@ -246,6 +246,118 @@ duplicate an existing ID (failing G01) or introduce a new ID with no
 
 ---
 
+## 5A. Cascade State and Propagation Direction
+
+This section formalizes the **direction of propagation** between the
+four repositories. It is the normative answer to the question: "when a
+standard changes, what else must change, and in what order?"
+
+### 5A.1. Cascade diagram
+
+```plantuml
+@startuml
+skinparam rectangle {
+  BackgroundColor<<std>>    LightBlue
+  BackgroundColor<<guard>>   LightYellow
+  BackgroundColor<<skill>>   LightGreen
+  BackgroundColor<<runtime>> White
+}
+left to right direction
+
+rectangle "L1: Standards (normative)" <<std>> as STD {
+  rectangle "20 standards in standards/standards/" as STD_FILES
+}
+rectangle "L2: Guard rules (enforcement)" <<guard>> as GUARD {
+  rectangle "17 RULE-MONOLITH-* + RULE-ENV-* in Z-ai-guard/rules/" as GUARD_FILES
+}
+rectangle "L3: Skills (ZAI implementation)" <<skill>> as SKILL {
+  rectangle "35 skill directories in Z-ai-skills/skills/" as SKILL_FILES
+}
+rectangle "L4: Runtime (project work)" <<runtime>> as RUNTIME {
+  rectangle "Project code in /home/z/my-project/" as PROJ
+}
+
+STD --> GUARD : normative source\n(G04 allows RULE -> STD)
+GUARD --> SKILL : enforcement contract\n(G04 allows ZAI -> RULE)
+SKILL --> RUNTIME : applied to project work\n(ZAI -> project, no edge type)
+
+note bottom of STD
+  Change originates here.
+  Bump version, edit STD-* file,
+  update Related: field.
+end note
+
+note right of GUARD
+  Must be updated when STD it
+  enforces changes semantics.
+  Edits via Related: field.
+end note
+
+note right of SKILL
+  Must be updated when its source
+  STD or RULE changes shape.
+  Edits via Related: / Aligned_with.
+end note
+
+note bottom of RUNTIME
+  Consumes skills. No upstream
+  edge — runtime cannot redefine
+  skills or standards.
+end note
+
+@enduml
+```
+
+### 5A.2. Direction rules
+
+| Rule | Statement | Enforcement |
+|------|-----------|-------------|
+| C-1 | Changes propagate **downward** only (L1 -> L2 -> L3 -> L4). | Code review; G04 layer matrix blocks upward edges. |
+| C-2 | No layer may redefine semantics declared by a layer above it. | G04 + W03 (dead-standard warning catches orphan lower-layer artifacts). |
+| C-3 | When a standard changes semantics, every RULE/ZAI/SKILL declaring `Related:` to it MUST be reviewed in the same release window. | Manual review checklist in PR template (TODO: link to CONTRIBUTING). |
+| C-4 | When a RULE changes its enforcement contract, every skill declaring `Related:` to that RULE MUST be reviewed. | Same as C-3. |
+| C-5 | Runtime projects MUST NOT carry local copies of standards or rules. They consume the orchestrator's pinned submodule pointers. | `verify-standards.js` V14 (planned) + manual review. |
+| C-6 | A lower layer MAY propose a change to an upper layer, but only via a PR to the upper repo — never via in-place edit at runtime. | Submodule immutability (RULE-MONOLITH-016) + pointer update protocol (§8 of this standard). |
+
+### 5A.3. Anti-patterns
+
+These patterns are **forbidden** by the cascade model:
+
+1. **Upward propagation.** A skill edit that silently changes the meaning of a standard. Blocked by G04 (STD <- ZAI is not allowed as a `Related:` edge — skills can declare Related: to standards, but standards cannot declare Related: to skills).
+2. **Local fork.** A runtime project that vendors a modified copy of a standard. Blocked by C-5 + RULE-MONOLITH-016.
+3. **Silent enforcement.** A guard rule that enforces a standard the standard never declared. Caught by G02 (Related: must resolve) and W03 (orphan standard = no rule references it).
+4. **Stale pointer.** A runtime project pinned to an old submodule SHA while a newer standard has shipped. Caught by nightly CI trigger (§10.3) — nightly runs against latest `main` of submodules, surfacing drift.
+
+### 5A.4. Worked example: bumping STD-ENV-002 from v1.2 to v1.3
+
+When ENV-002 §3.0 Bootstrap Procedure was added (2026-06-18), the
+cascade produced these downstream reviews:
+
+| Layer | Artifact | Required review action | Result |
+|-------|----------|------------------------|--------|
+| L1 | `ENV-002-zai-integration.md` v1.3 | Author the new §3.0 + bump version | Done (commit `c0d1dbe`) |
+| L2 | `Z-ai-guard/rules/RULE-ENV-008.md` (if it enforces bootstrap) | Verify rule still enforces correct section number; update if section moved | No rule currently enforces bootstrap — no action needed |
+| L3 | Skills declaring `Related: STD-ENV-002` | Verify skill instructions still match new §3.0 | No skills currently declare this — no action needed |
+| L4 | Runtime projects using this standard | Re-read standard at next session start; new §3.0 is purely additive (no existing semantics changed) | Will be picked up at next pointer bump |
+
+This example shows a **purely additive** L1 change — cascade produced
+zero downstream edits because no L2/L3 artifact declared a dependency
+on the specific section number that moved.
+
+### 5A.5. Cross-references
+
+- §5 of this standard defines layer assignment; §5A defines the
+direction of propagation between those layers.
+- §10.2 of this standard defines cross-repo HARD checks (G01-G15);
+§5A.2 above explains how G04 enforces cascade direction.
+- `verify-id-graph.js` W03 warning catches L1 standards that no L2/L3
+artifact references (dead-standard signal — cascade is broken at L1).
+- `verify-id-graph.js` W13 warning (v1.1.0+) catches broken cross-doc
+references that would prevent cascade propagation from being
+machine-traceable.
+
+---
+
 ## 6. Submodule Conventions
 
 ### 6.1. `.gitmodules` Hygiene
@@ -340,7 +452,7 @@ constraints declared in **STD-ENV-001**.
 
 <!-- BAD — file path alone, no ID -->
 This procedure implements `guard/rules/RULE-ENV-008.md` by enforcing
-the sandbox constraints declared in `standards/standards/STD-ENV-001.md`.
+the sandbox constraints declared in `standards/ENV-001-reproducibility.md`.
 ```
 
 ### 7.3. Cross-Repo Paths in Scripts
@@ -570,6 +682,44 @@ lands in the orchestrator's `main`.
 
 ---
 
+## 10A. Known Issues and Proposed Solutions
+
+This section documents discovered inconsistencies, missing content, and proposed corrections. Each issue has an ID, status, and proposed action. Issues resolved in the current version are marked `[RESOLVED]`; outstanding issues are marked `[OPEN]`.
+
+### ARCH-001-001 `[RESOLVED in v1.1]` — No §XA Known Issues section (W12 warning)
+
+**Problem:** v1.0 had no §XA Known Issues section. verify-id-graph.js v1.1.0 W12 warning flagged this as inconsistent with the convention established in ENV-002 v1.2 §10A.
+
+**Resolution:** This section (§10A) added in v1.1. Convention now followed.
+
+### ARCH-001-002 `[OPEN]` — §5A.3 references planned verifier `verify-standards.js V14` that does not exist yet
+
+**Problem:** §5A.3 anti-pattern #2 says "Blocked by C-5 + RULE-MONOLITH-016". §5A.2 rule C-5 says "verify-standards.js V14 (planned) + manual review". The V14 check is planned but not implemented. As of 2026-06-18, only manual review catches local forks of standards in runtime projects.
+
+**Proposed solution:** Implement `verify-standards.js V14` — scan project tree for files matching `standards/<DOMAIN>-<NNN>-<name>.md` pattern that are NOT part of the orchestrator's submodule pin. Lower priority than W13 sweep (75 broken refs) and W11 CRITICAL (DESIGN-001 split).
+
+### ARCH-001-003 `[OPEN]` — §5A.4 worked example hardcodes commit SHA `c0d1dbe`
+
+**Problem:** §5A.4 references commit `c0d1dbe` as the example. Over time this SHA will become stale as the standards repo advances.
+
+**Proposed solution:** Either (a) replace the SHA with a relative reference ("the commit that introduced §3.0"), or (b) accept the staleness as documentation of when the example was authored. Lean towards (b) — historical context is useful for understanding the example.
+
+### ARCH-001-004 `[OPEN]` — §5A references planned artifacts not yet shipped (RULE-ENV-008, skills/INDEX.md, doctor.sh)
+
+**Problem:** §5A cascade diagram and worked example reference artifacts that do not exist yet:
+- `Z-ai-guard/rules/RULE-ENV-008.md` (planned rule for bootstrap enforcement)
+- `Z-ai-skills/skills/INDEX.md` (planned skills tree index)
+- `Z-ai-platform/doctor.sh` (planned diagnostics script)
+- bare `INDEX.md` (disambiguate via context — `docs/sandbox/INDEX.md` exists, `skills/INDEX.md` planned)
+
+These references are intentional — they describe the target state of the cascade model, not the current state. Without them, the cascade section would describe only what exists today, not what the architecture is building toward.
+
+**Resolution (partial):** As of verify-id-graph.js v1.1.2, these planned references are in the W13 whitelist (see `W13_WHITELIST` constant in `scripts/verify-id-graph.js`). They do not generate W13 warnings. When the planned artifacts ship, they should be removed from the whitelist so the verifier catches any future breakage.
+
+**Proposed solution:** Track in issue tracker: (1) create `RULE-ENV-008.md` when bootstrap enforcement rule is needed, (2) create `Z-ai-skills/skills/INDEX.md` when skills tree grows past 50 entries, (3) create `doctor.sh` when CI diagnostics are needed. Each creation triggers whitelist cleanup.
+
+---
+
 ## 11. Related Artifacts
 
 - **STD-META-001** — ID system that defines prefixes, layers, and the
@@ -600,3 +750,5 @@ lands in the orchestrator's `main`.
 |---|---|---|
 | 0.1.0 | 2026-06-17 | Stub. Reserved the ID. Listed intended scope. |
 | 1.0.0 | 2026-06-17 | Full normative standard. Adds: repository topology (§4), layer assignment (§5), submodule conventions (§6), cross-repo path references (§7), pointer update protocol (§8), recovery procedures (§9), validation matrix (§10). Promoted from `[B] Recommended` to `[C] Critical`. |
+| 1.1.0 | 2026-06-18 | Added §5A Cascade State and Propagation Direction (cascade diagram, 6 direction rules C-1..C-6, 4 anti-patterns, worked example for STD-ENV-002 v1.2 -> v1.3 bump). Added §10A Known Issues (ARCH-001-001 resolved, ARCH-001-002/003 open). Closes W12 warning on this file. |
+| 1.1.1 | 2026-06-18 | Added ARCH-001-004 Known Issue (§5A references to planned artifacts documented, W13 whitelist in verify-id-graph.js v1.1.2 covers them). |

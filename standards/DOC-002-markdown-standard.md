@@ -271,7 +271,7 @@ The specific stack is determined by the project, not the standard. Example for N
 Built with: Next.js 16 + TypeScript + Tailwind CSS
 ```
 
-For the default value in this stack, see `README_TEMPLATE.md`.
+For the default value in this stack, see `templates/README_TEMPLATE.md`.
 
 **Rules:**
 
@@ -765,7 +765,7 @@ This section documents discovered inconsistencies, missing content, and proposed
 
 ### MD-001 `[OPEN]` — Level `[C]` vs `[W]` contradiction
 
-**Problem:** The header of this file (§0) says `Level: **[C] Critical** (unified with STD-DOC-003 — same rule = same severity)`. The footer says `Document complies with MARKDOWN_STANDARD v2.3 (level [W])`. The registry in `STANDARD_ID_SYSTEM.md` (STD-META-001 §4.4) lists this standard as `[W] Warning`. `IMPLEMENTATION_ORDER.md` §1 Group B table also lists it as `[W]`. There is a three-way contradiction: header says `[C]`, footer/registry/IMPLEMENTATION_ORDER say `[W]`.
+**Problem:** The header of this file (§0) says `Level: **[C] Critical** (unified with STD-DOC-003 — same rule = same severity)`. The footer says `Document complies with MARKDOWN_STANDARD v2.3 (level [W])`. The registry in `META-001-standard-id-system.md` (STD-META-001 §4.4) lists this standard as `[W] Warning`. `ARCH-002-implementation-order.md` §1 Group B table also lists it as `[W]`. There is a three-way contradiction: header says `[C]`, footer/registry/IMPLEMENTATION_ORDER say `[W]`.
 
 The header's rationale ("unified with STD-DOC-003 — same rule = same severity") argues for `[C]`: the same character prohibitions (emoji, Unicode icons) apply at `[C]` level in source code per STD-DOC-003 §3, and the rationale is that documentation should not be a downgrade path for violations.
 

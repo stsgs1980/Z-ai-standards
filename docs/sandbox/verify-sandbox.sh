@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
-# verify.sh — Z.ai Sandbox Documentation Verification Script
-# Запускать внутри sandbox: bash verify.sh
+# docs/sandbox/verify-sandbox.sh — Z.ai Sandbox Documentation Verification Script
+# Запускать внутри sandbox: bash docs/sandbox/verify-sandbox.sh
 #
 set -euo pipefail
 

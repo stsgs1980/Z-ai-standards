@@ -402,7 +402,7 @@ This section documents discovered inconsistencies, missing content, and proposed
 
 ### ARCH-002 `[RESOLVED in v2.3]` — `STD-DESIGN-001` missing from Group B table
 
-**Problem:** Prior to v2.3, the Group B standards table in §1 did not include `STD-DESIGN-001` (Design System Standard). The file `DESIGN_SYSTEM_STANDARD.md` existed and was referenced by STD-FE-001 §11, but IMPLEMENTATION_ORDER did not list it — making it appear as if the standard did not belong to the project's governance set.
+**Problem:** Prior to v2.3, the Group B standards table in §1 did not include `STD-DESIGN-001` (Design System Standard). The file `DESIGN-001-design-system.md` existed and was referenced by STD-FE-001 §11, but IMPLEMENTATION_ORDER did not list it — making it appear as if the standard did not belong to the project's governance set.
 
 **Resolution:** Added a row for STD-DESIGN-001 in the Group B table with Level `[C]+[W]` and scope "Design tokens, typography, color, spacing, card archetypes". Added STD-DESIGN-001 to §7 Cross-References with its mapping to Steps 3-4.
 
@@ -412,11 +412,11 @@ This section documents discovered inconsistencies, missing content, and proposed
 
 **Resolution:** Updated the Group B table entry for STD-DOC-004 to `[W]`.
 
-### ARCH-004 `[RESOLVED in v2.3]` — Filename `REPRODUCIBILITY-STANDARD.md` used hyphen
+### ARCH-004 `[RESOLVED in v2.3]` — Filename `ENV-001-reproducibility.md` used hyphen
 
-**Problem:** The Group B table referenced `REPRODUCIBILITY-STANDARD.md` (with a hyphen). Every other standard file in the directory uses underscore separators (`GITHUB_STANDARD.md`, `MARKDOWN_STANDARD.md`, etc.). The file has now been renamed to `REPRODUCIBILITY_STANDARD.md`.
+**Problem:** The Group B table referenced `ENV-001-reproducibility.md` (with a hyphen). Every other standard file in the directory uses underscore separators (`GIT-001-github.md`, `DOC-002-markdown-standard.md`, etc.). The file has now been renamed to `ENV-001-reproducibility.md`.
 
-**Resolution:** Updated the Group B table entry to `REPRODUCIBILITY_STANDARD.md`. The actual file rename is performed as part of this change set.
+**Resolution:** Updated the Group B table entry to `ENV-001-reproducibility.md`. The actual file rename is performed as part of this change set.
 
 ### ARCH-005 `[OPEN]` — Step 3 ("REPRODUCIBILITY") is overloaded
 

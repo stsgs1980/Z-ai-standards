@@ -305,7 +305,7 @@ This section documents discovered inconsistencies, missing content, and proposed
 
 ### A11Y-001 `[RESOLVED in v1.2]` — Registry listed STD-A11Y-001 as DEPRECATED, contradicting the file's ACTIVE status
 
-**Problem:** The registry in STD-META-001 (prior to v1.2) listed STD-A11Y-001 with Status `DEPRECATED`. However, the file `WCAG_2.1_AA_STANDARD.md` showed v1.1 dated 2026-05 with no deprecation notice in the header, no replacement standard referenced, and active content covering all WCAG 2.1 AA success criteria. The DEPRECATED status was therefore inconsistent with the file's actual maintenance state.
+**Problem:** The registry in STD-META-001 (prior to v1.2) listed STD-A11Y-001 with Status `DEPRECATED`. However, the file `A11Y-001-wcag-2-1-aa.md` showed v1.1 dated 2026-05 with no deprecation notice in the header, no replacement standard referenced, and active content covering all WCAG 2.1 AA success criteria. The DEPRECATED status was therefore inconsistent with the file's actual maintenance state.
 
 **Resolution:** STD-META-001 v1.2 §4.3 updated the Status column from `DEPRECATED` to `ACTIVE`. The file version is now v1.2 (this version). No content change was required in this file for the status correction — only the version bump and this Known Issues entry documenting the resolution.
 

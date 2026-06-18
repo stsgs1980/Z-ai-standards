@@ -16,8 +16,8 @@
 | `sandbox-commands-cheatsheet.md` | `Z.ai-Sandbox-Guide_commands_reference.md` | 47K | 1321 Linux commands across 25 categories with examples. On-demand reference only — do NOT load into context unless needed. |
 | `sandbox-migration.md` | `Z.ai-Sandbox-Migration Guide.md` | 9.8K | Step-by-step migration of a Next.js/Vercel project between sandbox sessions, with checks for typical errors (rm -rf without verification, token in URL, ERESOLVE, etc.) |
 | `sandbox-subagents-architecture.md` | `Z.ai-Sandbox-Super-Z-Subagents-Education.md` | 10K | Architecture of Super Z + subagents: types, parallel execution, statelessness, unified worklog, skills system |
-| `verify-sandbox.sh` | `verify.sh` | 8.5K | Bash script: 11 check groups (bun vs npm, dev server, API routes, allowedDevOrigins, XTransformPort, Dockerfile, versions, z-ai-web-dev-sdk, Prisma, submodule, hooks code quality) |
-| `INDEX.md` | `RELATIONS.md` (rewritten) | — | This file — table of contents + cross-document relationships |
+| `verify-sandbox.sh` | `docs/sandbox/verify-sandbox.sh` | 8.5K | Bash script: 11 check groups (bun vs npm, dev server, API routes, allowedDevOrigins, XTransformPort, Dockerfile, versions, z-ai-web-dev-sdk, Prisma, submodule, hooks code quality) |
+| `INDEX.md` | `docs/sandbox/INDEX.md` (rewritten) | — | This file — table of contents + cross-document relationships |
 
 ---
 
@@ -37,7 +37,7 @@
 
 ## 3. Known contradictions inside the package
 
-The original package documents contain three internal contradictions (flagged in the original `RELATIONS.md`). These are recorded here so that future readers do not re-discover them. None of them block usage — they are resolved by following the order of authority:
+The original package documents contain three internal contradictions (flagged in the original `docs/sandbox/INDEX.md`). These are recorded here so that future readers do not re-discover them. None of them block usage — they are resolved by following the order of authority:
 
 > **Authority order:** `ENV-002-zai-integration.md` (current standard) > `sandbox-guide.md` (most recent Z.ai sandbox doc) > other sandbox docs.
 

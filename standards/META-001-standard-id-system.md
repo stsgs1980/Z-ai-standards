@@ -915,19 +915,19 @@ This section documents discovered inconsistencies, missing content, and proposed
 
 ### META-003 `[RESOLVED in v1.2]` — Missing `DESIGN` domain and `STD-DESIGN-001` entry
 
-**Problem:** The `DESIGN` domain was not listed in §3 (Reserved Domains), and `STD-DESIGN-001` (Design System Standard, file `DESIGN_SYSTEM_STANDARD.md`, v3.0.0) was absent from §4 (ID Registry) entirely. This meant a shipped, actively-maintained standard had no registered ID.
+**Problem:** The `DESIGN` domain was not listed in §3 (Reserved Domains), and `STD-DESIGN-001` (Design System Standard, file `DESIGN-001-design-system.md`, v3.0.0) was absent from §4 (ID Registry) entirely. This meant a shipped, actively-maintained standard had no registered ID.
 
 **Resolution:** Added `DESIGN` to §3 domain table. Added new §4.11 "Design System (DESIGN)" subsection with the `STD-DESIGN-001` entry (v3.0.0, [C]+[W], ACTIVE). Renumbered the META subsection from §4.11 to §4.12.
 
 ### META-004 `[OPEN]` — `STD-DOC-001` entry references a file that is not shipped
 
-**Problem:** §4.4 lists `STD-DOC-001 | Markdown Standard (RU) | 2.1.5 | [W] Warning | DEPRECATED`. The file `MARKDOWN_STANDARD_RU.md` is not present in the standards directory — only the English version (STD-DOC-002) is shipped. The deprecated entry therefore references a non-existent artifact.
+**Problem:** §4.4 lists `STD-DOC-001 | Markdown Standard (RU) | 2.1.5 | [W] Warning | DEPRECATED`. The file `DOC-002-markdown-standard.md` is not present in the standards directory — only the English version (STD-DOC-002) is shipped. The deprecated entry therefore references a non-existent artifact.
 
 **Proposed solution:** Keep the entry as a historical record (deprecated IDs are not reassigned per §9.2), but the Status column now reads `DEPRECATED (file not shipped; superseded by STD-DOC-002)` to make the artifact's absence explicit. Alternative: remove the entry entirely and rely on git history. Current decision: keep with explicit "file not shipped" note.
 
 ### META-005 `[OPEN]` — Level `[C]` vs `[W]` ambiguity for STD-DOC-002
 
-**Problem:** `MARKDOWN_STANDARD.md` (STD-DOC-002) header says `Level: **[C] Critical** (unified with STD-DOC-003 — same rule = same severity)`. Its footer says `Document complies with MARKDOWN_STANDARD v2.3 (level [W])`. The registry (this document, §4.4) lists it as `[W] Warning`. `IMPLEMENTATION_ORDER.md` §1 Group B table lists it as `[W]`. There is a three-way contradiction.
+**Problem:** `DOC-002-markdown-standard.md` (STD-DOC-002) header says `Level: **[C] Critical** (unified with STD-DOC-003 — same rule = same severity)`. Its footer says `Document complies with MARKDOWN_STANDARD v2.3 (level [W])`. The registry (this document, §4.4) lists it as `[W] Warning`. `ARCH-002-implementation-order.md` §1 Group B table lists it as `[W]`. There is a three-way contradiction.
 
 **Proposed solution:** Decide authoritatively which level applies. The "same rule = same severity" principle from STD-DOC-003 argues for `[C]`. The registry and IMPLEMENTATION_ORDER argue for `[W]`. Until resolved, the registry keeps `[W]` (matching IMPLEMENTATION_ORDER), and the file header should be updated to remove the contradiction. See STD-DOC-002 Known Issues entry MD-001 for the cross-reference.
 

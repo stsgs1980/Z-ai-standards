@@ -61,10 +61,10 @@ Z-ai-standards/
 │   └── AGENT-002-orchestration.md             # 20. Multi-agent patterns
 │
 ├── templates/                             # Non-normative copy-and-fill-in artifacts
-│   └── README_TEMPLATE.md                     # STD-DOC-004 — README template
+│   └── templates/README_TEMPLATE.md                     # STD-DOC-004 — README template
 │
 ├── guides/                                # Non-normative how-to guides
-│   └── CODE_EXAMPLES_GUIDE.md                 # STD-DOC-005 — code block formatting
+│   └── guides/CODE_EXAMPLES_GUIDE.md                 # STD-DOC-005 — code block formatting
 │
 ├── scripts/                               # Verification tools (TOOL-* IDs)
 │   ├── verify-standards.js                    # V01-V10 per-repo invariants
@@ -189,12 +189,12 @@ Active migrations are tracked in `MIGRATIONS.md`. The current window:
 - **M001**: `ZAI-META-001` → `STD-SKILL-001` (superseded) — window open until Z-ai-skills v2.0.0
 - **M002**: `RULE-001..RULE-017` → `RULE-<DOMAIN>-NNN` (renamed) — window NOT YET OPEN (pending Z-ai-guard creation)
 - **M003**: `legacy/` flat layout → `standards/` flat layout with `<DOMAIN>-<NNN>-<name>.md` naming — completed 2026-06-18
-- **M004**: `IMPLEMENTATION_ORDER.md` (was STD-ARCH-001) → `ARCH-002-implementation-order.md` (new ID STD-ARCH-002) — completed 2026-06-18
+- **M004**: `ARCH-002-implementation-order.md` (was STD-ARCH-001) → `ARCH-002-implementation-order.md` (new ID STD-ARCH-002) — completed 2026-06-18
 
 ## Changelog
 
 | Version | Date | Change |
 |---|---|---|
-| 2.1.0 | 2026-06-18 | Flat layout: renamed all 20 standards to `<DOMAIN>-<NNN>-<name>.md` convention. Merged 3 STUBs (DOC-002, ENV-001, ENV-002) with their working drafts — full content now in formalized file. Merged `STANDARD_ID_SYSTEM.md` (v1.2 working draft) into `META-001-standard-id-system.md` (v2.0 formalized) — §XA Known Issues preserved. Split ARCH into ARCH-001 (architecture) + ARCH-002 (implementation order, new ID). Updated README with install order table for all 20 standards. |
-| 2.0.1 | 2026-06-18 | Restructured `standards/` into per-domain subfolders. Moved `README_TEMPLATE.md` to `templates/`. Moved `CODE_EXAMPLES_GUIDE.md` to `guides/`. Removed `legacy/` subfolder. |
+| 2.1.0 | 2026-06-18 | Flat layout: renamed all 20 standards to `<DOMAIN>-<NNN>-<name>.md` convention. Merged 3 STUBs (DOC-002, ENV-001, ENV-002) with their working drafts — full content now in formalized file. Merged `META-001-standard-id-system.md` (v1.2 working draft) into `META-001-standard-id-system.md` (v2.0 formalized) — §XA Known Issues preserved. Split ARCH into ARCH-001 (architecture) + ARCH-002 (implementation order, new ID). Updated README with install order table for all 20 standards. |
+| 2.0.1 | 2026-06-18 | Restructured `standards/` into per-domain subfolders. Moved `templates/README_TEMPLATE.md` to `templates/`. Moved `guides/CODE_EXAMPLES_GUIDE.md` to `guides/`. Removed `legacy/` subfolder. |
 | 2.0.0 | 2026-06-17 | Initial formalized release. 6 standards formalized as `STD-*-vX.Y.md`. |
