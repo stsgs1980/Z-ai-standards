@@ -1,8 +1,8 @@
-# Standard: Architecture & Repo Layout v1.1.1 (EN)
+# Standard: Architecture & Repo Layout v1.1.2 (EN)
 
 > ID: STD-ARCH-001
-> Version: 1.1.1
-> Previous: 1.1.0
+> Version: 1.1.2
+> Previous: 1.1.1
 > Level: **[C] Critical**
 > Last Updated: 2026-06-18
 > Effective Date: 2026-06-17
@@ -116,7 +116,7 @@ removing a repository requires a major-version bump of this standard
 | Repository | URL | Layer | Purpose |
 |---|---|---|---|
 | `Z-ai-platform` | `https://github.com/stsgs1980/Z-ai-platform.git` | L0 | Orchestrator: pins submodules, runs cross-repo CI |
-| `Z-ai-standards` | `https://github.com/stsgs1980/Z-ai-standards.git` | L1 | Standards (`STD-*`), verifiers (`verify-standards.js`, `verify-cascade.js`, `verify-id-graph.js`) |
+| `Z-ai-standards` | `https://github.com/stsgs1980/Z-ai-standards.git` | L1 | Standards (`STD-*`), verifiers (`verify-standards.js`, `verify-id-graph.js`) |
 | `Z-ai-guard` | `https://github.com/stsgs1980/Z-ai-guard.git` | L2 | Rules (`RULE-*`), procedures (`PROC-*`), tools (`TOOL-*`) |
 | `Z-ai-skills` | `https://github.com/stsgs1980/Z-ai-skills.git` | L3 | Skills (`ZAI-*`), skill catalog, skill runtime integration |
 
@@ -232,7 +232,6 @@ L0 (the orchestrator) contains ONLY:
 - `install-hooks.sh` — bootstrap pre-commit hooks.
 - `.githooks/pre-commit` — pre-commit hook (invokes `verify-standards.js`).
 - `.github/workflows/*.yml` — CI workflows (currently `verify-id-graph.yml`).
-- `scripts/*.js` — orchestrator-level scripts (e.g. `cross-validator-test.js`).
 
 L0 contains NO normative artifacts. It does not declare `STD-*`,
 `RULE-*`, `PROC-*`, `TOOL-*`, or `ZAI-*` IDs. The orchestrator's role
@@ -389,8 +388,9 @@ The `.gitmodules` file in the orchestrator MUST conform to:
 
 `git clone --recurse-submodules https://github.com/stsgs1980/Z-ai-platform.git`
 MUST produce a working tree with all three submodules checked out at
-the pinned SHAs. This is verified by the `cross-validator-test.js`
-script in `Z-ai-platform/scripts/`.
+the pinned SHAs. This is verified by the `verify-standards.js` and
+`verify-id-graph.js` scripts (run by the `.githooks/pre-commit` hook
+and by the `verify-id-graph.yml` CI workflow).
 
 If recursive clone fails (e.g. because a submodule URL was renamed),
 the recovery procedure is §9.2 of this standard.
@@ -752,3 +752,4 @@ These references are intentional — they describe the target state of the casca
 | 1.0.0 | 2026-06-17 | Full normative standard. Adds: repository topology (§4), layer assignment (§5), submodule conventions (§6), cross-repo path references (§7), pointer update protocol (§8), recovery procedures (§9), validation matrix (§10). Promoted from `[B] Recommended` to `[C] Critical`. |
 | 1.1.0 | 2026-06-18 | Added §5A Cascade State and Propagation Direction (cascade diagram, 6 direction rules C-1..C-6, 4 anti-patterns, worked example for STD-ENV-002 v1.2 -> v1.3 bump). Added §10A Known Issues (ARCH-001-001 resolved, ARCH-001-002/003 open). Closes W12 warning on this file. |
 | 1.1.1 | 2026-06-18 | Added ARCH-001-004 Known Issue (§5A references to planned artifacts documented, W13 whitelist in verify-id-graph.js v1.1.2 covers them). |
+| 1.1.2 | 2026-06-18 | Retired dead scripts. Dropped `verify-cascade.js` from §4.1 L1 verifier list (TOOL-VERIFY-003 RETIRED in META-001 §4.15). Dropped `scripts/*.js` from §5 L0 layout (parent `scripts/` directory removed — was empty after `cross-validator-test.js` deletion). Replaced §6.2 reference to `cross-validator-test.js` with the actual live verifiers (`verify-standards.js` + `verify-id-graph.js` run by pre-commit hook + CI). |

@@ -68,9 +68,7 @@ Z-ai-standards/
 │
 ├── scripts/                               # Verification tools (TOOL-* IDs)
 │   ├── verify-standards.js                    # V01-V10 per-repo invariants
-│   ├── verify-cascade.js                      # historical cascade checks
-│   ├── verify-id-graph.js                     # G01-G15 cross-repo ID graph
-│   └── cross-doc-consistency-check.js         # inter-draft consistency
+│   └── verify-id-graph.js                     # G01-G15 cross-repo ID graph
 │
 └── docs/                                  # Specifications for tools
     └── verify-id-graph-spec-v1.0.md

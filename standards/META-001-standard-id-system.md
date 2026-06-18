@@ -234,7 +234,7 @@ section is a summary; STD-SKILL-001 is the source of truth.
 |---|---|---|---|---|
 | TOOL-VERIFY-001 | Z-ai-guard/tools/verify-docs/ | 2.1 | [C] | ACTIVE |
 | TOOL-VERIFY-002 | Z-ai-standards/scripts/verify-standards.js | 2.2.0 | [C] | ACTIVE |
-| TOOL-VERIFY-003 | Z-ai-standards/scripts/verify-cascade.js | 2.2.0 | [C] | ACTIVE |
+| TOOL-VERIFY-003 | Z-ai-standards/scripts/verify-cascade.js | 2.2.0 | [C] | RETIRED 2026-06-18 (one-shot v1.0 cascade check; superseded by TOOL-VERIFY-002 + TOOL-VERIFY-004) |
 | TOOL-VERIFY-004 | Z-ai-standards/scripts/verify-id-graph.js | 1.0.0 | [C] | ACTIVE (planned) |
 | TOOL-BUMP-005 | Z-ai-guard/tools/verify-docs/src/bump.ts | 2.1 | [C] | ACTIVE |
 | TOOL-CHECKUPDATES-006 | Z-ai-standards/scripts/check-updates.sh | 2.2.0 | [W] | ACTIVE |
@@ -573,7 +573,7 @@ Invoke ZAI-ARCH-002 for the anti-monolith decomposition.
 #   PROC-LINECOUNT-004 (implements RULE-MONOLITH-012)
 #   PROC-COCHANGE-003 (implements RULE-DOC-010)
 # Both procedures call TOOL-VERIFY-002 (verify-standards.js)
-# and TOOL-VERIFY-003 (verify-cascade.js) as sub-checks.
+# and TOOL-VERIFY-004 (verify-id-graph.js) as sub-checks.
 ```
 
 ### 7.5. Alignment Declarations

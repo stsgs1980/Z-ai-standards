@@ -4,9 +4,8 @@
  * ============================================================================
  *
  * PURPOSE
- *   Unlike verify-cascade.js (one-shot check of the 16 cascade tasks), this
- *   script is a PERMANENT invariant checker. It is updated whenever ANY
- *   standard changes. The contract is:
+ *   PERMANENT invariant checker. Updated whenever ANY standard changes.
+ *   The contract is:
  *
  *     Whenever you edit a .md standard, you MUST:
  *       (1) Re-read this file and find the V## check(s) covering that standard

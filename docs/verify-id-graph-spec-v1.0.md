@@ -7,7 +7,7 @@
 > Last Updated: 2026-06-17
 > Effective Date: 2026-06-17
 > Status: **APPROVED**
-> Related: STD-META-001 v2.0, STD-SKILL-001 v1.0, TOOL-VERIFY-002 (verify-standards.js), TOOL-VERIFY-003 (verify-cascade.js)
+> Related: STD-META-001 v2.0, STD-SKILL-001 v1.0, TOOL-VERIFY-002 (verify-standards.js)
 > Implements invariants: G01–G15 from STD-META-001 §10.2 and STD-SKILL-001 §13.2
 
 > **Status: APPROVED.** This specification defines the cross-repo ID graph
@@ -64,7 +64,7 @@ Z-ai-standards/scripts/verify-id-graph.js
 Lives in Z-ai-standards (Layer 1) because it validates standards
 (STD-META-001 v2.0 and STD-SKILL-001 v1.0). Although it scans all 4
 repos, it is itself owned by the standards repo — same as
-`verify-standards.js` and `verify-cascade.js`.
+`verify-standards.js`.
 
 ### 2.2. Invocation
 
