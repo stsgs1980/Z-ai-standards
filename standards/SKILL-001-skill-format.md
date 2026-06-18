@@ -1,9 +1,9 @@
-# Standard: Skill Format & Identification v1.0 (EN)
+# Standard: Skill Format & Identification v1.1 (EN)
 
 > ID: STD-SKILL-001
-> Version: 1.0.0
+> Version: 1.1.0
 > Level: **[B] Recommended**
-> Last Updated: 2026-06-17
+> Last Updated: 2026-06-18
 > Effective Date: 2026-06-17
 > Status: **APPROVED**
 > verified_by: scripts/verify-standards.js#V05,V11,V13,V14, scripts/verify-id-graph.js#G01,G02,G14 (when ID present)
@@ -422,6 +422,92 @@ to create new skills. The skill-creator will:
 
 ---
 
+## 10A. Known Issues and Proposed Solutions
+
+This section documents discovered inconsistencies, missing content, and
+proposed corrections. Each issue has an ID, status, and proposed action.
+Issues resolved in the current version are marked `[RESOLVED]`; outstanding
+issues are marked `[OPEN]`.
+
+### SKILL-001-001 `[OPEN]` — §3.5 says Related: goes in blockquote only, but all 17 RULE files and 24 ZAI skills actually use YAML frontmatter `related:` field
+
+**Problem:** §3.5 (line 139-145) states:
+
+> These two fields go in the blockquote below the H1, NOT in YAML
+> frontmatter. They are graph edges consumed only by `verify-id-graph.js`.
+
+This rule was correct when the standard was written (v1.0, 2026-06-17),
+but actual repo practice has diverged. As of 2026-06-18:
+
+- All 17 RULE files in `Z-ai-guard/rules/RULE-MONOLITH-*.md` declare
+  their `related:` edges as a YAML list in frontmatter (e.g.
+  `RULE-MONOLITH-001` has `related: [RULE-MONOLITH-006, RULE-MONOLITH-007]`
+  in YAML, no `> Related:` blockquote line at all).
+- All 24 ZAI skills in `Z-ai-skills/skills/<name>/SKILL.md` declare their
+  `related:` edges as a YAML list in frontmatter. The blockquote header
+  carries `> ID:`, `> Version:`, `> Last Updated:` but typically omits
+  `> Related:`.
+
+`verify-id-graph.js` handles both formats: `parseYAMLFrontmatter()` is
+tried first, and if `related:` is present there it takes precedence
+(`extractDeclaration()` lines 524-547). So the verifier works either way,
+but the standard's normative text is wrong.
+
+**Proposed solution:** Update §3.5 to acknowledge both formats. Preferred
+format: YAML frontmatter `related:` (matches repo practice and the
+frontmatter-first principle). Blockquote `> Related:` remains valid for
+backward compatibility with older standards that have no YAML frontmatter
+(e.g. `META-001-standard-id-system.md`). When both are present, YAML wins.
+
+### SKILL-001-002 `[OPEN]` — `$STANDARDS_ROOT` environment variable used in Appendix B example but not formally defined
+
+**Problem:** Appendix B (ZAI-META-001 thin pointer template) shows:
+
+```bash
+cat $STANDARDS_ROOT/standards/STD-SKILL-001-v1.0.md
+```
+
+But `$STANDARDS_ROOT` is not formally defined in:
+
+- This standard (SKILL-001)
+- `ENV-001-reproducibility.md` (environment variables section)
+- `ENV-002-zai-integration.md` (sandbox bootstrap procedure)
+
+Skills that copy this example verbatim will produce an empty string
+expansion if the variable is unset, leading to a `cat /standards/...`
+path that does not exist.
+
+**Proposed solution:** Add `$STANDARDS_ROOT` to ENV-001 §3 (environment
+variables) with the definition:
+`STANDARDS_ROOT=/home/z/my-project/Z-ai-platform/standards` (or the
+equivalent path in non-sandbox deployments). Document that the variable
+MUST be set by the bootstrap procedure (ENV-002 §3.0 step 4) before any
+skill that references it is invoked.
+
+### SKILL-001-003 `[OPEN]` — Appendix B template shows ZAI-META-001 v1.1 but actual skill-id-system/SKILL.md is at v1.0
+
+**Problem:** Appendix B (line 654) shows the target state of
+`skills/skills/skill-id-system/SKILL.md` after migration to v1.1:
+
+```yaml
+id: ZAI-META-001
+version: 1.1
+```
+
+But the actual file at `Z-ai-skills/skills/skill-id-system/SKILL.md`
+(as of 2026-06-18) is still at v1.0 — the migration window described in
+§12.4 has not started. Readers who copy the template expecting it to
+match the current file will find a version mismatch.
+
+**Proposed solution:** Either (a) bump `Z-ai-skills/skills/skill-id-system/SKILL.md`
+to v1.1 to match the template (preferred — closes the migration window's
+first phase), or (b) add a note to Appendix B clarifying that the template
+shows the target state, not the current state. Option (a) requires a PR
+to Z-ai-skills; option (b) is a one-line edit here. Lean towards (a) when
+the next Z-ai-skills release is cut.
+
+---
+
 ## 11. ID Assignment Procedure (Optional)
 
 ### 11.1. When to Assign
@@ -697,4 +783,4 @@ reference for maintainers who want a single unified skill-creator.
 
 ---
 
-*End of STD-SKILL-001 v1.0 — APPROVED 2026-06-17.*
+*End of STD-SKILL-001 v1.1 — APPROVED 2026-06-17, §10A added 2026-06-18.*
