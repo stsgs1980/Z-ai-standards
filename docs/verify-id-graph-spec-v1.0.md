@@ -29,7 +29,7 @@ system defined in STD-META-001 v2.0 and STD-SKILL-001 v1.0. Where
 single repo, `verify-id-graph.js` checks the **dependency graph** spanning
 all four repositories of the Z-ai ecosystem:
 
-```
+```text
 Z-ai-platform  (meta — no IDs declared, scanned for references only)
 Z-ai-standards (L1: STD-*)
 Z-ai-guard     (L2: RULE-*, PROC-*, TOOL-*)
@@ -57,7 +57,7 @@ fields of every artifact's header, plus an undirected graph of
 
 ### 2.1. File Location
 
-```
+```text
 Z-ai-standards/scripts/verify-id-graph.js
 ```
 
@@ -334,7 +334,7 @@ For each edge `ZAI-A → ZAI-B`:
 - If the pair is not in the allowed table: hard error G14.
 
 Example failure:
-```
+```text
 G14: ZAI-DEV-001 (compatibility=sandbox) depends on ZAI-STS-005 (compatibility=both)
   → OK (sandbox may depend on both)
 
@@ -449,7 +449,7 @@ This means:
 
 ### 6.1. Human-Readable (default)
 
-```
+```text
 verify-id-graph.js v1.0.0
 Platform root: /home/user/Z-ai-platform
 Repos scanned: 4 (standards, guard, skills, platform)

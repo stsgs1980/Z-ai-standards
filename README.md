@@ -11,7 +11,7 @@ tools, and skills in lower layers.
 
 ## Repository Layout
 
-```
+```text
 Z-ai-standards/
 ├── README.md                              # This file — start here
 ├── MIGRATIONS.md                          # ID migration log (read by verify-id-graph.js)

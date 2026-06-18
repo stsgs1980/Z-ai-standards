@@ -93,7 +93,7 @@ created. This entry is a placeholder until AHG is migrated.
 
 ## Migration Lifecycle
 
-```
+```text
    ┌─────────────────┐
    │  ID is ACTIVE   │
    │  (in registry)  │
