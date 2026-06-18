@@ -1,9 +1,9 @@
-# Standard: Z.ai Integration v1.2 (EN)
+# Standard: Z.ai Integration v1.3 (EN)
 
 > ID: STD-ENV-002
-> Version: 1.2
+> Version: 1.3
 > Level: **[C] Critical**
-> Related: ENV-001-reproducibility.md (STD-ENV-001), sandbox-rules.md (instructions/)
+> Related: ENV-001-reproducibility.md (STD-ENV-001), ARCH-002-implementation-order.md (STD-ARCH-002), docs/sandbox/INDEX.md (reference)
 
 ---
 
@@ -24,6 +24,37 @@ The Z.ai sandbox has specific characteristics that affect all operations:
 | Process mortality | Background processes die after ~5 min inactivity | Watchdog with cron every 5 min |
 | No cross-chat process sharing | Cannot control processes from other chats | File-based coordination |
 | Git lockup possible | Previous chat may leave git blocked | Recovery protocol defined below |
+
+---
+
+## 3.0. Bootstrap Procedure for a New Project
+
+This subsection defines the canonical bootstrap flow when starting a new project in the Z.ai sandbox. It is **thin** — full reference material lives in `docs/sandbox/` and is loaded on demand.
+
+### 3.0.1. Seven-step bootstrap flow
+
+| Step | Action | Verify | Reference |
+|------|--------|--------|----------|
+| 1 | Confirm the sandbox shell is fresh: no stale `.git/rebase-merge`, no orphan `next dev` processes | `git status` reports clean; `pgrep -f 'next dev'` returns nothing | §4.3 below; `docs/sandbox/sandbox-guide.md` §8 |
+| 2 | Place the project under `/home/z/my-project/` (the designated sandbox root) | `pwd` starts with `/home/z/my-project/` | §3 below |
+| 3 | Install standards compliance layer: clone `Z-ai-platform` with submodules (recursive) so `standards/`, `guard/`, `skills/` are all present | `ls standards/standards/*.md \| wc -l` returns 20; `node standards/scripts/verify-id-graph.js` exits 0 | `ARCH-002-implementation-order.md` §1 install order; `ARCH-001-architecture-and-repo-layout.md` §3 submodule conventions |
+| 4 | Read `worklog.md` (tail 200 lines) to learn what prior sessions did, then append a new section with the bootstrap Task ID | `tail -200 worklog.md` shows recent context; your new section appears at end | §6.2 below; `AGENT-002-orchestration.md` |
+| 5 | For fullstack web-dev sessions only: run `init-fullstack_*.sh` from `https://z-cdn.chatglm.cn/`, then add `allowedDevOrigins` to `next.config.ts` manually (infra bug) | `next dev` returns HTTP 200 on `http://127.0.0.1:3000/`; `next.config.ts` contains `allowedDevOrigins` | `docs/sandbox/sandbox-guide.md` §1-5; `docs/sandbox/INDEX.md` §3 contradiction #3 |
+| 6 | For docs/methodology sessions (no Next.js): skip step 5, do NOT start dev server, do NOT create `src/app/` | `ls src/app/ 2>/dev/null` returns "No such file" | `docs/sandbox/INDEX.md` §2 scenario table |
+| 7 | Before declaring "project ready", run `docs/sandbox/verify-sandbox.sh` (fullstack only) or `verify-id-graph.js` (any session) | Both exit 0 | `docs/sandbox/verify-sandbox.sh`; §11 below |
+
+### 3.0.2. What the bootstrap flow guarantees
+
+After steps 1-7 complete successfully:
+- The project lives in the designated sandbox root (no path drift).
+- The standards compliance layer is present and self-consistent (ID graph passes HARD checks G01-G15).
+- The worklog carries forward prior context — no "black box" between sessions.
+- For fullstack sessions: dev server starts cleanly, no CORS/Caddy/port issues.
+- For docs sessions: no accidental Next.js scaffolding pollutes the project tree.
+
+### 3.0.3. When the bootstrap flow fails
+
+If any step fails, STOP and consult the reference column before retrying. Do NOT work around failures — they almost always indicate an environment issue (stale rebase, missing submodule, infra bug) that must be fixed, not hidden.
 
 ---
 
@@ -197,6 +228,7 @@ When calling chat.z.ai:
 | 1.0 | 2026-05 | Initial standard extracted from AGENT_RULES.md |
 | 1.1 | 2026-05-14 | Added SDK Integration section with 10 usage rules |
 | 1.2 | 2026-06 | Updated §6 Related to reference `REPRODUCIBILITY_STANDARD` (was `REPRODUCIBILITY-STANDARD` — see ZAI-001). Updated §3.1 to reference STD-ENV-001 v2.1 (was v1.1 — see ZAI-002). Updated compliance footer to MARKDOWN_STANDARD v2.3 (was v2.1 — see ZAI-003). Added §3.1 authoritative-source note (see ZAI-004). Added §10A Known Issues. |
+| 1.3 | 2026-06-18 | Added §3.0 Bootstrap Procedure for a New Project (7-step flow, thin, references `docs/sandbox/`). Updated Related: field to include `ARCH-002-implementation-order.md` and `docs/sandbox/INDEX.md`. Added ZAI-008 to Known Issues. |
 
 ---
 
@@ -245,6 +277,12 @@ This section documents discovered inconsistencies, missing content, and proposed
 **Problem:** §10 Version History v1.0 entry says "Initial standard extracted from AGENT_RULES.md". The file `AGENT_RULES.md` is not present in the standards directory or the project root. The reference is historical (the standard was originally extracted from that file), but a reader may look for the file and not find it.
 
 **Proposed solution:** This is the same issue as RMT-002 in README_TEMPLATE — `AGENT_RULES.md` is referenced by multiple standards but never defined. Resolve via the option chosen in RMT-002. If option 2 (define AGENT_RULES.md in this standard) is chosen, add a new §12 "AGENT_RULES.md Definition" subsection that defines the file's structure and mandatory content.
+
+### ZAI-008 `[OPEN]` — §3.0 Bootstrap Procedure references `init-fullstack_*.sh` without pinning a version
+
+**Problem:** §3.0.1 step 5 references `init-fullstack_*.sh` from `https://z-cdn.chatglm.cn/` using a glob, but does not pin which version. The script URL contains a timestamp (e.g. `init-fullstack_1775040338514.sh`) which changes over time. Different versions may produce different scaffolding, breaking reproducibility.
+
+**Proposed solution:** Add a §3.0.4 "Pinned init-fullstack version" subsection that records the exact script URL and SHA256 of the script used at the time of writing. Update on each verified upgrade. Cross-reference with STD-ENV-001 reproducibility rules.
 
 ---
 

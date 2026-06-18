@@ -18,6 +18,7 @@
  *     - Aligned_with: has corresponding Related: edge (G15)
  *     - Compatibility DAG valid for ZAI skills (G14)
  *     - Soft warnings (W01-W10) for non-critical issues
+ *     - Soft warnings (W11-W15) for project health / consistency (v1.1.0)
  *
  * TWO-LEVEL STRICTNESS
  *   HARD (G01-G15)  → exit 1 if any fail
@@ -25,6 +26,9 @@
  *                    Apply to ZAI skills only when `id` field present
  *   SOFT (W01-W10)  → reported, but does not fail
  *                    Unless --fail-on-warnings flag is set
+ *   SOFT (W11-W15)  → project-health warnings (v1.1.0): size anomalies,
+ *                    missing §XA Known Issues, broken cross-doc refs,
+ *                    excessive OPEN issues, naming drift
  *
  * USAGE
  *   node scripts/verify-id-graph.js [options]
@@ -55,7 +59,7 @@ const path = require('path');
 // CONSTANTS
 // ============================================================================
 
-const VERSION = '1.0.0';
+const VERSION = '1.1.0';
 const EFFECTIVE_DATE = '2026-06-17';
 
 // Allowed Related: edges per STD-META-001 §6.1
@@ -1021,6 +1025,125 @@ function phase9_orphanWarnings(idMap) {
 }
 
 // ============================================================================
+// PHASE 10 — PROJECT HEALTH WARNINGS (W11-W15, v1.1.0)
+// ============================================================================
+// These catch growth/decay signals that G01-G15 do not cover:
+//   W11 — Size anomaly (file > 1000 lines warn, > 1500 critical warn)
+//   W12 — Missing §XA Known Issues section
+//   W13 — Broken cross-doc file references (link to non-existent .md/.sh)
+//   W14 — Excessive OPEN Known Issues (> 5 = debt accumulation signal)
+//   W15 — Naming drift (file does not match <DOMAIN>-<NNN>-<name>.md)
+//
+// These are SOFT warnings — they do NOT fail CI. Use --fail-on-warnings to promote.
+// ============================================================================
+
+const VALID_DOMAINS = new Set([
+  'META', 'ARCH', 'DOC', 'SKILL', 'ENV', 'GIT', 'DESIGN',
+  'FE', 'A11Y', 'ERR', 'SEC', 'TEST', 'AGENT',
+]);
+
+function phase10_healthWarnings(repos) {
+  if (!repos.standards) return;
+  const standardsTreeRoot = repos.standards;
+
+  // Collect all .md files under standards/ tree (covers standards/standards/*.md,
+  // standards/docs/**/*.md, standards/templates/*.md)
+  const mdFiles = [];
+  function walk(dir, depth) {
+    if (depth > 8) return;
+    let entries;
+    try { entries = fs.readdirSync(dir, { withFileTypes: true }); }
+    catch (e) { return; }
+    for (const entry of entries) {
+      if (entry.name === 'node_modules' || entry.name === '.git' ||
+          entry.name === '_design' || entry.name === 'legacy') continue;
+      const full = path.join(dir, entry.name);
+      if (entry.isDirectory()) walk(full, depth + 1);
+      else if (entry.name.endsWith('.md')) mdFiles.push(full);
+    }
+  }
+  walk(standardsTreeRoot, 0);
+
+  for (const filePath of mdFiles) {
+    const fileName = path.basename(filePath);
+    let content;
+    try { content = fs.readFileSync(filePath, 'utf8'); }
+    catch (e) { continue; }
+    const lineCount = content.split('\n').length;
+
+    // W15: naming drift — applies only to standards/standards/ (normative files)
+    // Skip docs/, templates/, README.md, INDEX.md (non-normative)
+    const isNormative = filePath.includes(path.join('standards', 'standards') + path.sep);
+    if (isNormative) {
+      const nameMatch = fileName.match(/^([A-Z0-9]+)-(\d{3})-(.+)\.md$/);
+      if (!nameMatch) {
+        if (fileName !== 'README.md' && fileName !== 'INDEX.md') {
+          warn('W15', `${fileName}: does not match <DOMAIN>-<NNN>-<name>.md naming convention`);
+        }
+      } else {
+        const domain = nameMatch[1];
+        if (!VALID_DOMAINS.has(domain)) {
+          warn('W15', `${fileName}: unknown domain "${domain}" (valid: ${[...VALID_DOMAINS].join(', ')})`);
+        }
+      }
+    }
+
+    // W11: size anomaly (applies to all .md files)
+    if (lineCount > 1500) {
+      warn('W11', `${fileName}: ${lineCount} lines (CRITICAL — exceeds 1500-line cap, split required)`);
+    } else if (lineCount > 1000) {
+      warn('W11', `${fileName}: ${lineCount} lines (exceeds 1000-line soft cap, consider splitting)`);
+    }
+
+    // W12: missing §XA Known Issues section (applies only to normative standards)
+    if (isNormative) {
+      // Pattern matches: ## 10A. Known Issues, ## 11A. Known Issues, ## XA. Known Issues
+      const hasKnownIssues = /^\s*##\s+\d*[A-Z]\.?\s*Known\s+Issues/im.test(content);
+      if (!hasKnownIssues) {
+        warn('W12', `${fileName}: no §XA Known Issues section (convention per ENV-002 v1.2 §10A)`);
+      }
+    }
+
+    // W14: excessive OPEN Known Issues
+    const openMatches = content.match(/\[OPEN\]/g);
+    if (openMatches && openMatches.length > 5) {
+      warn('W14', `${fileName}: ${openMatches.length} OPEN Known Issues (exceeds 5-issue soft cap — debt accumulation signal)`);
+    }
+
+    // W13: broken cross-doc file references
+    // Matches `path/to/file.md` or `path/to/file.sh` in inline code.
+    // Skips: URLs, absolute paths, .ts/.js/.json imports, version-history fragments.
+    const refPattern = /`([a-zA-Z0-9_\-\/]+\.(md|sh))`/g;
+    let m;
+    const seen = new Set(); // dedupe within one file
+    while ((m = refPattern.exec(content)) !== null) {
+      const refPath = m[1];
+      if (seen.has(refPath)) continue;
+      seen.add(refPath);
+      // Skip URLs and absolute paths
+      if (refPath.startsWith('http://') || refPath.startsWith('https://')) continue;
+      if (refPath.startsWith('/home/') || refPath.startsWith('/tmp/') ||
+          refPath.startsWith('/usr/') || refPath.startsWith('/etc/')) continue;
+      // Resolve against multiple candidate roots
+      const candidates = [
+        path.join(standardsTreeRoot, refPath),                       // from repo root (e.g. standards/docs/sandbox/x.md)
+        path.join(standardsTreeRoot, 'standards', refPath),          // from standards/ subdir
+        path.join(standardsTreeRoot, 'docs', refPath),               // from docs/
+        path.join(standardsTreeRoot, 'scripts', refPath),            // from scripts/
+        path.join(standardsTreeRoot, 'templates', refPath),          // from templates/
+        path.join(path.dirname(filePath), refPath),                  // from current file's dir
+      ];
+      const exists = candidates.some(p => {
+        try { return fs.existsSync(p); } catch (e) { return false; }
+      });
+      if (!exists) {
+        warn('W13', `${fileName}: references \"${refPath}\" which does not exist in standards/ tree`);
+      }
+    }
+  }
+}
+
+// ============================================================================
 // OUTPUT FORMATTING
 // ============================================================================
 
@@ -1057,7 +1180,7 @@ function emitHumanReadable(opts) {
   }
   out.push('');
 
-  out.push('--- Soft Warnings (W01-W10) ---');
+  out.push('--- Soft Warnings (W01-W15) ---');
   if (results.warnings.length === 0) {
     out.push('  (none)');
   } else {
@@ -1167,6 +1290,7 @@ function main() {
   phase7_alignedWithSymmetry(idMap);
   phase8_compatibilityDAG(idMap);
   phase9_orphanWarnings(idMap);
+  phase10_healthWarnings(repos);
 
   // Emit output
   if (opts.json) {
