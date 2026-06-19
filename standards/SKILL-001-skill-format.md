@@ -344,8 +344,8 @@ skill-name/
 
 ### 8.2. Size Guidelines
 
-- `SKILL.md` hard ceiling: 800 lines (RULE-MONOLITH-012 v1.2 §1 — SKILL.md row); soft warn at 400
-- Use `references/` for content that doesn't need to load at trigger time — these files are exempt from the ceiling
+- `SKILL.md` hard ceiling: 800 lines (META-001 §4.18.1, SKILL.md row); soft warn at 400 — see canonical for full matrix
+- Use `references/` for content that doesn't need to load at trigger time — these files are exempt per META-001 §4.18.1 (references/**.md row)
 - Use `scripts/` for repetitive tasks that can be extracted
 
 ---
@@ -401,7 +401,7 @@ to create new skills. The skill-creator will:
 | `compatibility` valid enum (if present) | `verify-standards.js` | V13c | **SOFT** (only if `compatibility` field exists) |
 | Frontmatter `id` matches blockquote `ID:` | `verify-standards.js` | V14a | **SOFT** (only if both present) |
 | Frontmatter `version` matches blockquote `Version:` | `verify-standards.js` | V14b | **HARD** (always) |
-| File under 800 lines (RULE-MONOLITH-012 v1.2 §1 — SKILL.md row) | `line-count-check.sh` | PROC-LINECOUNT-004 (deferred) | **HARD** (all skills) |
+| File under 800 lines (META-001 §4.18.1, SKILL.md row) | `line-count-check.sh` | PROC-LINECOUNT-004 (deferred) | **HARD** (all skills) |
 
 ### 10.2. Cross-Repo Checks (in Z-ai-platform CI)
 
@@ -637,7 +637,7 @@ They may declare an `Aligned_with:` edge if drift becomes a problem.
 - [ ] Required fields present: `name`, `description`, `version`
 - [ ] `name` matches folder name (with `_sts` suffix for STS)
 - [ ] Frontmatter `version` matches blockquote `Version:` (V14b)
-- [ ] `SKILL.md` under 800 lines (RULE-MONOLITH-012 v1.2 §1 — SKILL.md row; soft warn at 400)
+- [ ] `SKILL.md` under 800 lines (META-001 §4.18.1, SKILL.md row; soft warn at 400)
 - [ ] `verify-standards.js` V11/V13/V14b pass
 
 **Extended (with ID):**
