@@ -1,8 +1,8 @@
-# Standard: Implementation Order v2.5
+# Standard: Implementation Order v2.6
 
 > ID: STD-ARCH-002
-> Version: 2.5
-> Previous: 2.3 (was incorrectly labeled STD-ARCH-001)
+> Version: 2.6
+> Previous: 2.5
 > Level: **[C] Critical**
 > Last Updated: 2026-06-19
 > Effective Date: 2026-06-19
@@ -24,6 +24,15 @@ Violating either order leads to rework.
 
 The 20 normative standards below MUST be installed (read, understood, and accepted) in this order. Each row cites the prerequisite standards whose concepts the current standard depends on.
 
+> **Implicit prerequisite (v2.6, 2026-06-19):** `STD-META-001` is required by
+> every other standard (it defines the ID system that all standards use to
+> reference each other). It is listed as an explicit prerequisite only for
+> standards whose *primary* conceptual dependency is the ID system itself
+> (ARCH-001, ARCH-002, DOC-002, SKILL-001). All other standards list
+> `STD-META-001` in their `Related:` header field for graph completeness
+> but it is not repeated in the Prerequisites column below. This convention
+> was confirmed by reconciliation audit on 2026-06-19.
+
 | # | ID | File | Prerequisites | Why this position |
 |---|---|---|---|---|
 | 1 | STD-META-001 | `META-001-standard-id-system.md` | — | Defines the ID system. Every other standard is referenced by its `STD-*` ID, so the ID system must be accepted first. |
@@ -33,12 +42,12 @@ The 20 normative standards below MUST be installed (read, understood, and accept
 | 5 | STD-DOC-003 | `DOC-003-unicode-policy.md` | DOC-002 | Defines character rules (no emoji, no box-drawing, etc.). Pairs with DOC-002 — must be accepted alongside it. |
 | 6 | STD-SKILL-001 | `SKILL-001-skill-format.md` | META-001, DOC-002 | Defines skill format. Needed before any skill is authored or consumed. |
 | 7 | STD-ENV-001 | `ENV-001-reproducibility.md` | ARCH-001, DOC-002 | Defines L1-L4 reproducibility layers (env, code, delivery, process). Foundation for everything that runs. |
-| 8 | STD-ENV-002 | `ENV-002-zai-integration.md` | ENV-001 | Sandbox-specific rules. Builds on ENV-001 — assumes reproducibility baseline. |
+| 8 | STD-ENV-002 | `ENV-002-zai-integration.md` | ENV-001, ARCH-002 | Sandbox-specific rules. Builds on ENV-001 — assumes reproducibility baseline. Also depends on ARCH-002 for the project-setup sequence (§2-§6) it inherits (bootstrap.sh, status.sh are ENV-002 §3.0 artifacts that follow ARCH-002's setup sequence). |
 | 9 | STD-GIT-001 | `GIT-001-github.md` | ENV-001, DOC-002 | Commit/branch/push policy for production repos. Needed before any commit. |
 | 10 | STD-GIT-002 | `GIT-002-github-sandbox.md` | GIT-001, ENV-002 | Sandbox-specific git rules (deadlock prevention). Builds on GIT-001. |
 | 11 | STD-DESIGN-001 | `DESIGN-001-design-system.md` | DOC-002, DOC-003 | Design tokens (color, typography, spacing). Must be defined before frontend consumes them. |
 | 12 | STD-FE-001 | `FE-001-frontend.md` | ENV-001, DOC-002, DESIGN-001 | Frontend code rules. Consumes design tokens — requires DESIGN-001 first. |
-| 13 | STD-A11Y-001 | `A11Y-001-wcag-2-1-aa.md` | FE-001, DESIGN-001 | WCAG 2.1 AA compliance. Verified against frontend components — requires FE-001. |
+| 13 | STD-A11Y-001 | `A11Y-001-wcag-2-1-aa.md` | FE-001, DESIGN-001 | WCAG 2.1 AA compliance. Verified against frontend components — requires FE-001. (Note: A11Y-001 also references STD-TEST-001 for testing practices, but TEST-001 is installed later at #18 — the reference is forward, not a prerequisite. See A11Y-001 §11 for the testing cross-link.) |
 | 14 | STD-ERR-001 | `ERR-001-error-handling.md` | FE-001, DOC-002 | Error classification, try-catch, logging. Applied in API routes and frontend boundaries. |
 | 15 | STD-ERR-002 | `ERR-002-error-recovery.md` | ERR-001 | Retry, circuit breaker, fallback. Builds on error handling concepts. |
 | 16 | STD-SEC-001 | `SEC-001-security-core.md` | ENV-001, GIT-001, DOC-002 | OWASP Top 10, secrets, validation. Needs env + git for context. |
@@ -435,3 +444,31 @@ This section documents discovered inconsistencies, missing content, and proposed
 **Problem:** §2 Step 1 says "Copy all Group B files to project folder (e.g., `docs/standards/`)". The actual standards in this project live at `/home/z/my-project/Z-ai-standards/standards/`. The example path `docs/standards/` is illustrative but may confuse readers who expect a canonical location.
 
 **Proposed solution:** Either (a) update the example to `Z-ai-standards/standards/` to match the actual project layout, or (b) add a note: "The standards directory path is project-specific; this project uses `Z-ai-standards/standards/`. Substitute your project's path." Option (b) is more flexible.
+
+### ARCH-008 `[RESOLVED in v2.6]` — Prerequisites column vs Related: header reconciliation
+
+**Problem:** Audit on 2026-06-19 compared ARCH-002 §1 Prerequisites column against each standard's `Related:` header field. Found 15/20 mismatches:
+- 13 were the same pattern: header lists `STD-META-001` explicitly, ARCH-002 §1 omits it (treating it as implicit foundation). Both views correct in spirit, but technically inconsistent.
+- 1 real cycle: `STD-A11Y-001` header lists `STD-TEST-001`, but A11Y is installed at #13 and TEST at #18 — A11Y cannot depend on something installed later.
+- 1 real undeclared dep: `STD-ENV-002` header lists `STD-ARCH-002`, but ARCH-002 §1 ENV-002 row did not declare ARCH-002 as a prereq.
+- 1 real missing-from-header: `STD-DOC-002` had ARCH-002 listed as prereq in §1, but DOC-002 header did not list ARCH-002 in `Related:`.
+
+**Resolution (v2.6):**
+1. Added "Implicit prerequisite" blockquote at top of §1 documenting that META-001 is implicitly required by all standards; not repeated in Prerequisites column unless it is the primary conceptual dependency (ARCH-001/002, DOC-002, SKILL-001).
+2. ENV-002 row in §1: added ARCH-002 to Prerequisites, with rationale ("bootstrap.sh / status.sh are ENV-002 §3.0 artifacts that follow ARCH-002's setup sequence").
+3. A11Y-001 row in §1: added clarifying note that TEST-001 is a forward reference (not a prereq); A11Y-001 §11 has the testing cross-link.
+4. DOC-002 header `Related:` field: added ARCH-002 (file-side fix in DOC-002 v2.4.2).
+5. A11Y-001 header `Related:` field: kept TEST-001 but downgraded semantic (file-side fix in A11Y-001 v1.3.1 — added `§11` cross-link marker, kept ID for graph completeness; reading order clarified by §1 note).
+
+**Verification:** Reconciliation script (`scripts/reconcile_arch002_vs_headers.py`) re-run; expected 20/20 match after applying the implicit-META convention.
+
+---
+
+## 8. Change History
+
+| Version | Date | Change |
+|---|---|---|
+| 2.0 | 2026-06-17 | Initial 4-repo split release. Combined 6-step Project Setup Sequence with 20-standard installation order. |
+| 2.3 | 2026-06-18 | Resolved ARCH-001 through ARCH-004 known issues. Renamed STD-ARCH-001 stub to ARCH-002 (correcting earlier mislabel). |
+| 2.5 | 2026-06-19 | Resolved ARCH-005 partial; added §6 Path B integration. |
+| 2.6 | 2026-06-19 | Resolved ARCH-008. Reconciliation audit: implicit-META convention documented in §1; ENV-002 prereq added ARCH-002; A11Y-001 forward-ref to TEST-001 clarified; DOC-002 header added ARCH-002 to `Related:`. Reconciliation script added at `scripts/reconcile_arch002_vs_headers.py`. |

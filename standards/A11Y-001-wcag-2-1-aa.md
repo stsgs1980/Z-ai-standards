@@ -1,11 +1,11 @@
-# Standard: WCAG 2.1 AA Accessibility v1.3
+# Standard: WCAG 2.1 AA Accessibility v1.3.1
 
 > ID: STD-A11Y-001
-> Version: 1.3
+> Version: 1.3.1
 > Status: ACTIVE
 > Level: **[C] Critical**
 > Last Updated: 2026-06-19
-> Related: STD-FE-001 (frontend), STD-DESIGN-001 (design system), STD-TEST-001 (testing), STD-META-001 (ID system), https://www.w3.org/TR/WCAG21/
+> Related: STD-FE-001 (frontend), STD-DESIGN-001 (design system), STD-TEST-001 (testing — forward reference; A11Y-001 installed at #13, TEST-001 at #18; see §11 for the testing cross-link), STD-META-001 (ID system), https://www.w3.org/TR/WCAG21/
 > Entry point: `bash scripts/check-md.sh [path]` (Markdown hygiene only — this standard has no a11y-specific CLI yet; see §8.2 for jest-axe + Lighthouse commands)
 
 ---
