@@ -1,7 +1,7 @@
 # Standard: Standard ID System v2.0 (EN)
 
 > ID: STD-META-001
-> Version: 2.0.2
+> Version: 2.0.3
 > Previous: 1.2 (single-layer, STD- only)
 > Level: **[C] Critical**
 > Last Updated: 2026-06-19
@@ -204,7 +204,7 @@ section is a summary; STD-SKILL-001 is the source of truth.
 | RULE-AGENT-009 | Session start protocol | 1.0 | [C] | ACTIVE | Z-ai-guard/AGENT_RULES.md |
 | RULE-DOC-010 | Documentation sync | 1.0 | [C] | ACTIVE | Z-ai-guard/AGENT_RULES.md |
 | RULE-INTEGRITY-011 | Integrity protection | 1.0 | [C] | ACTIVE | Z-ai-guard/AGENT_RULES.md |
-| RULE-MONOLITH-012 | Anti-monolith (250 lines) | 1.1 | [C] | ACTIVE | Z-ai-guard/AGENT_RULES.md |
+| RULE-MONOLITH-012 | Anti-monolith (file size by category) | 1.2 | [C] | ACTIVE | Z-ai-guard/rules/RULE-MONOLITH-012.md |
 | RULE-VERSION-013 | Use verify-docs bump | 1.1 | [C] | ACTIVE | Z-ai-guard/AGENT_RULES.md |
 | RULE-COMMIT-014 | Pre-commit checklist | 1.1 | [C] | ACTIVE | Z-ai-guard/AGENT_RULES.md |
 | RULE-DOC-015 | No Unicode graphics | 1.0 | [W] | ACTIVE | Z-ai-guard/AGENT_RULES.md |
@@ -990,6 +990,25 @@ The script should live in `eslint-rules/` or `scripts/` per the project's toolin
 ---
 
 ## 15. Version History
+
+### v2.0.3 (2026-06-19)
+
+RULE-MONOLITH-012 v1.2 alignment.
+
+- §4.13 row for RULE-MONOLITH-012: version `1.1` → `1.2`, title
+  `Anti-monolith (250 lines)` → `Anti-monolith (file size by category)`,
+  file path `Z-ai-guard/AGENT_RULES.md` (stale since M002) →
+  `Z-ai-guard/rules/RULE-MONOLITH-012.md` (correct post-M002 path).
+  v1.2 replaces the blanket "no file over 250 lines" with a per-category
+  matrix (code: 250, SKILL.md: 800, STD-*.md: 1200, references/: exempt,
+  etc.) plus an explicit 44-file exempt list. The blanket rule was
+  untrue as written: 75 files violated it, only 18 were genuine split
+  candidates. STD-SKILL-001 §8.2 / §10.1 / §13 checklist updated to
+  match the new 800-line SKILL.md ceiling. No new IDs; no breaking
+  changes to the graph (RULE-MONOLITH-012 ID unchanged).
+- Other §4.13 rows still reference `Z-ai-guard/AGENT_RULES.md` (the
+  pre-M002 path). These are pre-existing tech debt, not introduced by
+  v2.0.3; cleanup deferred to a future standards release.
 
 ### v2.0.2 (2026-06-19)
 
