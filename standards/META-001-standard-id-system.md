@@ -1,7 +1,7 @@
 # Standard: Standard ID System v2.0 (EN)
 
 > ID: STD-META-001
-> Version: 2.0.1
+> Version: 2.0.2
 > Previous: 1.2 (single-layer, STD- only)
 > Level: **[C] Critical**
 > Last Updated: 2026-06-19
@@ -220,24 +220,44 @@ section is a summary; STD-SKILL-001 is the source of truth.
 
 | ID | File | Version | Level | Status |
 |---|---|---|---|---|
-| PROC-SETUP-001 | Z-ai-guard/setup.sh | 2.0 | [C] | ACTIVE |
-| PROC-UPDATE-002 | Z-ai-guard/update.sh | 2.1 | [C] | ACTIVE |
-| PROC-COCHANGE-003 | Z-ai-guard/scripts/co-change-check.sh | 1.0 | [C] | ACTIVE |
-| PROC-LINECOUNT-004 | Z-ai-guard/scripts/line-count-check.sh | 1.0 | [C] | ACTIVE |
-| PROC-PLATFORM-INSTALL-005 | Z-ai-platform/install.sh | 1.0 | [C] | ACTIVE (planned) |
-| PROC-PLATFORM-UPDATE-006 | Z-ai-platform/update.sh | 1.0 | [C] | ACTIVE (planned) |
-| PROC-PLATFORM-DOCTOR-007 | Z-ai-platform/doctor.sh | 1.0 | [C] | ACTIVE (planned) |
+| PROC-SETUP-001 | Z-ai-guard/setup.sh | 2.0 | [C] | ACTIVE (planned) — file not yet created |
+| PROC-UPDATE-002 | Z-ai-guard/update.sh | 2.1 | [C] | ACTIVE (planned) — file not yet created |
+| PROC-COCHANGE-003 | Z-ai-guard/scripts/co-change-check.sh | 1.0 | [C] | ACTIVE (planned) — file not yet created |
+| PROC-LINECOUNT-004 | Z-ai-guard/scripts/line-count-check.sh | 1.0 | [C] | ACTIVE (planned) — file not yet created |
+| PROC-PLATFORM-INSTALL-005 | Z-ai-platform/install.sh | 1.0 | [C] | RETIRED 2026-06-19 (superseded by `bootstrap.sh` — single entry point covers install + update + restore) |
+| PROC-PLATFORM-UPDATE-006 | Z-ai-platform/update.sh | 1.0 | [C] | RETIRED 2026-06-19 (superseded by `bootstrap.sh`) |
+| PROC-PLATFORM-DOCTOR-007 | Z-ai-platform/doctor.sh | 1.0 | [C] | RETIRED 2026-06-19 (superseded by `status.sh` — diagnostic-only entry point) |
+
+> **Phantom-ID fix (META v2.0.2, 2026-06-19):** Rows previously marked
+> `ACTIVE` for PROC-SETUP-001, PROC-UPDATE-002, PROC-COCHANGE-003,
+> PROC-LINECOUNT-004 referenced files that do not exist in Z-ai-guard.
+> Status is now `ACTIVE (planned)` to reflect reality. The four procedures
+> are pending migration M003 (see `Z-ai-standards/MIGRATIONS.md`).
+>
+> **PROC-PLATFORM-005/006/007 retirement (META v2.0.2, 2026-06-19):**
+> Three platform-side procedures were planned in v2.0.0 but never
+> implemented. The functions they would have provided are covered by
+> `Z-ai-platform/bootstrap.sh` (install + update + restore in one entry
+> point) and `Z-ai-platform/status.sh` (diagnostic). The three IDs are
+> RETIRED with supersession notes; they will not be re-used (per §9.2
+> no-reassignment rule).
 
 ### 4.15. Tools (TOOL-)
 
 | ID | File | Version | Level | Status |
 |---|---|---|---|---|
-| TOOL-VERIFY-001 | Z-ai-guard/tools/verify-docs/ | 2.1 | [C] | ACTIVE |
+| TOOL-VERIFY-001 | Z-ai-guard/tools/verify-docs/ | 2.1 | [C] | ACTIVE (planned) — file not yet created |
 | TOOL-VERIFY-002 | Z-ai-standards/scripts/verify-standards.js | 2.2.0 | [C] | ACTIVE |
 | TOOL-VERIFY-003 | Z-ai-standards/scripts/verify-cascade.js | 2.2.0 | [C] | RETIRED 2026-06-18 (one-shot v1.0 cascade check; superseded by TOOL-VERIFY-002 + TOOL-VERIFY-004) |
-| TOOL-VERIFY-004 | Z-ai-standards/scripts/verify-id-graph.js | 1.0.0 | [C] | ACTIVE (planned) |
-| TOOL-BUMP-005 | Z-ai-guard/tools/verify-docs/src/bump.ts | 2.1 | [C] | ACTIVE |
+| TOOL-VERIFY-004 | Z-ai-standards/scripts/verify-id-graph.js | 1.0.0 | [C] | ACTIVE (planned) — file exists, status promotes to ACTIVE on first green CI run post-v2.0.2 |
+| TOOL-BUMP-005 | Z-ai-guard/tools/verify-docs/src/bump.ts | 2.1 | [C] | ACTIVE (planned) — file not yet created |
 | TOOL-CHECKUPDATES-006 | Z-ai-standards/scripts/check-updates.sh | 2.2.0 | [W] | ACTIVE |
+
+> **Phantom-ID fix (META v2.0.2, 2026-06-19):** Rows previously marked
+> `ACTIVE` for TOOL-VERIFY-001 and TOOL-BUMP-005 referenced files that do
+> not exist in Z-ai-guard. Status is now `ACTIVE (planned)` to reflect
+> reality. The two tools are pending migration M004 (see
+> `Z-ai-standards/MIGRATIONS.md`).
 
 ### 4.16. Skills (ZAI-)
 
@@ -969,4 +989,39 @@ The script should live in `eslint-rules/` or `scripts/` per the project's toolin
 
 ---
 
-*End of STD-META-001 v2.0 — APPROVED 2026-06-17.*
+## 15. Version History
+
+### v2.0.2 (2026-06-19)
+
+Phantom-ID audit and PROC-PLATFORM retirement.
+
+- §4.14 PROC-SETUP-001, PROC-UPDATE-002, PROC-COCHANGE-003, PROC-LINECOUNT-004:
+  status `ACTIVE` → `ACTIVE (planned) — file not yet created`. The four
+  procedures are registered but their target files do not exist in
+  Z-ai-guard yet. Pending migration M003.
+- §4.14 PROC-PLATFORM-INSTALL-005, PROC-PLATFORM-UPDATE-006, PROC-PLATFORM-DOCTOR-007:
+  status `ACTIVE (planned)` → `RETIRED 2026-06-19`. These three were
+  placeholders for platform-side install/update/doctor scripts that
+  were never built. Their functions are now covered by `bootstrap.sh`
+  (install + update + restore) and `status.sh` (diagnostic). IDs are
+  not reassigned per §9.2.
+- §4.15 TOOL-VERIFY-001, TOOL-BUMP-005: status `ACTIVE` →
+  `ACTIVE (planned) — file not yet created`. Same pattern as §4.14.
+  Pending migration M004.
+- §4.15 TOOL-VERIFY-004: clarified wording — file exists, but status
+  remains `ACTIVE (planned)` until first green CI run post-v2.0.2
+  promotes it to `ACTIVE` (matches the pattern used when the tool was
+  first added).
+
+### v2.0.1 (2026-06-19)
+
+Minor clarifications.
+
+### v2.0 (2026-06-17)
+
+Initial approved release: 4-repo split, ID graph verifier, 13/13 HARD
+PASS, migration M001 (ZAI-META-001 → STD-SKILL-001) window open.
+
+---
+
+*End of STD-META-001 v2.0.2 — APPROVED 2026-06-17, last amended 2026-06-19.*
