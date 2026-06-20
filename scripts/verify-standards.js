@@ -26,6 +26,14 @@
  *   Both scripts are complementary and should both run in CI.
  *
  * HISTORY
+ *   2026-06-21: V11 added — promotes W11's 1000-line markdown soft cap to a
+ *     HARD invariant. Closes the "detection without prevention" gap: W11
+ *     (verify-id-graph.js) warned on >1000-line files but did not fail the
+ *     pipeline, so W11=0 was fragile (any commit could regress it). V11 turns
+ *     the same 1000-line cap into a hard exit-1 enforcement, applying the
+ *     LESSON-001 principle (root-cause fix scales as O(1), whitelist as O(N)).
+ *     V11 scans STANDARDS_DIR + DOCS/sandbox + TEMPLATES via readdirSync
+ *     (catches any NEW file, not just an enumerated list).
  *   2026-06-18: Path re-targeting to flat <DOMAIN>-<NNN>-<name>.md layout.
  *     V01/V02/V03 retired (premises contradicted current standards).
  *     V07 thresholds updated to FE-001 v2.1+ actual values.
@@ -511,6 +519,83 @@ function extractSection(content, sectionNumber) {
     'STD-DOC-004 README_TEMPLATE.md has Badges guidance (§1 row + ≥1 §2 example + §3 checklist mention)',
     hasBadgesRow && hasAtLeast1Badge && checklistMentionsBadges,
     `§1 Badges row=${hasBadgesRow}; §2 shields.io badges=${badgeUrls.length} (≥1=${hasAtLeast1Badge}); §3 checklist mentions badges=${checklistMentionsBadges}`);
+})();
+
+// ============================================================================
+// V11 — HARD CAP: no .md file in STANDARDS_DIR / docs/sandbox / templates
+//       exceeds 1000 lines (promotion of W11 soft cap to hard invariant)
+//
+// RATIONALE (2026-06-21)
+//   W11 in verify-id-graph.js already warns at >1000 lines and warns CRITICAL
+//   at >1500. But because W11 is a SOFT warning, a commit could regress it
+//   without failing CI — W11=0 was an unstable equilibrium, not a structural
+//   guarantee. V11 promotes the 1000-line cap to a HARD exit-1 invariant so
+//   that any future commit adding a >1000-line .md file FAILS the verifier
+//   and must be split before merge.
+//
+//   This applies LESSON-001 (root-cause fix scales as O(1), whitelist as O(N)):
+//   splitting the 2 long skills files today (cosmetic, O(N) over time) is
+//   weaker than encoding the cap as a check that scales as O(1) — the check
+//   runs on every commit regardless of how many files exist.
+//
+// SCOPE
+//   - STANDARDS_DIR (all *.md — normative + companion files)
+//   - DOCS_DIR = docs/sandbox/ (all *.md — guides, cookbooks, parts)
+//   - TEMPLATES_DIR (all *.md)
+//
+//   Deliberately EXCLUDED:
+//   - docs/session/*.md (worklog, SESSION_NOTES, DECISIONS_LOG) — these are
+//     append-only journals that grow by design.
+//   - scripts/*.js (verifier self-checking is a chicken-egg)
+//   - README.md at repo root (project landing page, not a standard)
+//
+//   The scan uses fs.readdirSync (NOT an enumerated target list) so that any
+//   NEW .md file added to the covered directories is automatically subject to
+//   the cap. V04/V08/V09 use enumerated lists because they need specific file
+//   paths for content-level checks; V11 is structural and must catch growth
+//   anywhere in the covered trees.
+//
+// THRESHOLD
+//   1000 lines (matches W11 soft cap exactly — no threshold inflation). If a
+//   file legitimately needs >1000 lines, the right answer is to split it into
+//   a companion file + INDEX (see DESIGN-001 split pattern, 2026-06-21), not
+//   to relax V11.
+// ============================================================================
+(function V11() {
+  const HARD_CAP = 1000;
+
+  function listMd(dir) {
+    if (!fs.existsSync(dir)) return [];
+    return fs.readdirSync(dir)
+      .filter(f => f.endsWith('.md'))
+      .map(f => path.join(dir, f));
+  }
+
+  const targets = [
+    ...listMd(STANDARDS_DIR),
+    ...listMd(DOCS_DIR),
+    ...listMd(TEMPLATES_DIR),
+  ];
+
+  const offenders = [];
+  for (const file of targets) {
+    const content = readSafe(file) || '';
+    // Line count: split on \n. Trailing newline does not add a phantom line
+    // because split returns ['last', ''] for 'a\n' → 2 entries, but the
+    // empty string is not a line of content. Use the same convention as
+    // verify-id-graph.js (which uses `wc -l`-equivalent counting).
+    const lineCount = content === '' ? 0 : content.split('\n').length - (content.endsWith('\n') ? 1 : 0);
+    if (lineCount > HARD_CAP) {
+      offenders.push(`${path.basename(file)}: ${lineCount} lines (exceeds ${HARD_CAP}-line hard cap, split required)`);
+    }
+  }
+
+  check('V11',
+    `No .md file in standards/ + docs/sandbox/ + templates/ exceeds ${HARD_CAP} lines (hard promotion of W11 soft cap) — scanned ${targets.length} files`,
+    offenders.length === 0,
+    offenders.length === 0
+      ? `all ${targets.length} files ≤ ${HARD_CAP} lines`
+      : `${offenders.length} file(s) over cap: ${offenders.join('; ')}`);
 })();
 
 // ============================================================================
