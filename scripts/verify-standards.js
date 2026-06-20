@@ -73,6 +73,24 @@ const PATHS = {
   STD_DOC_003:    path.join(STANDARDS_DIR, 'DOC-003-unicode-policy.md'),
   STD_ARCH_001:   path.join(STANDARDS_DIR, 'ARCH-002-implementation-order.md'),
   HOOKS_GUIDE:    path.join(DOCS_DIR, 'sandbox-hooks-cookbook.md'),
+  // Split-out parts of the cookbook (split 2026-06-19). Each part is a separate
+  // .md file that must pass the same STD-DOC-003 / fence / ratio checks as the
+  // INDEX file. Listed here so all 3 verifier phases (V04 unicode, V08 fences,
+  // V09 ratio) include them automatically via the `...PATHS.HOOKS_GUIDE_PARTS`
+  // spread in each phase's `targets` array.
+  HOOKS_GUIDE_PARTS: [
+    path.join(DOCS_DIR, 'hooks-basic.md'),
+    path.join(DOCS_DIR, 'hooks-ai.md'),
+    path.join(DOCS_DIR, 'hooks-routes.md'),
+    path.join(DOCS_DIR, 'hooks-patterns.md'),
+  ],
+  // Split-out parts of the commands cheatsheet (split 2026-06-19).
+  CHEATSHEET_PARTS: [
+    path.join(DOCS_DIR, 'sandbox-commands-file.md'),
+    path.join(DOCS_DIR, 'sandbox-commands-system.md'),
+    path.join(DOCS_DIR, 'sandbox-commands-dev.md'),
+    path.join(DOCS_DIR, 'sandbox-commands-media.md'),
+  ],
   SANDBOX_GUIDE:  path.join(DOCS_DIR, 'sandbox-guide.md'),
   README_TEMPLATE: path.join(TEMPLATES_DIR, 'README_TEMPLATE.md'),
 };
@@ -193,6 +211,8 @@ function extractSection(content, sectionNumber) {
       .filter(f => f.endsWith('.md'))
       .map(f => path.join(STANDARDS_DIR, f)),
     PATHS.HOOKS_GUIDE,
+    ...PATHS.HOOKS_GUIDE_PARTS,
+    ...PATHS.CHEATSHEET_PARTS,
     PATHS.SANDBOX_GUIDE,
   ].filter(Boolean);
 
@@ -348,6 +368,8 @@ function extractSection(content, sectionNumber) {
       .filter(f => f.endsWith('.md'))
       .map(f => path.join(STANDARDS_DIR, f)),
     PATHS.HOOKS_GUIDE,
+    ...PATHS.HOOKS_GUIDE_PARTS,
+    ...PATHS.CHEATSHEET_PARTS,
     PATHS.SANDBOX_GUIDE,
   ].filter(Boolean);
 
@@ -409,6 +431,8 @@ function extractSection(content, sectionNumber) {
       .filter(f => f.endsWith('.md'))
       .map(f => path.join(STANDARDS_DIR, f)),
     PATHS.HOOKS_GUIDE,
+    ...PATHS.HOOKS_GUIDE_PARTS,
+    ...PATHS.CHEATSHEET_PARTS,
     PATHS.SANDBOX_GUIDE,
     PATHS.README_TEMPLATE,
   ].filter(Boolean);

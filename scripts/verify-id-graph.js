@@ -1157,9 +1157,43 @@ function phase10_healthWarnings(repos) {
       // v1.1.3 additions: planned companion file referenced in DESIGN-001-profile-terminal-dashboard.md TDP-002
       'DESIGN-001-cards-reference.md',    // planned split target if companion file grows past 1200 lines (see TDP-002)
     ]);
+    // v1.1.4 (2026-06-21): Root-cause fix for false-positive W13 in change-history sections.
+    // Before scanning, strip the body of any `## N. Version History`, `## N. Change History`,
+    // or `## Changelog` section. Such sections naturally mention old/renamed/split filenames
+    // as historical facts (e.g. "Removed: `react-components.md` (was 1449; now 55-line INDEX)").
+    // These are NOT navigational references and should not trigger W13.
+    //
+    // Without this, every change-log entry that mentions a filename requires a new
+    // whitelist entry -- unbounded growth. Skipping the section is the proper fix.
+    //
+    // We keep the `## N. ...` header line itself (so the section is still visible in
+    // the scanned content) but drop all body lines until the next `## ` header or EOF.
+    const changeHistoryRe = /^##\s+\d+\.?\s*(Version History|Change History|Changelog)\s*$/im;
+    const stripCh = (txt) => {
+      const lines = txt.split('\n');
+      const out = [];
+      let skipping = false;
+      for (const line of lines) {
+        if (skipping) {
+          // End skip when we hit the next `## ` header (any level-2 header).
+          if (/^##\s/.test(line)) {
+            skipping = false;
+            out.push(line);
+          }
+          // else: drop the line (it's inside the change-history body)
+        } else {
+          out.push(line);
+          if (changeHistoryRe.test(line)) {
+            skipping = true;
+          }
+        }
+      }
+      return out.join('\n');
+    };
+    const w13Content = stripCh(content);
     let m;
     const seen = new Set(); // dedupe within one file
-    while ((m = refPattern.exec(content)) !== null) {
+    while ((m = refPattern.exec(w13Content)) !== null) {
       const refPath = m[1];
       if (seen.has(refPath)) continue;
       seen.add(refPath);
