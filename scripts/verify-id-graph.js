@@ -1072,8 +1072,18 @@ function phase10_healthWarnings(repos) {
     const lineCount = content.split('\n').length;
 
     // W15: naming drift — applies only to standards/standards/ (normative files)
-    // Skip docs/, templates/, README.md, INDEX.md (non-normative)
-    const isNormative = filePath.includes(path.join('standards', 'standards') + path.sep);
+    // Skip docs/, templates/, README.md, INDEX.md (non-normative).
+    // Also skip companion files — they live under standards/standards/ but
+    // are NOT parser-bound standards (no STD- ID in header). They inherit
+    // a parent ID via "Companion to:" header line (directly to STD-X, or
+    // transitively via another companion like DESIGN-001-profile-cards.md
+    // which is companion-of-companion). Treating them as normative would
+    // fire W12 (missing §XA Known Issues) and W15 (naming drift) on every
+    // companion, requiring per-file whitelists.
+    // Root-cause fix (LESSON-001 principle): refine isNormative scope.
+    // See SESSION_NOTES.md §12.4 for the lesson that motivated this.
+    const isCompanion = /^>\s*Companion to:/m.test(content);
+    const isNormative = filePath.includes(path.join('standards', 'standards') + path.sep) && !isCompanion;
     if (isNormative) {
       const nameMatch = fileName.match(/^([A-Z0-9]+)-(\d{3})-(.+)\.md$/);
       if (!nameMatch) {

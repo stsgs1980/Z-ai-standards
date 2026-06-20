@@ -1,13 +1,14 @@
 # Standard: Markdown Formatting v2.4 (EN)
 
 > ID: STD-DOC-002
-> Version: 2.4.2
+> Version: 2.4.3
 > Level: **[C] Critical** (unified with STD-DOC-003 — same rule = same severity)
 > Related: STD-META-001 (ID system), STD-ARCH-002 (implementation order — DOC-002 is installed at position #4, after ARCH-002 defines the install sequence)
-> Last Updated: 2026-06-19
-> Effective Date: 2026-06-19
+> Last Updated: 2026-06-21
+> Effective Date: 2026-06-21
 > Note: Character rules (emoji, box-drawing, etc.) are delegated to STD-DOC-003. Per ARCH-002 install order, DOC-003 is read after DOC-002. The dependency edge is therefore DOC-003 → DOC-002 (DOC-003 depends on DOC-002's markdown scope).
-> Entry point: `bash scripts/check-md.sh [path]` — see §0 (TL;DR) and §10.7.
+> Entry point: `bash scripts/check-md.sh [path]` — see §0 (TL;DR) and §10 (now in companion `DOC-002-eslint-integration.md`).
+> Companion file: `DOC-002-eslint-integration.md` (§10 ESLint Integration, extracted in v2.4.3 for W11 soft-cap cleanup).
 
 ---
 
@@ -397,358 +398,19 @@ For the default value in this stack, see `templates/README_TEMPLATE.md`.
 
 ## 10. ESLint Integration for Markdown Linting
 
-This section describes how to configure ESLint to automatically enforce the rules defined in this standard and the nested **No-Unicode Policy (STD-DOC-003)**. ESLint acts as the automated enforcement layer for the rules that are otherwise checked manually in code review.
-
-### 10.1. Why ESLint for Markdown?
-
-Manual code review is insufficient for consistent enforcement of formatting and character policies across large projects. ESLint provides:
-
-- **Immediate feedback** in the editor (red squiggles, error popups)
-- **Pre-commit hooks** that catch violations before they enter the repository
-- **CI/CD pipeline enforcement** that generates reports on every push
-- **Uniform severity** — rules from STD-DOC-003 ([C] Critical) apply equally to source code and documentation. Same rule = same severity. No downgrade for .md files.
-
-The key principle: **ESLint is the automated executor of the standards, not a replacement for them.** The standards documents remain the single source of truth; ESLint configuration is derived from them.
-
-### 10.2. Required Dependencies
-
-```bash
-# Core ESLint (if not already installed)
-npm install --save-dev eslint
-
-# Markdown processor — lets ESLint parse .md files
-npm install --save-dev eslint-plugin-markdown
-
-# Custom rule for No-Unicode Policy enforcement (see STD-DOC-003 section 10.1)
-# This file lives in your project at: eslint-rules/no-unicode-policy.js
-```
-
-**Dependency chain:**
-
-```text
-eslint
-  └── eslint-plugin-markdown       (parses .md into virtual JS AST)
-       └── no-unicode-policy.js    (custom rule from STD-DOC-003)
-```
-
-### 10.3. ESLint Configuration (Flat Config — eslint.config.js)
-
-ESLint 9+ uses the flat config format. The configuration below maps this standard's rules to ESLint warnings and STD-DOC-003 rules to ESLint errors.
-
-```javascript
-// eslint.config.js
-import markdown from "eslint-plugin-markdown";
-import noUnicodePolicy from "./eslint-rules/no-unicode-policy.js";
-
-export default [
-  // --- Global ignores ---
-  {
-    ignores: [
-      "node_modules/**",
-      ".next/**",
-      "dist/**",
-      "build/**",
-      "coverage/**",
-    ],
-  },
-
-  // --- Markdown files (.md) ---
-  // eslint-plugin-markdown extracts code blocks from .md files
-  // and presents them as virtual JS/TS files for linting.
-  ...markdown.configs.recommended,
-
-  {
-    files: ["**/*.md/**"],          // virtual files inside .md code blocks
-    rules: {
-      // STD-DOC-002: Code blocks must specify a language
-      // (enforced via custom rule — see section 10.5)
-      "markdown/code-block-language": "warn",
-
-      // STD-DOC-003: No emoji/Unicode graphics in code blocks
-      "no-unicode-policy/no-emoji": "error",
-      "no-unicode-policy/no-unicode-graphics": "error",
-
-      // General quality rules for code inside .md blocks
-      "no-undef": "off",            // code snippets in docs may be incomplete
-      "no-unused-vars": "off",      // examples don't need every variable used
-      "no-console": "off",          // examples often show console usage
-    },
-  },
-
-  {
-    files: ["**/*.md"],             // the .md files themselves (not code blocks)
-    plugins: {
-      "no-unicode-policy": noUnicodePolicy,
-    },
-    rules: {
-      // STD-DOC-003 section 4: No emoji in Markdown documentation
-      // Severity: error ([C] Critical) — same rule, same severity as source code.
-      // To soften enforcement for a legacy project migration, override in the
-      // project's local eslint.config.js to "warn" with a documented cutover date.
-      "no-unicode-policy/no-emoji-in-md": "error",
-
-      // STD-DOC-003 section 4: No Unicode icons in Markdown documentation
-      "no-unicode-policy/no-unicode-graphics-in-md": "error",
-    },
-  },
-
-  // --- Source code files (.ts, .tsx, .js, .jsx) ---
-  {
-    files: ["**/*.{ts,tsx,js,jsx}"],
-    plugins: {
-      "no-unicode-policy": noUnicodePolicy,
-    },
-    rules: {
-      // STD-DOC-003 [C] Critical: No emoji in production code / UI strings
-      "no-unicode-policy/no-emoji": "error",
-
-      // STD-DOC-003 [C] Critical: No Unicode graphics in production code
-      "no-unicode-policy/no-unicode-graphics": "error",
-
-      // STD-DOC-002 indirectly: no irregular whitespace (NBSP, ZWSP, etc.)
-      "no-irregular-whitespace": "error",
-    },
-  },
-];
-```
-
-### 10.4. ESLint Configuration (Legacy — .eslintrc.js)
-
-For projects still using the legacy config format:
-
-```javascript
-// .eslintrc.js
-module.exports = {
-  plugins: ["markdown"],
-
-  overrides: [
-    {
-      // Code blocks inside .md files
-      files: ["**/*.md/**"],
-      rules: {
-        "no-unicode-policy/no-emoji": "error",
-        "no-unicode-policy/no-unicode-graphics": "error",
-        "no-undef": "off",
-        "no-unused-vars": "off",
-        "no-console": "off",
-      },
-    },
-    {
-      // .md files themselves
-      files: ["**/*.md"],
-      rules: {
-        // [C] Critical — same rule, same severity as source code (see §10.6)
-        "no-unicode-policy/no-emoji-in-md": "error",
-        "no-unicode-policy/no-unicode-graphics-in-md": "error",
-      },
-    },
-    {
-      // Source code files
-      files: ["**/*.{ts,tsx,js,jsx}"],
-      rules: {
-        "no-unicode-policy/no-emoji": "error",
-        "no-unicode-policy/no-unicode-graphics": "error",
-        "no-irregular-whitespace": "error",
-      },
-    },
-  ],
-};
-```
-
-### 10.5. Custom ESLint Rules for This Standard
-
-#### 10.5.1. Rule: `code-block-language`
-
-Enforces section 5.4 of this standard: every fenced code block must specify a language. If the exact language is unknown, `text` or `bash` must be used as a fallback.
-
-```javascript
-// eslint-rules/code-block-language.js
-module.exports = {
-  meta: {
-    type: "suggestion",
-    docs: {
-      description:
-        "Require language specification in fenced code blocks (STD-DOC-002 section 5.4)",
-    },
-    messages: {
-      missingLanguage:
-        "Code block must specify a language. Use 'text' or 'bash' if unknown (STD-DOC-002 section 5.4).",
-    },
-  },
-  create(context) {
-    const sourceCode = context.sourceCode || context.getSourceCode();
-    const text = sourceCode.getText();
-    const lines = text.split("\n");
-
-    // Match opening fences without a language: ``` without anything after
-    const fenceRegex = /^```(\s*)$/;
-
-    return {
-      Program() {
-        lines.forEach((line, index) => {
-          if (fenceRegex.test(line)) {
-            context.report({
-              loc: { line: index + 1, column: 0 },
-              messageId: "missingLanguage",
-            });
-          }
-        });
-      },
-    };
-  },
-};
-```
-
-#### 10.5.2. Rule: `no-emoji-in-md`
-
-Scans the raw text of `.md` files (outside code blocks) for emoji characters. This is the Markdown-specific version of the No-Unicode Policy rule — it operates at level [C] Critical per STD-DOC-002 section 9.1.
-
-```javascript
-// eslint-rules/no-emoji-in-md.js
-module.exports = {
-  meta: {
-    type: "suggestion",
-    docs: {
-      description:
-        "Disallow emoji in Markdown documentation (STD-DOC-002 + STD-DOC-003 section 4)",
-    },
-    messages: {
-      emojiFound:
-        "Emoji are prohibited in documentation. Use text tags like [OK], [FAIL] instead (STD-DOC-002 section 4.4, STD-DOC-003 section 4).",
-    },
-  },
-  create(context) {
-    const emojiPattern =
-      /[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}\u{2600}-\u{27BF}\u{FE00}-\u{FEFF}\u{1F900}-\u{1F9FF}\u{1FA00}-\u{1FA6F}\u{1FA70}-\u{1FAFF}\u{2702}-\u{27B0}]/u;
-
-    return {
-      Program(node) {
-        const sourceCode = context.sourceCode || context.getSourceCode();
-        const text = sourceCode.getText();
-
-        // Remove code blocks (they are handled by the code-block-level rules)
-        const textWithoutCodeBlocks = text.replace(/```[\s\S]*?```/g, "");
-
-        const lines = textWithoutCodeBlocks.split("\n");
-        lines.forEach((line, index) => {
-          if (emojiPattern.test(line)) {
-            context.report({
-              loc: { line: index + 1, column: 0 },
-              messageId: "emojiFound",
-            });
-          }
-        });
-      },
-    };
-  },
-};
-```
-
-### 10.6. Nested Standards: How ESLint Rules Map to This Document
-
-The relationship between this standard (STD-DOC-002) and the No-Unicode Policy (STD-DOC-003) is reflected in the ESLint severity levels:
-
-| Standard Section | Rule | ESLint Severity | Rationale |
-|------------------|------|-----------------|-----------|
-| STD-DOC-002 Section 3 (Prohibited: Emoji) | `no-unicode-policy/no-emoji-in-md` | `error` | [C] level — same as source code |
-| STD-DOC-002 Section 3 (Prohibited: Unicode icons) | `no-unicode-policy/no-unicode-graphics-in-md` | `error` | [C] level — same as source code |
-| STD-DOC-002 Section 5.4 (Code block language) | `code-block-language` | `warn` | [W] level for documentation |
-| STD-DOC-003 Section 4 (Prohibited: Emoji in code) | `no-unicode-policy/no-emoji` | `error` | [C] level for production code |
-| STD-DOC-003 Section 4 (Prohibited: Unicode graphics in code) | `no-unicode-policy/no-unicode-graphics` | `error` | [C] level for production code |
-| STD-DOC-002/003 (Irregular whitespace) | `no-irregular-whitespace` | `error` | Always critical |
-
-**Key principle of uniform severity:** A rule originating from STD-DOC-003 ([C] Critical) applies with the same severity regardless of context — source code or documentation. The rationale: if emoji are prohibited, they are prohibited everywhere. Downgrading severity for .md files created an enforcement gap where violations in documentation were not caught before merge. The `lint-md.js` script defaults to `--level=C` and can be overridden with `--level=W` for projects that intentionally want softer enforcement.
-
-### 10.7. Application Stages
-
-| Stage | When | Tool | Action |
-|-------|------|------|--------|
-| Editor | Real-time | ESLint + VS Code extension | Inline errors |
-| Pre-commit | Before commit | husky + lint-staged | Block commit on any violation |
-| Manual check | On demand | `bash scripts/check-md.sh [path]` | Wraps ESLint + `lint-md.js` + static checks — see §0 TL;DR |
-| CI | Push to branch | eslint-plugin-markdown + custom rules | Report in logs |
-| Pre-merge | Before merge to main | GitHub Action | Report in PR |
-
-**`scripts/check-md.sh` (recommended entry point):** Runs three layers in sequence — (1) bash-only static checks for the most common §5 violations, (2) ESLint if `eslint-plugin-markdown` is installed, (3) `lint-md.js` if present at the repo root. Layers 2 and 3 degrade gracefully to `[skip]` when their tools are missing, so the script is useful in any checkout (including fresh clones without `npm install`). Layer 1 always runs and catches: bare code fences (§5.4), `*`/`+` list markers (§5.2), closing `#` on headings (§5.1), multiple H1 in one document (§5.1), table pseudographics outside code blocks (§3).
-
-**lint-staged configuration:**
-
-```json
-{
-  "*.{ts,tsx,js,jsx}": [
-    "eslint --max-warnings=0"
-  ],
-  "*.md": [
-    "node lint-md.js"
-  ]
-}
-```
-
-**Note:** `lint-md.js` defaults to `--level=C`, so .md violations also block the commit. To soften enforcement for a specific project, use `node lint-md.js --level=W` instead — violations will be reported as warnings but will not block the commit.
-
-**CI workflow:**
-
-```yaml
-# .github/workflows/md-lint.yml
-name: Markdown + Code Lint
-on: [push, pull_request]
-jobs:
-  lint:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - run: npm ci
-      - name: Lint source code (blocks on error)
-        run: npx eslint '**/*.{ts,tsx,js,jsx}' --max-warnings=0
-      - name: Lint Markdown (blocks on error)
-        run: node lint-md.js .
-```
-
-### 10.8. Inline Disabling of ESLint Rules
-
-ESLint supports inline disable comments, but they must be used sparingly and with justification, consistent with the escalation policy in section 9.1.
-
-```markdown
-<!-- eslint-disable-next-line no-unicode-policy/no-emoji-in-md -->
-This line intentionally contains an emoji for demonstration purposes.
-```
-
-**Rules for inline disables:**
-
-1. Each `eslint-disable` must include a comment explaining why
-2. Disables of [C]-level rules in production code require Tech Lead approval
-3. Disables of [C]-level rules in documentation require Tech Lead approval (same as production code — see §9.1)
-4. `eslint-disable` without a specific rule name is prohibited — always specify which rule is being disabled
-
-### 10.9. Running ESLint Manually
-
-```bash
-# Lint all source code files (errors block)
-npx eslint 'src/**/*.{ts,tsx}'
-
-# Lint all Markdown files (errors block — same severity as source code)
-npx eslint '**/*.md' --plugin markdown --max-warnings=0
-
-# Lint a specific file
-npx eslint docs/README.md --plugin markdown
-
-# Fix auto-fixable issues (formatting, not policy violations)
-npx eslint '**/*.md' --plugin markdown --fix
-```
-
-**Important:** ESLint `--fix` can only fix formatting issues (indentation, quote style, missing semicolons). It **cannot** fix policy violations (emoji removal, Unicode graphics replacement) — these require manual intervention because the correct replacement depends on context.
-
-### 10.10. Troubleshooting Common Issues
-
-| Problem | Cause | Solution |
-|---------|-------|----------|
-| ESLint does not scan .md files | Missing `eslint-plugin-markdown` | Install and configure the plugin (section 10.3) |
-| False positives on emoji in code blocks | `.md` rule scanning code blocks | Ensure `no-emoji-in-md` strips code blocks (section 10.5.2) |
-| `no-undef` errors in .md code snippets | ESLint treats code blocks as real JS | Add `"no-undef": "off"` in `.md/**` override (section 10.3) |
-| Custom rule not found | Incorrect plugin path | Verify `eslint-rules/no-unicode-policy.js` exists and is imported correctly |
-| Flat config vs legacy config conflict | Mixed config formats | Use only one format — flat config (`eslint.config.js`) for ESLint 9+ |
-
----
+> **Moved to companion file** `DOC-002-eslint-integration.md` in v2.4.3
+> (W11 soft-cap cleanup). The full ESLint setup guide — dependencies,
+> flat config, rule mappings, sample workflows — lives there. Section
+> numbers (§10.1 through §10.7) preserved verbatim.
+
+**Quick summary** (full guide in companion):
+
+- **Why ESLint?** — Immediate editor feedback, pre-commit hooks, CI enforcement. ESLint is the automated executor of STD-DOC-002 + STD-DOC-003 rules.
+- **Dependencies:** `eslint`, `eslint-plugin-markdown`, custom `no-unicode-policy.js` rule
+- **Config:** flat config (`eslint.config.js`) mapping §3 prohibited elements to warnings and STD-DOC-003 character rules to errors
+- **Entry point:** `bash scripts/check-md.sh [path]` (wrapper that runs static checks + ESLint + `lint-md.js`)
+- **CI integration:** GitHub Actions workflow example in companion §10.6
+- **Pre-commit hook:** husky + lint-staged config in companion §10.7
 
 ## 11. Exceptions
 
@@ -953,6 +615,7 @@ Both exit 0. The PR is now mergeable.
 | 2.3.2 | 2026-06 | §8 Stack Signature scope clarified: applies only to application repository README/CHANGELOG, NOT to standards/rules/skills/templates/meta-repos. Removed cargo-cult `Built with:` footer from this file (it is a governance doc, not an application). Project-wide cleanup documented in worklog task stack-signature-cleanup-2026-06-18. |
 | 2.4.0 | 2026-06 | Resolved MD-001 and MD-003 (both open since v2.3.1). **MD-001:** footer updated from `(level [W])` to `(level [C])`; §9.1 rewritten from `[W] non-blocking` to `[C] blocking` policy with `eslint-disable` + Tech Lead approval workflow and a per-project legacy soft-opt-out clause; §10.5.2 description updated from `[W] Warning` to `[C] Critical`; §10.8 rule 3 collapsed (no more `[W]`-in-docs carve-out); §10.9 comment updated; §13 checklist updated. ARCH-002 §1 Group B table and STD-META-001 §4.4 registry entry updated to `[C]`. **MD-003:** §10.3 flat config and §10.4 legacy config — `no-emoji-in-md` and `no-unicode-graphics-in-md` changed from `"warn"` to `"error"` (aligned with §10.6 mapping table). **New content:** §0 TL;DR with 5 must-not / 5 must / where-to-look table; §3 `(ref)` scope clarified with concrete appropriate / not-appropriate examples; §12.4 full before/after README example with 7 violations and verification commands. **Header:** Version 2.3.2 → 2.4.0. |
 | 2.4.1 | 2026-06 | Added `scripts/check-md.sh` — bash wrapper that runs three layers in sequence: (1) bash-only static checks for the most common §5 violations (bare code fences, `*`/`+` list markers, closing `#` on headings, multiple H1, table pseudographics outside code blocks); (2) ESLint via `eslint-plugin-markdown` if installed; (3) `lint-md.js` if present at repo root. Layers 2 and 3 degrade gracefully to `[skip]` when their tools are missing, so the script works in fresh clones without `npm install`. §0 TL;DR updated to recommend `bash scripts/check-md.sh [path]` as the primary entry point. §10.7 Application Stages table extended with a new "Manual check" row. §13 Pre-merge checklist extended with a `check-md.sh` bullet. §14A new MD-004 issue documents the 5 pre-existing bare-fence violations the script discovered in `README.md` and `docs/verify-id-graph-spec-v1.0.md`. |
+| 2.4.3 | 2026-06-21 | W11 soft-cap cleanup. Extracted §10 ESLint Integration (354 lines, reference implementation detail) to companion file `DOC-002-eslint-integration.md`. Companion is NOT parser-bound — inherits parent ID via "Companion to: STD-DOC-002" header line, same pattern as DESIGN-001-profile-terminal-dashboard. §10 replaced with stub (quick summary + pointer to companion). File size: 1012 -> 658 lines. W11 soft warning cleared. Section numbers (§10.1 through §10.7) preserved verbatim; external refs resolve to companion. §0 TL;DR entry point note updated to mention §10 lives in companion. No new IDs. No graph edge changes. |
 
 ---
 

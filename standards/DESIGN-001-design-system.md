@@ -1,14 +1,16 @@
 # Design System Standard
 
 > ID: STD-DESIGN-001
-> Version: 3.1.0
+> Version: 3.1.1
 > Level: **[C] Critical** + **[W] Warning**
 > Related: Markdown Standard v2.3 (STD-DOC-002), No-Unicode Policy v2.3 (STD-DOC-003), STD-META-001 (ID system)
-> Companion file: `DESIGN-001-profile-terminal-dashboard.md` (Terminal Dashboard example Profile, §14-§26)
+> Companion files: `DESIGN-001-profile-terminal-dashboard.md` (Terminal Dashboard example Profile, §14-§26 except §19), `DESIGN-001-profile-cards.md` (§19 Card Archetypes, sub-companion added in v3.1.1)
 
 This standard consists of two layers: **Core** (framework-agnostic, design-language-agnostic rules that apply to any project) and **Profile** (product-specific token values, component maps, and design language choices). The Core is universal; the Profile is a concrete instantiation that is swapped per project.
 
 **v3.1.0 structural change:** The Terminal Dashboard example Profile (§14-§26) has been moved to a companion file `DESIGN-001-profile-terminal-dashboard.md` to bring this standard under the 1500-line hard cap (W11 CRITICAL closure). See §14 below for the pointer. All section numbers are preserved verbatim in the companion file, so cross-references to "STD-DESIGN-001 §N" (N in 14-26) remain stable.
+
+**v3.1.1 structural change:** §19 Card Archetypes (168 lines) further extracted from the profile companion to `DESIGN-001-profile-cards.md` to bring the profile file under the 1000-line soft cap (W11 soft warning closure). Section number preserved verbatim. The companion chain is now: STD-DESIGN-001 (parser-bound) -> profile-terminal-dashboard.md (companion) -> profile-cards.md (sub-companion).
 
 ---
 
@@ -719,6 +721,11 @@ Before a Profile is approved, verify it satisfies every Core constraint. Each it
 > in this file) has been moved to the companion file
 > `DESIGN-001-profile-terminal-dashboard.md` in v3.1.0 to bring this
 > standard under the 1500-line hard cap (W11 CRITICAL closure).
+>
+> In v3.1.1, §19 Card Archetypes was further extracted from the profile
+> companion to `DESIGN-001-profile-cards.md` to bring the profile file
+> under the 1000-line soft cap (W11 soft warning closure). References to
+> "§19" or "[PROFILE P6] Card Archetypes" resolve to that sub-companion.
 
 > All cross-references to "STD-DESIGN-001 §N" where N is in 14-26
 > resolve to that companion file. Section numbers are preserved

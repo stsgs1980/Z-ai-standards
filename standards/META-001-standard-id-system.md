@@ -1,14 +1,16 @@
 # Standard: Standard ID System v2.0 (EN)
 
 > ID: STD-META-001
-> Version: 2.0.4
+> Version: 2.0.6
 > Previous: 1.2 (single-layer, STD- only)
 > Level: **[C] Critical**
-> Last Updated: 2026-06-19
-> Effective Date: 2026-06-19
+> Last Updated: 2026-06-21
+> Effective Date: 2026-06-21
 > Status: **APPROVED**
 > verified_by: scripts/verify-standards.js#V05, scripts/verify-id-graph.js#G01-G14
 > Related: (none — META is foundational)
+> Companion files: `META-001-id-registry.md` (§4.13-4.17 ID Registry tables),
+> `META-001-faq.md` (§12 FAQ) — both extracted in v2.0.6 for W11 soft-cap cleanup.
 
 > **Status: APPROVED.** This revision supersedes draft v1 (which
 > proposed `SKILL-` prefix and a conflicting domain list). v2 preserves the
@@ -189,179 +191,21 @@ section is a summary; STD-SKILL-001 is the source of truth.
 > Unchanged from v1.2 §4.1–4.12. The 20 STD-* IDs listed in v1.2 are
 > preserved verbatim. See v1.2 for the full table.
 
-### 4.13. Rules (RULE-)
+### 4.13-4.17. ID Registry (RULE/PROC/TOOL/ZAI/STD-SKILL-001)
 
-| ID | Document | Version | Level | Status | File |
-|---|---|---|---|---|---|
-| RULE-ANSWER-001 | Answer Before Act | 1.0 | [C] | ACTIVE | Z-ai-guard/AGENT_RULES.md |
-| RULE-WORKLOG-002 | Worklog before/after | 1.0 | [C] | ACTIVE | Z-ai-guard/AGENT_RULES.md |
-| RULE-READ-003 | Read before write | 1.0 | [C] | ACTIVE | Z-ai-guard/AGENT_RULES.md |
-| RULE-COMMIT-004 | One logical block per commit | 1.0 | [C] | ACTIVE | Z-ai-guard/AGENT_RULES.md |
-| RULE-LOOPS-005 | No loops | 1.0 | [C] | ACTIVE | Z-ai-guard/AGENT_RULES.md |
-| RULE-HONEST-006 | Honest reporting | 1.0 | [C] | ACTIVE | Z-ai-guard/AGENT_RULES.md |
-| RULE-STRUCT-007 | Work structure | 1.0 | [W] | ACTIVE | Z-ai-guard/AGENT_RULES.md |
-| RULE-ENV-008 | Sandbox verification | 1.0 | [C] | ACTIVE | Z-ai-guard/AGENT_RULES.md |
-| RULE-AGENT-009 | Session start protocol | 1.0 | [C] | ACTIVE | Z-ai-guard/AGENT_RULES.md |
-| RULE-DOC-010 | Documentation sync | 1.0 | [C] | ACTIVE | Z-ai-guard/AGENT_RULES.md |
-| RULE-INTEGRITY-011 | Integrity protection | 1.0 | [C] | ACTIVE | Z-ai-guard/AGENT_RULES.md |
-| RULE-MONOLITH-012 | Anti-monolith (file size by category) | 1.3 | [C] | ACTIVE | Z-ai-guard/rules/RULE-MONOLITH-012.md |
-| RULE-VERSION-013 | Use verify-docs bump | 1.1 | [C] | ACTIVE | Z-ai-guard/AGENT_RULES.md |
-| RULE-COMMIT-014 | Pre-commit checklist | 1.1 | [C] | ACTIVE | Z-ai-guard/AGENT_RULES.md |
-| RULE-DOC-015 | No Unicode graphics | 1.0 | [W] | ACTIVE | Z-ai-guard/AGENT_RULES.md |
-| RULE-ARCH-016 | Submodule immutability | 1.0 | [C] | ACTIVE | Z-ai-guard/AGENT_RULES.md |
-| RULE-ARCH-017 | Upstream write protection | 1.0 | [C] | ACTIVE | Z-ai-guard/AGENT_RULES.md |
+> **Moved to companion file** `META-001-id-registry.md` in v2.0.5 (W11
+> soft-cap cleanup). The full ID Registry tables for RULE-*, PROC-*,
+> TOOL-*, ZAI-*, and STD-SKILL-001 live there. Section numbers preserved
+> verbatim, so external references to "STD-META-001 §4.13" through
+> "§4.17" resolve to the companion file.
 
-> The RULE-<DOMAIN>-NNN format replaces the legacy RULE-001..RULE-017
-> numbering from AHG v2.5.0. Legacy numbers are migrated per §8. The
-> legacy numbering is preserved as an alias for one release cycle
-> (Z-ai-guard v3.0.0 → v3.1.0), then removed in v3.1.0.
+**Quick summary** (full tables in companion):
 
-### 4.14. Procedures (PROC-)
-
-| ID | File | Version | Level | Status |
-|---|---|---|---|---|
-| PROC-SETUP-001 | Z-ai-guard/setup.sh | 2.0 | [C] | ACTIVE (planned) — file not yet created |
-| PROC-UPDATE-002 | Z-ai-guard/update.sh | 2.1 | [C] | ACTIVE (planned) — file not yet created |
-| PROC-COCHANGE-003 | Z-ai-guard/scripts/co-change-check.sh | 1.0 | [C] | ACTIVE (planned) — file not yet created |
-| PROC-LINECOUNT-004 | Z-ai-guard/scripts/line-count-check.sh | 1.0 | [C] | ACTIVE (planned) — file not yet created |
-| PROC-PLATFORM-INSTALL-005 | Z-ai-platform/install.sh | 1.0 | [C] | RETIRED 2026-06-19 (superseded by `bootstrap.sh` — single entry point covers install + update + restore) |
-| PROC-PLATFORM-UPDATE-006 | Z-ai-platform/update.sh | 1.0 | [C] | RETIRED 2026-06-19 (superseded by `bootstrap.sh`) |
-| PROC-PLATFORM-DOCTOR-007 | Z-ai-platform/doctor.sh | 1.0 | [C] | RETIRED 2026-06-19 (superseded by `status.sh` — diagnostic-only entry point) |
-
-> **Phantom-ID fix (META v2.0.2, 2026-06-19):** Rows previously marked
-> `ACTIVE` for PROC-SETUP-001, PROC-UPDATE-002, PROC-COCHANGE-003,
-> PROC-LINECOUNT-004 referenced files that do not exist in Z-ai-guard.
-> Status is now `ACTIVE (planned)` to reflect reality. The four procedures
-> are pending migration M003 (see `Z-ai-standards/MIGRATIONS.md`).
->
-> **PROC-PLATFORM-005/006/007 retirement (META v2.0.2, 2026-06-19):**
-> Three platform-side procedures were planned in v2.0.0 but never
-> implemented. The functions they would have provided are covered by
-> `Z-ai-platform/bootstrap.sh` (install + update + restore in one entry
-> point) and `Z-ai-platform/status.sh` (diagnostic). The three IDs are
-> RETIRED with supersession notes; they will not be re-used (per §9.2
-> no-reassignment rule).
-
-### 4.15. Tools (TOOL-)
-
-| ID | File | Version | Level | Status |
-|---|---|---|---|---|
-| TOOL-VERIFY-001 | Z-ai-guard/tools/verify-docs/ | 2.1 | [C] | ACTIVE (planned) — file not yet created |
-| TOOL-VERIFY-002 | Z-ai-standards/scripts/verify-standards.js | 2.2.0 | [C] | ACTIVE |
-| TOOL-VERIFY-003 | Z-ai-standards/scripts/verify-cascade.js | 2.2.0 | [C] | RETIRED 2026-06-18 (one-shot v1.0 cascade check; superseded by TOOL-VERIFY-002 + TOOL-VERIFY-004) |
-| TOOL-VERIFY-004 | Z-ai-standards/scripts/verify-id-graph.js | 1.0.0 | [C] | ACTIVE (planned) — file exists, status promotes to ACTIVE on first green CI run post-v2.0.2 |
-| TOOL-BUMP-005 | Z-ai-guard/tools/verify-docs/src/bump.ts | 2.1 | [C] | ACTIVE (planned) — file not yet created |
-| TOOL-CHECKUPDATES-006 | Z-ai-standards/scripts/check-updates.sh | 2.2.0 | [W] | ACTIVE |
-
-> **Phantom-ID fix (META v2.0.2, 2026-06-19):** Rows previously marked
-> `ACTIVE` for TOOL-VERIFY-001 and TOOL-BUMP-005 referenced files that do
-> not exist in Z-ai-guard. Status is now `ACTIVE (planned)` to reflect
-> reality. The two tools are pending migration M004 (see
-> `Z-ai-standards/MIGRATIONS.md`).
-
-### 4.16. Skills (ZAI-)
-
-> **Full registry lives in STD-SKILL-001.** This section is a summary;
-> conflicts are resolved in favor of STD-SKILL-001.
-
-#### 4.16.1. Memory (MEM)
-
-| ID | Skill | Version | Status |
-|---|---|---|---|
-| ZAI-MEM-001 | memory-store | 1.0 | ACTIVE |
-| ZAI-MEM-002 | memory-query | 1.0 | ACTIVE |
-| ZAI-MEM-003 | memory-delete | 1.0 | ACTIVE |
-| ZAI-MEM-004 | memory-export | 1.0 | ACTIVE |
-
-#### 4.16.2. File System (FS)
-
-| ID | Skill | Version | Status |
-|---|---|---|---|
-| ZAI-FS-001 | folder-indexer | 1.0 | ACTIVE |
-
-#### 4.16.3. Session (SESSION)
-
-| ID | Skill | Version | Status |
-|---|---|---|---|
-| ZAI-SESSION-001 | session-log | 1.1 | ACTIVE |
-| ZAI-SESSION-002 | context-consolidation | 1.0 | ACTIVE |
-| ZAI-SESSION-003 | session-experience | 4.0 | ACTIVE |
-
-#### 4.16.4. Development (DEV)
-
-| ID | Skill | Version | Status |
-|---|---|---|---|
-| ZAI-DEV-001 | project-clone | 1.0 | ACTIVE |
-| ZAI-DEV-002 | commit-work | 1.0 | ACTIVE |
-| ZAI-DEV-003 | database-schema-designer | 1.0 | ACTIVE |
-
-#### 4.16.5. Architecture (ARCH)
-
-| ID | Skill | Version | Status |
-|---|---|---|---|
-| ZAI-ARCH-001 | mermaid-diagrams | 1.0 | ACTIVE |
-| ZAI-ARCH-002 | anti-monolith | 1.0 | ACTIVE |
-
-#### 4.16.6. Quality Assurance (QA)
-
-| ID | Skill | Version | Status |
-|---|---|---|---|
-| ZAI-QA-001 | qa-test-planner | 1.0 | ACTIVE |
-
-#### 4.16.7. Requirements (REQ)
-
-| ID | Skill | Version | Status |
-|---|---|---|---|
-| ZAI-REQ-001 | requirements-clarity | 1.0 | ACTIVE |
-
-#### 4.16.8. Meta-skills (META)
-
-| ID | Skill | Version | Status | Note |
-|---|---|---|---|---|
-| ZAI-META-001 | skill-id-system | 1.0 | ACTIVE → SUPERSEDED | Content migrated to STD-SKILL-001 in v2.0; skill itself becomes a thin pointer |
-| ZAI-META-002 | skill-creator | 1.1 | ACTIVE | Reads STD-SKILL-001 for ID system; no longer defines its own domains |
-
-#### 4.16.9. User-Created (STS)
-
-| ID | Skill | Version | Status |
-|---|---|---|---|
-| ZAI-STS-001 | prompt-engineering_sts | 1.1 | ACTIVE |
-| ZAI-STS-002 | sync-toolkit_sts | 1.0 | ACTIVE |
-| ZAI-STS-003 | performance-code-generator_sts | 1.0 | ACTIVE |
-| ZAI-STS-004 | frontend-styling-expert_sts | 1.0 | ACTIVE |
-| ZAI-STS-005 | phi-layout_sts | 3.0 | ACTIVE |
-| ZAI-STS-006 | zai-ui-composer_sts | 1.1.2 | ACTIVE |
-| ZAI-STS-007 | workflow-discipline_sts | 2.0 | ACTIVE |
-
-#### 4.16.10. Sandbox System Skills (NO ZAI- PREFIX)
-
-Per ZAI-META-001 §4 (preserved in STD-SKILL-001 §6), the following skills
-live in the Z.ai sandbox at `/home/z/my-project/skills/` and do **not**
-receive ZAI- prefix IDs. They are tracked by folder name only. The list
-below is informational; the canonical list is maintained in STD-SKILL-001
-§6. They include: `api-retry`, `dev-watchdog`, `fallback`, `gepetto`,
-`health-check`, `humanizer`, `phi-layout`, `react-dev`, `reducing-entropy`,
-`session-handoff`, `z-ai-web-dev-sdk`, plus sandbox-native skills such as
-`fullstack-dev`, `docx`, `pdf`, `xlsx`, `pptx`, `charts`, etc.
-
-### 4.17. Skill System Standard (STD-SKILL-001)
-
-| ID | Document | Version | Level | Status |
-|---|---|---|---|---|
-| STD-SKILL-001 | Skill ID System Standard | 1.0.0 | [C] | ACTIVE (new in v2.0) |
-
-> New standard hosted at `Z-ai-standards/standards/SKILL_ID_SYSTEM_STANDARD.md`.
-> Supersedes the content of ZAI-META-001 (which becomes a thin pointer).
-> See §8 for the migration map.
-
-### 4.18. File Size Limits (Canonical Source)
-
-> **Source of truth for RULE-MONOLITH-012 (L2 enforcement).**
-> All line-count limits for `.md`, `.ts`, `.tsx`, `.js`, `.py`, `.sh`
-> and similar text artifacts are defined HERE. RULE-MONOLITH-012 mirrors
-> this table for enforcement; PROC-LINECOUNT-004 (when created) reads
-> this section. Domain standards (STD-SKILL-001 §8.2, STD-FE-001 §6,
-> STD-DOC-002 §11) reference this section instead of duplicating.
+- **RULE-** (17 IDs): RULE-ANSWER-001 through RULE-ARCH-017, see companion §4.13
+- **PROC-** (7 IDs, 3 RETIRED): PROC-SETUP-001 through PROC-PLATFORM-DOCTOR-007, see companion §4.14
+- **TOOL-** (6 IDs): TOOL-VERIFY-001 through TOOL-CHECKUPDATES-006, see companion §4.15
+- **ZAI-** (24 IDs across 9 domains): see companion §4.16
+- **STD-SKILL-001** (skill ID system): see companion §4.17
 
 #### 4.18.1 Limits matrix
 
@@ -401,7 +245,7 @@ limit is exceeded**, not the blanket source-code limit of 250. If a
 `STD-*.md` exceeds 1200 lines, it MUST split -- the parser concern is
 handled by the ID migration protocol (§8), not by exempting the file.
 
-#### 4.18.4 Exempt list (49 files, 17 165 lines, as of 2026-06-21)
+#### 4.18.4 Exempt list (55 files, 21 322 lines, as of 2026-06-21)
 
 > Generated by `scripts/audit_md_files.py`. Files matching an exempt
 > matrix row are exempt by rule; this list exists so the rule cannot
@@ -411,9 +255,9 @@ handled by the ID migration protocol (§8), not by exempting the file.
 
 | Lines | Path |
 |---|---|
-| 2662 | `docs/session/worklog.md` |
+| 3241 | `docs/session/worklog.md` |
 | 810 | `docs/session/DECISIONS_LOG.md` |
-| 638 | `docs/session/SESSION_NOTES.md` |
+| 776 | `docs/session/SESSION_NOTES.md` |
 
 **Append-only migration log (1 file):**
 
@@ -425,11 +269,11 @@ handled by the ID migration protocol (§8), not by exempting the file.
 
 | Lines | Path |
 |---|---|
-| 129 | `standards/docs/sandbox/INDEX.md` |
+| 142 | `standards/docs/sandbox/INDEX.md` |
 | 119 | `skills/skills/INDEX.md` |
 | 43 | `guard/rules/INDEX.md` |
 
-**Externalised references (42 files, 12 622 lines):**
+**Externalised references (43 files, 14 182 lines):**
 
 | Lines | Path |
 |---|---|
@@ -475,6 +319,22 @@ handled by the ID migration protocol (§8), not by exempting the file.
 | 48 | `skills/skills/reducing-entropy/references/data-over-abstractions.md` |
 | 46 | `skills/skills/reducing-entropy/references/simplicity-vs-easy.md` |
 | 13 | `skills/skills/commit-work/references/commit-message-template.md` |
+
+**Standards companion files (5 files, 1 867 lines):**
+
+> Companion files are NOT parser-bound — they inherit parent ID via
+> "Companion to: STD-XXX-NNN" header line. They live outside
+> `references/` because they belong to standards, not skills. Listed
+> here so the rule cannot lie about what it covers. See §4.18.3 for
+> the parser-bound file split protocol that justifies this category.
+
+| Lines | Path |
+|---|---|
+| 947 | `standards/standards/DESIGN-001-profile-terminal-dashboard.md` |
+| 389 | `standards/standards/DOC-002-eslint-integration.md` |
+| 216 | `standards/standards/META-001-id-registry.md` |
+| 209 | `standards/standards/DESIGN-001-profile-cards.md` |
+| 106 | `standards/standards/META-001-faq.md` |
 
 #### 4.18.5 Domain standard references
 
@@ -943,82 +803,16 @@ truth. Neither ZAI-META-001 nor ZAI-META-002 defines domains after v2.0.
 
 ## 12. FAQ
 
-### Q: Why `ZAI-` and not `SKILL-`?
+> **Moved to companion file** `META-001-faq.md` in v2.0.5 (W11 soft-cap
+> cleanup). The full FAQ (10 Q&A pairs covering ID prefix choices,
+> cross-layer reference rules, ZAI-META-001 migration, etc.) lives there.
 
-A: `ZAI-` was chosen in toolkit v2.0.5 to distinguish user-toolkit skills
-from Z.ai sandbox built-in skills (which have no prefix) and ZCode Desktop
-built-ins (which have no prefix). Renaming to `SKILL-` would break 24
-existing IDs and every reference to them in standards, rules, and consumer
-projects. The semantic role of `ZAI-` is identical to what `SKILL-` would
-be; only the literal prefix differs.
+**Quick summary** (full Q&A in companion):
 
-### Q: Do all skills need a `ZAI-` ID?
-
-A: **No.** IDs are optional for skills. A skill needs an ID only when
-referenced by ID from a standard, rule, procedure, tool, or another
-skill's `Related:` field. Most personal `_sts` skills do not need an ID.
-The runtime sandbox matches skills by `name:` field in frontmatter, not
-by ID. See STD-SKILL-001 §4.2 for the full criteria.
-
-### Q: What about the 24 existing ZAI-* IDs from toolkit v2.0.5?
-
-A: They are preserved unchanged. No migration, no rename. The registry
-in §4.16 below is the reference. New skills may be added without IDs.
-
-### Q: Why can't a standard reference a rule?
-
-A: Standards describe what is true in a domain (e.g. "every commit message
-has a type prefix"). Rules describe what agents must do about it (e.g.
-"before pushing, run the commit-lint procedure"). If a standard could
-reference a rule, the rule's lifecycle would constrain the standard's
-lifecycle — but standards are meant to be slower-moving and more stable
-than rules. The direction must be `RULE → STD`, never the reverse.
-
-### Q: But STD-FE-001 currently references ZAI-ARCH-002 in its prose. Is that wrong?
-
-A: No — that reference is `Aligned_with:`, not `Related:`. STD-FE-001 and
-ZAI-ARCH-002 are kept in sync (the standard declares thresholds; the skill
-decomposes when thresholds are exceeded). The bidirectional `Aligned_with:`
-edge allows this without violating the `Related:` DAG. v2.0 formalizes
-this distinction; previously it was implicit and uncheckable.
-
-### Q: Why can't a tool invoke a procedure?
-
-A: Tools are leaf nodes — they do one thing and exit. Procedures are
-orchestrators that may call multiple tools. Allowing `TOOL → PROC` would
-invert the dependency: a tool would need to know about higher-level
-workflow, breaking composability.
-
-### Q: Why can't a procedure invoke a skill?
-
-A: Procedures run automatically (in hooks, CI). Skills are user-callable
-capabilities that may require human input (parameter selection, approval).
-A procedure invoking a skill would silently trigger user-facing behavior,
-which is unsafe.
-
-### Q: What if I need a rule that depends on a skill?
-
-A: That's allowed (`RULE → ZAI` is green in the matrix). The rule says
-"when condition X holds, the agent should invoke ZAI-Y". The rule does
-not invoke the skill mechanically — it instructs the agent to do so. The
-mechanical invocation (if any) would be a PROC, but PROC → ZAI is
-forbidden, so any skill invocation is by agent decision, not by hook.
-
-### Q: Can a standard reference another standard in a different repo?
-
-A: Yes — `STD → STD` is allowed regardless of which repo each standard
-lives in. All four repos share the same STD-* registry.
-
-### Q: What happens to ZAI-META-001 after v2.0?
-
-A: Its content (the skill ID system specification) moves to STD-SKILL-001
-in Z-ai-standards. The ZAI-META-001 file remains in Z-ai-skills as a thin
-pointer (~20 lines) that says "Content moved to STD-SKILL-001; this file
-exists only so existing trigger phrases (`skill id`, `create skill`)
-continue to resolve during the migration window." After Z-ai-skills v2.0.0,
-ZAI-META-001 is removed entirely.
-
----
+- Why `ZAI-` and not `SKILL-`? — historical, renaming would break 24 IDs
+- Do all skills need a `ZAI-` ID? — No, IDs are optional for skills
+- Why can't a standard reference a rule? — `RULE -> STD` only, never reverse
+- What about ZAI-META-001 after v2.0? — content moved to STD-SKILL-001, file becomes thin pointer
 
 ## 13. Cross-References
 
@@ -1126,6 +920,24 @@ The script should live in `eslint-rules/` or `scripts/` per the project's toolin
 
 ## 15. Version History
 
+### v2.0.6 (2026-06-21)
+
+W11 soft-cap cleanup. Extracted §4.13-4.17 (ID Registry tables, 173 lines) to
+`META-001-id-registry.md` and §12 FAQ (78 lines) to `META-001-faq.md`. Both
+are companion files — not parser-bound, inherit parent ID via "Companion to:
+STD-META-001" header line, same pattern as DESIGN-001-profile-terminal-dashboard.
+
+- §4.18 (File Size Limits, canonical source for RULE-MONOLITH-012) STAYS in
+  META-001 — it is active enforcement material, not reference.
+- §4.13-4.17 and §12 replaced with stubs (quick summary + pointer to companion).
+- File size: 1165 -> 941 lines. W11 soft warning cleared.
+- Section numbers preserved verbatim; external refs to "STD-META-001 §4.13"
+  through "§4.17" and "§12" resolve to companion files.
+- Updated §4.18.4 exempt list to add the 2 new companion files (META-001-id-registry.md
+  216 lines, META-001-faq.md 106 lines) under a new "Standards companion files"
+  category. Updated counts: 49 -> 51 files, 17 165 -> 17 487 lines.
+- No new IDs. No graph edge changes.
+
 ### v2.0.5 (2026-06-21)
 
 Update §4.18.4 exempt list to reflect the 3-file pilot split.
@@ -1162,4 +974,4 @@ Initial approved release: 4-repo split, ID graph verifier, 13/13 HARD PASS, migr
 
 ---
 
-*End of STD-META-001 v2.0.2 — APPROVED 2026-06-17, last amended 2026-06-19.*
+*End of STD-META-001 v2.0.6 — APPROVED 2026-06-17, last amended 2026-06-21.*
