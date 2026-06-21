@@ -56,61 +56,45 @@ const fs = require('fs');
 const path = require('path');
 
 // ============================================================================
-// CONSTANTS
+// LIBRARY MODULES (O-018 modularization, 2026-06-21)
+// ============================================================================
+// Pure functions + constants extracted into lib/ for reuse and isolation.
+// See lib/*.js for source. The main file retains stateful / impure code:
+//   - extractDeclaration (calls fs.readFileSync)
+//   - parseMigrations (calls fs.readFileSync + fs.existsSync)
+//   - phase1-phase10 (mutate global `results`)
+//   - emitHumanReadable / emitJSON (read global `results`)
+//   - main (orchestrates everything)
 // ============================================================================
 
-const VERSION = '1.1.4';
-const EFFECTIVE_DATE = '2026-06-17';
+const {
+  LAYER_MATRIX,
+  COMPAT_MATRIX,
+  FORBIDDEN_EDGES,
+  REPO_GLOBS,
+  ID_REGEX,
+  // VALID_DOMAINS is NOT imported here — lib/constants exports the skills-
+  // side domain set (MEM/FS/SESSION/...), but verify-id-graph.js has its
+  // own standards-side set (META/ARCH/DOC/...) defined inline at line ~897.
+  // These are different sets and must not collide.
+} = require('./lib/constants');
 
-// Allowed Related: edges per STD-META-001 §6.1
-// Matrix: source prefix → set of allowed target prefixes
-const LAYER_MATRIX = {
-  STD:  new Set(['STD']),
-  RULE: new Set(['STD', 'RULE', 'PROC', 'TOOL', 'ZAI']),
-  PROC: new Set(['STD', 'RULE', 'PROC', 'TOOL']),
-  TOOL: new Set(['STD', 'RULE', 'TOOL']),
-  ZAI:  new Set(['STD', 'RULE', 'TOOL', 'ZAI']),
-};
+const {
+  parseYAMLFrontmatter,
+  parseBlockquoteHeader,
+  parseHTMLComment,
+  extractReferences,
+} = require('./lib/parsers');
 
-// Compatibility DAG per STD-SKILL-001 §7.2
-// Source compatibility → allowed target compatibility
-const COMPAT_MATRIX = {
-  both:    new Set(['both']),
-  sandbox: new Set(['both', 'sandbox']),
-  ade:     new Set(['both', 'ade']),
-};
+const { tarjanSCC } = require('./lib/graph-algorithms');
+const { compareSnapshot: compareSnapshotLib } = require('./lib/snapshot');
 
-// Forbidden layer edges (G07-G10)
-const FORBIDDEN_EDGES = {
-  G07: { from: 'STD',  to: ['RULE', 'PROC', 'TOOL', 'ZAI'] },
-  G08: { from: 'PROC', to: ['ZAI'] },
-  G09: { from: 'TOOL', to: ['PROC'] },
-  G10: { from: 'TOOL', to: ['ZAI'] },
-};
+// ============================================================================
+// CONSTANTS (script-level — not shared with other verifiers)
+// ============================================================================
 
-// Repo discovery globs per spec §3.2
-const REPO_GLOBS = {
-  standards: {
-    patterns: ['standards/**/*.md', 'STANDARDS.md', '*.md'],
-    prefix: 'STD',
-  },
-  guard: {
-    patterns: ['AGENT_RULES.md', 'rules/**/*.md', 'instructions/**/*.md',
-               'scripts/**/*.{sh,js,ts}', 'tools/**/*.{md,ts,js}'],
-    prefixes: ['RULE', 'PROC', 'TOOL'],
-  },
-  skills: {
-    patterns: ['skills/**/SKILL.md', 'skills/**/*.md'],
-    prefixes: ['ZAI'],
-  },
-  platform: {
-    patterns: ['*.md', 'docs/**/*.md', 'templates/**/*.md'],
-    prefixes: [],  // platform declares no IDs; only scanned for references
-  },
-};
-
-// ID format regex
-const ID_REGEX = /^(STD|RULE|PROC|TOOL|ZAI)-([A-Z]+)-(\d{3})$/;
+const VERSION = '1.1.5';
+const EFFECTIVE_DATE = '2026-06-21';
 
 // ============================================================================
 // RESULTS STATE
@@ -438,105 +422,9 @@ function matchesPattern(relPath, pattern) {
 // HEADER EXTRACTION (3 formats per spec §4.1)
 // ============================================================================
 
-function parseYAMLFrontmatter(content) {
-  // Match --- at start, then YAML block, then ---
-  const m = content.match(/^---\n([\s\S]*?)\n---\n/);
-  if (!m) return null;
-  const yaml = m[1];
-  const result = {};
-  const lines = yaml.split('\n');
-  let currentListKey = null;
-  for (const line of lines) {
-    // List item under a previous key (e.g., "  - VALUE")
-    const listItem = line.match(/^\s+-\s+(.*)$/);
-    if (listItem && currentListKey) {
-      if (!Array.isArray(result[currentListKey])) {
-        result[currentListKey] = [];
-      }
-      let v = listItem[1].trim();
-      // Strip quotes
-      if ((v.startsWith('"') && v.endsWith('"')) ||
-          (v.startsWith("'") && v.endsWith("'"))) {
-        v = v.slice(1, -1);
-      }
-      result[currentListKey].push(v);
-      continue;
-    }
-    const kv = line.match(/^(\w+):\s*(.*)$/);
-    if (kv) {
-      let val = kv[2].trim();
-      // Strip quotes
-      if ((val.startsWith('"') && val.endsWith('"')) ||
-          (val.startsWith("'") && val.endsWith("'"))) {
-        val = val.slice(1, -1);
-      }
-      // Empty value means: either null or a list follows — start collecting list items
-      if (val === '') {
-        result[kv[1]] = [];
-        currentListKey = kv[1];
-      } else {
-        result[kv[1]] = val;
-        currentListKey = null;
-      }
-    } else if (!line.trim()) {
-      // Blank line ends list collection
-      currentListKey = null;
-    }
-  }
-  // Convert empty arrays back to empty string for backward compat with `if (yaml.id)` checks
-  // (id is always a scalar, so this only affects list keys)
-  return result;
-}
-
-function parseBlockquoteHeader(content) {
-  // Find lines starting with > at the top of the file (after H1)
-  // Parse key: value pairs, supporting comma-separated lists
-  const lines = content.split('\n');
-  const header = {};
-  let inBlockquote = false;
-  for (let i = 0; i < Math.min(lines.length, 80); i++) {
-    const line = lines[i];
-    // Match: "> Key: value" or "> **Key:** value" patterns
-    const m = line.match(/^>\s*\*?\*?([A-Za-z_][\w_]*)\*?\*?:\s*(.*)$/);
-    if (m) {
-      inBlockquote = true;
-      let val = m[2].trim();
-      // Strip trailing markdown formatting and parenthetical notes for list fields
-      // e.g. "STD-FE-001, STD-DESIGN-001 (some note)" → "STD-FE-001, STD-DESIGN-001"
-      const key = m[1];
-      // Strip leading ** and trailing **
-      val = val.replace(/^\*\*/, '').replace(/\*\*$/, '').trim();
-      header[key] = val;
-    } else if (inBlockquote && line.startsWith('>')) {
-      // continuation line in blockquote, skip (or could be Status text)
-    } else if (inBlockquote && !line.startsWith('>')) {
-      // End of blockquote — but allow re-entry if more > lines appear
-      // (some docs have prose between blockquote sections)
-    }
-  }
-  return header;
-}
-
-function parseHTMLComment(content) {
-  // Find: <!-- ID: RULE-ENV-008 | ver:1.0 | Level: C | Related: STD-ENV-001,STD-ENV-002 | Aligned_with: -->
-  const m = content.match(/<!--\s*ID:\s*([A-Z]+-[A-Z]+-\d{3})\s*\|([\s\S]*?)-->/);
-  if (!m) return null;
-  const id = m[1];
-  const rest = m[2];
-  const fields = { id };
-  for (const part of rest.split('|')) {
-    const kv = part.match(/^\s*(\w+):\s*(.*?)\s*$/);
-    if (kv) {
-      const key = kv[1].toLowerCase();
-      const val = kv[2];
-      if (key === 'ver') fields.version = val;
-      else if (key === 'level') fields.level = val.replace(/^\[?\*?\*?\[?/, '').replace(/[\]\*]?$/, '').trim();
-      else if (key === 'related') fields.related = val ? val.split(',').map(s => s.trim()).filter(Boolean) : [];
-      else if (key === 'aligned_with') fields.aligned_with = val ? val.split(',').map(s => s.trim()).filter(Boolean) : [];
-    }
-  }
-  return fields;
-}
+// parseYAMLFrontmatter, parseBlockquoteHeader, parseHTMLComment are now
+// required from ./lib/parsers (O-018 modularization). They are unchanged
+// — see lib/parsers.js for source.
 
 function extractDeclaration(filePath, repoName) {
   const content = fs.readFileSync(filePath, 'utf8');
@@ -678,16 +566,7 @@ function extractDeclaration(filePath, repoName) {
 // REFERENCE EXTRACTION (any mention of an ID in any file)
 // ============================================================================
 
-function extractReferences(content) {
-  // Find all ID-shaped tokens in the content
-  const refs = new Set();
-  const regex = /\b(STD|RULE|PROC|TOOL|ZAI)-[A-Z]+-\d{3}\b/g;
-  let m;
-  while ((m = regex.exec(content)) !== null) {
-    refs.add(m[0]);
-  }
-  return [...refs];
-}
+// extractReferences is now required from ./lib/parsers (O-018).
 
 // ============================================================================
 // MIGRATIONS PARSING
@@ -724,61 +603,7 @@ function parseMigrations(filePath) {
 // TARJAN'S SCC ALGORITHM (for cycle detection)
 // ============================================================================
 
-function tarjanSCC(nodes, edges) {
-  // nodes: array of node IDs
-  // edges: array of {source, target}
-  // Returns: array of SCCs (each SCC is an array of node IDs)
-  const adj = new Map();
-  for (const n of nodes) adj.set(n, []);
-  for (const e of edges) {
-    if (adj.has(e.source)) {
-      adj.get(e.source).push(e.target);
-    }
-  }
-
-  let index = 0;
-  const stack = [];
-  const indices = new Map();
-  const lowlinks = new Map();
-  const onStack = new Map();
-  const sccs = [];
-
-  function strongconnect(v) {
-    indices.set(v, index);
-    lowlinks.set(v, index);
-    index++;
-    stack.push(v);
-    onStack.set(v, true);
-
-    for (const w of adj.get(v) || []) {
-      if (!indices.has(w)) {
-        strongconnect(w);
-        lowlinks.set(v, Math.min(lowlinks.get(v), lowlinks.get(w)));
-      } else if (onStack.get(w)) {
-        lowlinks.set(v, Math.min(lowlinks.get(v), indices.get(w)));
-      }
-    }
-
-    if (lowlinks.get(v) === indices.get(v)) {
-      const scc = [];
-      let w;
-      do {
-        w = stack.pop();
-        onStack.set(w, false);
-        scc.push(w);
-      } while (w !== v);
-      sccs.push(scc);
-    }
-  }
-
-  for (const v of nodes) {
-    if (!indices.has(v)) {
-      strongconnect(v);
-    }
-  }
-
-  return sccs;
-}
+// tarjanSCC is now required from ./lib/graph-algorithms (O-018).
 
 // ============================================================================
 // MAIN PHASES
@@ -1403,76 +1228,12 @@ function emitJSON(opts) {
  *
  * Returns { ok: true } or { ok: false, diff: [string, ...] }.
  */
+// compareSnapshot is now required from ./lib/snapshot (O-018).
+// Wrapper preserves the original 2-arg signature for backward compat
+// (lib/snapshot.js exports a 3-arg version that takes currentVersion
+// explicitly, so we pass VERSION here).
 function compareSnapshot(currentJSON, baselinePath) {
-  const diffs = [];
-  let baseline;
-  try {
-    baseline = JSON.parse(fs.readFileSync(baselinePath, 'utf8'));
-  } catch (e) {
-    return {
-      ok: false,
-      diff: [`[snapshot] Could not read baseline file ${baselinePath}: ${e.message}`],
-    };
-  }
-
-  // Version mismatch warning (non-fatal)
-  if (baseline.snapshot_meta && baseline.snapshot_meta.script_version &&
-      baseline.snapshot_meta.script_version !== VERSION) {
-    console.error(`[snapshot] WARNING: baseline was created with version ${baseline.snapshot_meta.script_version}, current is ${VERSION}. Structure may still match.`);
-  }
-
-  // Compare summary
-  const curSum = currentJSON.summary;
-  const baseSum = baseline.summary || {};
-  for (const key of ['ids_extracted', 'related_edges', 'aligned_with_edges', 'hard_pass', 'hard_fail', 'warnings']) {
-    if (curSum[key] !== baseSum[key]) {
-      diffs.push(`[snapshot] summary.${key}: baseline=${baseSum[key]}, current=${curSum[key]}`);
-    }
-  }
-
-  // Compare checks (by id)
-  const curChecks = new Map((currentJSON.checks || []).map(c => [c.id, c]));
-  const baseChecks = new Map((baseline.checks || []).map(c => [c.id, c]));
-  const allCheckIds = new Set([...curChecks.keys(), ...baseChecks.keys()]);
-  for (const id of [...allCheckIds].sort()) {
-    const cur = curChecks.get(id);
-    const base = baseChecks.get(id);
-    if (!base) {
-      diffs.push(`[snapshot] check ${id}: present in current, MISSING in baseline`);
-      continue;
-    }
-    if (!cur) {
-      diffs.push(`[snapshot] check ${id}: MISSING in current, present in baseline`);
-      continue;
-    }
-    if (cur.status !== base.status) {
-      diffs.push(`[snapshot] check ${id}.status: baseline=${base.status}, current=${cur.status}`);
-    }
-    if (cur.description !== base.description) {
-      diffs.push(`[snapshot] check ${id}.description changed`);
-    }
-    // details: compare as sorted arrays
-    const curDetails = (cur.details || []).slice().sort();
-    const baseDetails = (base.details || []).slice().sort();
-    if (JSON.stringify(curDetails) !== JSON.stringify(baseDetails)) {
-      diffs.push(`[snapshot] check ${id}.details differ (baseline ${baseDetails.length} entries, current ${curDetails.length})`);
-    }
-  }
-
-  // Compare warnings (as sorted set of {code, message})
-  const normWarn = (w) => (w.code + '::' + (w.message || w.msg || JSON.stringify(w)));
-  const curWarn = (currentJSON.warnings || []).map(normWarn).sort();
-  const baseWarn = (baseline.warnings || []).map(normWarn).sort();
-  if (JSON.stringify(curWarn) !== JSON.stringify(baseWarn)) {
-    const curSet = new Set(curWarn);
-    const baseSet = new Set(baseWarn);
-    const added = curWarn.filter(w => !baseSet.has(w));
-    const removed = baseWarn.filter(w => !curSet.has(w));
-    if (added.length) diffs.push(`[snapshot] warnings ADDED: ${added.length} (first: ${added[0].slice(0, 100)})`);
-    if (removed.length) diffs.push(`[snapshot] warnings REMOVED: ${removed.length} (first: ${removed[0].slice(0, 100)})`);
-  }
-
-  return { ok: diffs.length === 0, diff: diffs };
+  return compareSnapshotLib(currentJSON, baselinePath, VERSION);
 }
 
 // ============================================================================
