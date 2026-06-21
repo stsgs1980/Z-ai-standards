@@ -118,13 +118,13 @@ license: MIT
 
 | Field | Required | Notes |
 |---|---|---|
-| `name` | **yes** | Must match folder name (without `_sts` suffix for STS skills) |
+| `name` | **yes** | Must match folder name exactly (including `_sts` suffix for STS skills); see §9.1 |
 | `description` | **yes** | Primary trigger; full sentences with context |
 | `version` | **yes** | SemVer |
 | `id` | **conditional** | Required if skill is referenced by ID externally; format: `ZAI-<DOMAIN>-<NNN>` (see §4) |
 | `compatibility` | **conditional** | Required if `id` present; one of `both` / `sandbox` / `ade` (see §6) |
 | `trigger` | recommended | Comma-separated keywords, 5–15 items max |
-| `author` | optional | Required for STS domain skills |
+| `author` | optional | Signature of skill creator; if set to `STS`, the skill follows §9 STS conventions (folder must have `_sts` suffix per V11c) |
 | `license` | optional | Default: MIT |
 
 ### 3.4. Frontmatter vs Blockquote Consistency
@@ -393,7 +393,7 @@ to create new skills. The skill-creator will:
 |---|---|---|---|
 | `SKILL.md` exists | `verify-standards.js` | V11a | **HARD** (all skills) |
 | `name` matches folder name | `verify-standards.js` | V11b | **HARD** (all skills) |
-| STS skills have `_sts` suffix | `verify-standards.js` | V11c | **HARD** (STS skills only) |
+| STS skills have `_sts` suffix in folder name | `verify-skills.js` | V11c | **HARD** (folder-name-driven: applies to folders ending `_sts`, and to skills whose `author` field equals `STS`) |
 | YAML frontmatter parses | `verify-standards.js` | V13a | **HARD** (all skills) |
 | Required fields (`name`, `description`, `version`) | `verify-standards.js` | V13b | **HARD** (all skills) |
 | `id` format valid (if present) | `verify-standards.js` | V05a | **SOFT** (only if `id` field exists) |

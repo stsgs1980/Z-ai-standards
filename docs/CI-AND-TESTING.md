@@ -430,12 +430,15 @@ node standards/scripts/verify-id-graph.js --update-snapshot \
 unless `--update-snapshot` is explicitly passed (and the diff is
 reviewed in the PR).
 
-#### 9.2.2 `verify-skills.js` — IMPLEMENTED (soft-default)
+#### 9.2.2 `verify-skills.js` — IMPLEMENTED + REMEDIATED (`--strict` since 2026-06-21)
 
 **Status:** ✅ IMPLEMENTED in `standards/scripts/verify-skills.js`
-v1.0.0 + Phase 3 in `.githooks/pre-commit` + CI step in
-`.github/workflows/verify-id-graph.yml`. **Not yet `--strict`** —
-see remediation backlog below.
+v1.0.0 + Phase 3 in `.githooks/pre-commit` (HARD, `--strict`) + CI
+step in `.github/workflows/verify-id-graph.yml` (HARD, `--strict`).
+**All 15 pre-existing violations closed** in the same patch that
+clarified STD-SKILL-001 §3.3 (name must match folder name exactly,
+including `_sts` suffix) and §10.1 V11c (STS-suffix rule is
+author+folder driven, not folder-only).
 
 **Why:** 35 of 36 skills had no validator. `SKILL.md` files could
 have broken frontmatter, invalid `Related:` edges, or contract
@@ -450,49 +453,69 @@ not pluggable.
 | Check | Source | Strictness | Description |
 |---|---|---|---|
 | S01 | V11a | HARD | SKILL.md exists in every skills/skills/{name}/ folder |
-| S02 | V11b | SOFT-default, HARD with `--strict` | frontmatter name matches folder name |
-| S03 | V11c | SOFT-default, HARD with `--strict` | STS skills have _sts suffix |
+| S02 | V11b | HARD (`--strict` default since 2026-06-21) | frontmatter name matches folder name exactly (incl. `_sts` suffix) |
+| S03 | V11c | HARD (`--strict` default since 2026-06-21) | STS skills (with `author: STS`) have `_sts` folder suffix |
 | S04 | V13a | HARD | YAML frontmatter parses |
-| S05 | V13b | SOFT-default, HARD with `--strict` | Required fields: name, description, version |
+| S05 | V13b | HARD (`--strict` default since 2026-06-21) | Required fields: name, description, version |
 | S06 | V05a | SOFT | id format: ZAI-<DOMAIN>-<NNN> |
 | S07 | V13c | SOFT | compatibility: both\|sandbox\|ade |
 | S08 | V14a | SOFT | frontmatter id matches blockquote ID: |
 | S09 | V14b | HARD | frontmatter version matches blockquote Version: |
 
-**Soft-default rationale:** STD-SKILL-001 §10.1 marks S02/S03/S05 as
-HARD, but as of v1.0.0 the skills corpus has **15 pre-existing
-violations** (8 name/folder mismatches, 3 missing _sts suffixes, 4
-missing version fields). Until these are remediated, the verifier
-runs them as SOFT by default so CI does not block on pre-existing
-technical debt. Once remediated, flip `--strict` on in CI.
+**Remediation log (closed 2026-06-21, all 15 violations):**
 
-**Remediation backlog (to enable `--strict`):**
+| # | Skill | Was | Now |
+|---|---|---|---|
+| 1 | `phi-layout` | `name: golden-grid` | `name: phi-layout` (v2.2 → v2.3) |
+| 2 | `frontend-styling-expert_sts` | (false-positive due to verifier bug) | unchanged; verifier fixed |
+| 3 | `performance-code-generator_sts` | (false-positive due to verifier bug) | unchanged; verifier fixed |
+| 4 | `phi-layout_sts` | (false-positive due to verifier bug) | unchanged; verifier fixed |
+| 5 | `prompt-engineering_sts` | (false-positive due to verifier bug) | unchanged; verifier fixed |
+| 6 | `sync-toolkit_sts` | (false-positive due to verifier bug) | unchanged; verifier fixed |
+| 7 | `workflow-discipline_sts` | (false-positive due to verifier bug) | unchanged; verifier fixed |
+| 8 | `zai-ui-composer_sts` | (false-positive due to verifier bug) | unchanged; verifier fixed |
+| 9 | `anti-monolith` | `author: STS` (system skill, not personal) | `author:` field removed |
+| 10 | `session-experience` | `author: STS` (system skill, not personal) | `author:` field removed |
+| 11 | `session-log` | `author: STS` (system skill, not personal) | `author:` field removed |
+| 12 | `gepetto` | missing `version:` | `version: 1.0` added |
+| 13 | `reducing-entropy` | missing `version:` | `version: 1.0` added |
+| 14 | `session-handoff` | missing `version:` | `version: 1.0` added |
+| 15 | `skill-creator` | missing `version:` | `version: 1.0` added |
 
-- 6 STS skills with `name: foo_sts` (should be `name: foo` per
-  STD-SKILL-001 §3.3): `frontend-styling-expert_sts`,
-  `performance-code-generator_sts`, `phi-layout_sts`,
-  `prompt-engineering_sts`, `sync-toolkit_sts`, `workflow-discipline_sts`,
-  `zai-ui-composer_sts`
-- 1 skill with wrong `name` field: `phi-layout` (name="golden-grid",
-  expected "phi-layout")
-- 3 skills with `author: STS` but missing `_sts` folder suffix:
-  `anti-monolith`, `session-experience`, `session-log`
-- 4 skills missing `version:` field: `gepetto`, `reducing-entropy`,
-  `session-handoff`, `skill-creator`
+**Root-cause finding (verifier bug, not data bug):**
+
+7 of the 8 S02 violations were false-positives caused by an
+ambiguity in STD-SKILL-001 §3.3 vs §9.1. §3.3 said "name must match
+folder name (without `_sts` suffix for STS skills)" while §9.1 and
+the §11 checklist said "name matches folder name (with `_sts`
+suffix for STS)". The verifier v1.0.0 implemented the §3.3 wording
+literally — `expected = folder.replace(/_sts$/, '')` — which
+contradicted §9.1. The same patch that closes the violations
+clarifies §3.3 ("name must match folder name exactly, including
+`_sts` suffix for STS skills; see §9.1") and fixes the verifier to
+compare without stripping the suffix. Only 1 of 8 S02 violations
+(`phi-layout` → `name: golden-grid`) was a real data bug.
+
+The 3 S03 violations (`anti-monolith`, `session-experience`,
+`session-log`) were genuine semantic errors: these skills had
+`author: STS` set despite being system skills (with ZAI-ARCH/SESSION
+IDs, not ZAI-STS-XXX). Per §9, the `author: STS` field is the marker
+that triggers the `_sts` folder-suffix requirement; system skills
+must not set it. Fix: drop the `author:` field — git history
+preserves attribution.
+
+The 4 S05 violations were genuine missing-`version` fields; added
+`version: 1.0` to each (these skills predate the v1.1 requirement).
 
 **Integration (shipped):**
 
-- `.githooks/pre-commit` Phase 3: runs `verify-skills.js` in
-  soft-default mode. Non-blocking at this stage (WARN only).
-- `.github/workflows/verify-id-graph.yml`: runs `verify-skills.js`
-  in soft-default mode. HARD failures (S01/S04/S09) block CI; SOFT
-  warnings (S02/S03/S05) do not yet.
+- `.githooks/pre-commit` Phase 3: runs `verify-skills.js --strict`.
+  HARD failures (any of S01/S02/S03/S04/S05/S09) block the commit.
+- `.github/workflows/verify-id-graph.yml`: runs `verify-skills.js
+  --strict`. HARD failures block CI.
 - `.github/workflows/e2e-verifiers.yml` Test 3+4: validates that
   `--strict` mode catches S02 violations, and that cleanup restores
   PASS.
-
-**Timeline for `--strict` flip:** Q3 2026, after the 15 violations
-above are remediated in a focused PR.
 
 #### 9.2.3 End-to-end test: modify standard → verify → CI — IMPLEMENTED
 
@@ -793,3 +816,4 @@ do not re-introduce them.
 | 2026-06-21 | Initial creation. Merges two draft documents ("Полный CI/CD Pipeline" and "Уровни тестирования Z-ai-platform") into one canonical reference. Documents the actual existing workflow (`.github/workflows/verify-id-graph.yml`, 250 lines) instead of a hypothetical one. Includes §11 bug audit table documenting 12 factual errors in the drafts against actual repo state. |
 | 2026-06-21 | Rewrite of §9 — expanded from a flat 7-row table into a structured priority matrix (§9.1) with P0/P1/P2 sections (§9.2/9.3/9.4), each item carrying explicit owner, target quarter, and dependencies. Adds §9.2.2 `verify-skills.js` scope (35/36 skills have no validator — formalised as P0 blocker for v2.5.0). Adds §9.3.2 `run-contract.sh --dry-run` in CI (the `--dry-run` flag already exists in `run-contract.sh` §1, so this is a one-step CI addition with no script-side prerequisite). Adds §9.4.3 `--help` flag for verifiers (P2 UX improvement). Adds §10.8.1 LESSON-004a — refined two-layer guard (uncommitted-state check + `--force` flag) replacing the audit's initial `$PWD`-prefix proposal, which is fragile across clone paths and sandbox configurations. Cross-references `SESSION_NOTES.md` §12.8 for the full structured lesson entry. Updates §11 #12 to point at §10.8.1. |
 | 2026-06-21 | **All three P0 items in §9.2 marked IMPLEMENTED.** (1) §9.2.1 snapshot test: `verify-id-graph.js` v1.1.4 adds `--snapshot`/`--compare`/`--update-snapshot` flags, baseline at `standards/_snapshots/id-graph-baseline.json`, CI step in `verify-id-graph.yml`. (2) §9.2.2 `verify-skills.js` v1.0.0: new skills-side verifier with 9 checks (S01-S09 mapping to V11a-V14b), soft-default mode (S02/S03/S05 are SOFT until 15 pre-existing violations remediated, then `--strict` flip), Phase 3 in `.githooks/pre-commit`, CI step in `verify-id-graph.yml`. (3) §9.2.3 e2e test: `.github/workflows/e2e-verifiers.yml` with 5 tests (V11 violation, cleanup PASS, S02 violation, cleanup PASS, snapshot compare mismatch), smoke-tested locally. Remediation backlog for `--strict` flip: 6 STS skills with `name: foo_sts`, 1 `phi-layout` wrong name, 3 skills missing `_sts` suffix, 4 skills missing `version:` field. |
+| 2026-06-21 | **§9.2.2 REMEDIATED — `verify-skills.js` flipped to `--strict` default.** All 15 pre-existing violations closed in a single remediation patch. Root-cause analysis revealed 7 of 8 S02 violations were false-positives caused by a contradiction in STD-SKILL-001 §3.3 ("name must match folder name without `_sts` suffix") vs §9.1 + §11 checklist ("name matches folder name with `_sts` suffix"). Verifier v1.0.0 had implemented the §3.3 wording literally. Same patch clarifies §3.3 to defer to §9.1, fixes verifier S02 to compare without stripping suffix, and fixes the one real S02 violation (`phi-layout` `name: golden-grid` → `name: phi-layout`). S03 violations (`anti-monolith`, `session-experience`, `session-log`) were genuine: these system skills had `author: STS` field set despite having canonical ZAI-ARCH/SESSION IDs (not ZAI-STS-XXX); `author:` field dropped. S05 violations were 4 skills missing `version:` (`gepetto`, `reducing-entropy`, `session-handoff`, `skill-creator`); `version: 1.0` added. After remediation: `verify-skills.js --strict` 6/6 HARD PASS, 0 SOFT warnings. `.githooks/pre-commit` Phase 3 + CI step promoted to `--strict`. |

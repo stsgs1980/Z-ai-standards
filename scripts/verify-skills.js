@@ -293,9 +293,15 @@ function runChecks(platformRoot, opts) {
   })();
 
   // ----------------------------------------------------------------
-  // S02 (V11b): frontmatter `name` matches folder name
-  //   - For STS skills: folder name has _sts suffix, frontmatter name does NOT
-  //   - For other skills: folder name == frontmatter name
+  // S02 (V11b): frontmatter `name` matches folder name EXACTLY
+  //   - Per STD-SKILL-001 §3.3 + §9.1: name must match folder name
+  //     exactly, INCLUDING the `_sts` suffix for STS skills.
+  //   - Earlier verifier v1.0.0 stripped the _sts suffix before
+  //     comparing (per ambiguous §4.1 wording "without _sts suffix"),
+  //     which contradicted §9.1 ("name: <skill-name>_sts matches
+  //     folder") and §11 checklist. STD-SKILL-001 §3.3 was clarified
+  //     in the same patch that fixes this verifier — see Change
+  //     History of that standard.
   // ----------------------------------------------------------------
   (function S02() {
     const offenders = [];
@@ -305,13 +311,13 @@ function runChecks(platformRoot, opts) {
       const content = fs.readFileSync(skillMdPath, 'utf8');
       const fm = parseFrontmatter(content);
       if (!fm.parsed) continue; // flagged by S04
-      const expected = s.name.replace(/_sts$/, '');
+      const expected = s.name;
       if (fm.data.name !== expected) {
         offenders.push(`${s.name}: frontmatter name="${fm.data.name}" expected "${expected}"`);
       }
     }
     check('S02',
-      'frontmatter `name` matches folder name (without _sts suffix for STS skills)',
+      'frontmatter `name` matches folder name exactly (incl. `_sts` suffix for STS skills; per §3.3 + §9.1)',
       offenders.length === 0,
       offenders.length === 0
         ? `all ${skillDirs.length} skills match`
