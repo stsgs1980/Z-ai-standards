@@ -345,6 +345,7 @@ skill-name/
 ### 8.2. Size Guidelines
 
 - `SKILL.md` hard ceiling: 800 lines (META-001 §4.18.1, SKILL.md row); soft warn at 400 — see canonical for full matrix
+- `CONTRACT.md` hard ceiling: 500 lines (META-001 §4.18.1, CONTRACT.md row); soft warn at 300 — added 2026-06-21 (O-017 Phase D2), validated against 2 pilot contracts (commit-work 368 lines, session-handoff 466 lines). See META-001 §4.18.6 for rationale.
 - Use `references/` for content that doesn't need to load at trigger time — these files are exempt per META-001 §4.18.1 (references/**.md row)
 - Use `scripts/` for repetitive tasks that can be extracted
 
@@ -401,7 +402,8 @@ to create new skills. The skill-creator will:
 | `compatibility` valid enum (if present) | `verify-standards.js` | V13c | **SOFT** (only if `compatibility` field exists) |
 | Frontmatter `id` matches blockquote `ID:` | `verify-standards.js` | V14a | **SOFT** (only if both present) |
 | Frontmatter `version` matches blockquote `Version:` | `verify-standards.js` | V14b | **HARD** (always) |
-| File under 800 lines (META-001 §4.18.1, SKILL.md row) | `line-count-check.sh` | PROC-LINECOUNT-004 (deferred) | **HARD** (all skills) |
+| `SKILL.md` ≤ 800 lines (META-001 §4.18.1, SKILL.md row) | `verify-skills.js` | V12a | **HARD** (all skills) — added 2026-06-21 (O-017 Phase D2) |
+| `CONTRACT.md` ≤ 500 lines (META-001 §4.18.1, CONTRACT.md row) | `verify-skills.js` | V12b | **HARD** (all skills with CONTRACT.md) — added 2026-06-21 (O-017 Phase D2) |
 
 ### 10.2. Cross-Repo Checks (in Z-ai-platform CI)
 
@@ -783,4 +785,4 @@ reference for maintainers who want a single unified skill-creator.
 
 ---
 
-*End of STD-SKILL-001 v1.1 — APPROVED 2026-06-17, §10A added 2026-06-18.*
+*End of STD-SKILL-001 v1.1 — APPROVED 2026-06-17, §10A added 2026-06-18, §8.2/§10.1 V12a/V12b added 2026-06-21 (O-017 Phase D2: tiered hard caps for SKILL.md ≤800 + CONTRACT.md ≤500, replacing deferred PROC-LINECOUNT-004 with active `verify-skills.js` S10 enforcement).*

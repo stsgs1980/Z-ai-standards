@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * ============================================================================
- * verify-skills.js — Skills-side Format Verifier v1.0.0
+ * verify-skills.js — Skills-side Format Verifier v1.1.0
  * ============================================================================
  *
  * ID: TOOL-VERIFY-005
@@ -14,7 +14,7 @@
  *   analogue of verify-standards.js — same pattern, different corpus.
  *
  *   The script scans the skills/ submodule (sibling of standards/) and
- *   runs 9 checks per SKILL.md:
+ *   runs 10 checks per SKILL.md:
  *
  *     S01 (V11a)  SKILL.md exists in every skills/skills/{name}/ folder
  *     S02 (V11b)  frontmatter `name` matches folder name
@@ -26,16 +26,23 @@
  *     S07 (V13c)  compatibility field: both|sandbox|ade  [SOFT, if present]
  *     S08 (V14a)  frontmatter id matches blockquote ID:  [SOFT, if both]
  *     S09 (V14b)  frontmatter version matches blockquote Version:
+ *     S10 (V12)   Tiered hard caps (META-001 §4.18.1):
+ *                   S10a: SKILL.md ≤ 800 lines (HARD, all skills)
+ *                   S10b: CONTRACT.md ≤ 500 lines (HARD, if CONTRACT.md exists)
+ *                 References are exempt per §4.18.1 — no check.
  *
- *   Checks S01, S02, S03, S04, S05, S09 are HARD (exit 1 on fail).
+ *   Checks S01, S02, S03, S04, S05, S09, S10 are HARD (exit 1 on fail).
  *   Checks S06, S07, S08 are SOFT (reported, do not fail).
  *
  * SCOPE
  *   - skills/skills/{name}/SKILL.md  (one per skill folder, 36 folders today)
+ *   - skills/skills/{name}/CONTRACT.md  (optional, 2 skills today)
  *   - Does NOT validate the skills/docs/ companion files (those are
  *     prose, not skill definitions).
  *   - Does NOT validate skill scripts (run-contract.sh etc.) — those
  *     are validated by their own contract layer (Phase B).
+ *   - Does NOT validate references/**.md — these are exempt per
+ *     META-001 §4.18.1 (loaded on demand, not parser-bound).
  *   - Cross-repo `Related:` edge resolution is handled by
  *     verify-id-graph.js G02 (not duplicated here).
  *
@@ -57,7 +64,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const VERSION = '1.0.0';
+const VERSION = '1.1.0';
 const EFFECTIVE_DATE = '2026-06-21';
 
 // ============================================================================
@@ -532,6 +539,103 @@ function runChecks(platformRoot, opts) {
         : `${offenders.length} mismatch(es): ${offenders.join('; ')}`
     );
   })();
+
+  // ----------------------------------------------------------------
+  // S10 (V12): Tiered hard caps per META-001 §4.18.1
+  //   S10a: SKILL.md   ≤ 800 lines  HARD (all skills)
+  //   S10b: CONTRACT.md ≤ 500 lines  HARD (if CONTRACT.md exists)
+  //
+  // RATIONALE (2026-06-21, O-017 Phase D2)
+  //   META-001 §4.18.1 already specifies the SKILL.md ≤ 800 ceiling,
+  //   but enforcement was deferred (PROC-LINECOUNT-004 not implemented).
+  //   S10a promotes this ceiling from documentation to a runtime HARD
+  //   invariant — same pattern as verify-standards.js V11 (which
+  //   promoted W11's 1000-line soft cap to HARD on 2026-06-21).
+  //
+  //   S10b adds a new CONTRACT.md ≤ 500 cap, validated against the 2
+  //   pilot contracts (commit-work 368 lines, session-handoff 466
+  //   lines). The original O-017 proposal suggested 200, but both
+  //   pilots would violate a 200-line cap by 1.8×–2.3×. Per LESSON-001
+  //   (root-cause fix scales as O(1)), the cap was adjusted to fit
+  //   measured reality rather than compressing the pilots. See
+  //   META-001 §4.18.6 for the full rationale.
+  //
+  //   References are EXEMPT per §4.18.1 (references/**.md row) — no
+  //   check applied. README.md ≤ 400 cap exists in §4.18.1 but is
+  //   NOT enforced by S10 yet (deferred to a future task; 2 existing
+  //   READMEs violate the 400 cap and need remediation first).
+  //
+  // SCOPE
+  //   - skills/skills/{name}/SKILL.md (every skill folder)
+  //   - skills/skills/{name}/CONTRACT.md (only if present, 2 today)
+  //   - References are explicitly NOT scanned (exempt per §4.18.1)
+  //
+  // THRESHOLDS
+  //   SKILL.md:    800 lines (matches §4.18.1 SKILL.md row exactly)
+  //   CONTRACT.md: 500 lines (matches §4.18.1 CONTRACT.md row, new)
+  //
+  // FAILURE MODE
+  //   If a file exceeds its cap, the offender is reported with the
+  //   actual line count and the applicable cap. The fix is either:
+  //     (a) Split the file (preferred for SKILL.md — move examples to
+  //         references/, see STD-SKILL-001 §8.2)
+  //     (b) For CONTRACT.md, externalise auxiliary sections (change
+  //         history, cross-refs, honest uncertainties) to references/
+  //         — these are NOT parser-bound, see META-001 §4.18.6
+  // ----------------------------------------------------------------
+  (function S10() {
+    const SKILLMD_CAP = 800;
+    const CONTRACTMD_CAP = 500;
+
+    const skillMdOffenders = [];
+    const contractMdOffenders = [];
+    let skillMdChecked = 0;
+    let contractMdChecked = 0;
+
+    for (const s of skillDirs) {
+      // S10a: SKILL.md
+      const skillMdPath = path.join(s.path, 'SKILL.md');
+      if (fs.existsSync(skillMdPath)) {
+        skillMdChecked++;
+        const content = fs.readFileSync(skillMdPath, 'utf8');
+        // Same line-count convention as verify-standards.js V11 and
+        // verify-id-graph.js (wc -l equivalent).
+        const lineCount = content === '' ? 0 : content.split('\n').length - (content.endsWith('\n') ? 1 : 0);
+        if (lineCount > SKILLMD_CAP) {
+          skillMdOffenders.push(`${s.name}/SKILL.md: ${lineCount} lines (exceeds ${SKILLMD_CAP}-line cap, split required — see STD-SKILL-001 §8.2)`);
+        }
+      }
+
+      // S10b: CONTRACT.md (optional)
+      const contractMdPath = path.join(s.path, 'CONTRACT.md');
+      if (fs.existsSync(contractMdPath)) {
+        contractMdChecked++;
+        const content = fs.readFileSync(contractMdPath, 'utf8');
+        const lineCount = content === '' ? 0 : content.split('\n').length - (content.endsWith('\n') ? 1 : 0);
+        if (lineCount > CONTRACTMD_CAP) {
+          contractMdOffenders.push(`${s.name}/CONTRACT.md: ${lineCount} lines (exceeds ${CONTRACTMD_CAP}-line cap, externalise auxiliary sections to references/ — see META-001 §4.18.6)`);
+        }
+      }
+    }
+
+    // S10a: SKILL.md
+    check('S10a',
+      `SKILL.md ≤ ${SKILLMD_CAP} lines (META-001 §4.18.1, SKILL.md row) — checked ${skillMdChecked} SKILL.md files`,
+      skillMdOffenders.length === 0,
+      skillMdOffenders.length === 0
+        ? `all ${skillMdChecked} SKILL.md files ≤ ${SKILLMD_CAP} lines`
+        : `${skillMdOffenders.length} file(s) over cap: ${skillMdOffenders.join('; ')}`
+    );
+
+    // S10b: CONTRACT.md
+    check('S10b',
+      `CONTRACT.md ≤ ${CONTRACTMD_CAP} lines (META-001 §4.18.1, CONTRACT.md row) — checked ${contractMdChecked} CONTRACT.md files`,
+      contractMdOffenders.length === 0,
+      contractMdOffenders.length === 0
+        ? (contractMdChecked === 0 ? 'no skills have CONTRACT.md (optional)' : `all ${contractMdChecked} CONTRACT.md files ≤ ${CONTRACTMD_CAP} lines`)
+        : `${contractMdOffenders.length} file(s) over cap: ${contractMdOffenders.join('; ')}`
+    );
+  })();
 }
 
 // ============================================================================
@@ -568,12 +672,14 @@ Options:
   --root=<path>        Override platform root (auto-detected otherwise)
   --help, -h           Show this help
 
-Checks (S01-S09, mapping to STD-SKILL-001 §10.1 V11a-V14b):
+Checks (S01-S10, mapping to STD-SKILL-001 §10.1 V11a-V14b + META-001 §4.18.1 V12):
 
   HARD (exit 1 on fail) — always:
     S01 (V11a)  SKILL.md exists in every skills/skills/{name}/ folder
     S04 (V13a)  YAML frontmatter parses
     S09 (V14b)  frontmatter version matches blockquote Version:
+    S10a (V12)  SKILL.md ≤ 800 lines (META-001 §4.18.1, SKILL.md row)
+    S10b (V12)  CONTRACT.md ≤ 500 lines (META-001 §4.18.1, CONTRACT.md row)
 
   SOFT-default, HARD with --strict — see rationale below:
     S02 (V11b)  frontmatter name matches folder name (without _sts suffix)
@@ -584,6 +690,16 @@ Checks (S01-S09, mapping to STD-SKILL-001 §10.1 V11a-V14b):
     S06 (V05a)  id field format: ZAI-<DOMAIN>-<NNN> + valid domain
     S07 (V13c)  compatibility field: both|sandbox|ade
     S08 (V14a)  frontmatter id matches blockquote ID:
+
+S10 rationale (added 2026-06-21, O-017 Phase D2):
+  S10 promotes the META-001 §4.18.1 SKILL.md ≤ 800 ceiling from
+  documentation to a runtime HARD invariant (replacing the deferred
+  PROC-LINECOUNT-004). S10b adds a new CONTRACT.md ≤ 500 cap,
+  validated against 2 pilot contracts (commit-work 368, session-
+  handoff 466 — see META-001 §4.18.6). Original O-017 proposal of
+  200 was invalidated by the actual pilots; per LESSON-001, the cap
+  was adjusted to fit measured reality. References are exempt per
+  §4.18.1 — not scanned.
 
 Soft-default rationale for S02/S03/S05:
   STD-SKILL-001 §10.1 marks these as HARD, but as of v1.0.0 the skills
@@ -614,7 +730,7 @@ function printHuman() {
   console.log(`Skills scanned: ${results.stats.skills_scanned}`);
   console.log('='.repeat(72));
   console.log('');
-  console.log('--- Hard Checks (S01-S05, S09) ---');
+  console.log('--- Hard Checks (S01-S05, S09, S10) ---');
   for (const c of results.checks.filter(c => !c.isSoft)) {
     const icon = c.status === 'PASS' ? '[PASS]' : '[FAIL]';
     console.log(`${icon} ${c.id.padEnd(width)}  ${c.description}`);

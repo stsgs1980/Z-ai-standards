@@ -215,6 +215,7 @@ section is a summary; STD-SKILL-001 is the source of truth.
 | Tests (`.test.*`, `.spec.*`) | 400 | 250 | Tests are linear by nature |
 | Config (`.json`, `.yml`, `.toml`, `.ini`) | exempt | — | Naturally flat, machine-generated |
 | `SKILL.md` (any repo) | 800 | 400 | Trigger surface + examples must load in one read |
+| `CONTRACT.md` (any skill) | 500 | 300 | 5-tuple execution contract: trigger/hook/guards/standards/success + auxiliary sections (versioning, cross-refs, change history). Validated against 2 pilots: commit-work 368 lines (Phase B1), session-handoff 466 lines (Phase C1) — see §4.18.6 |
 | `README.md` (any repo) | 400 | 250 | Top-level entry point, scanned not read |
 | `INDEX.md` (any repo) | exempt | — | Router, small by design |
 | `STD-*.md`, `META-*.md` (standards) | 1200 | 800 | Normative docs have cross-refs and many sections |
@@ -342,12 +343,28 @@ Domain standards MUST reference this section instead of duplicating:
 
 - `STD-SKILL-001 §8.2` -> "SKILL.md hard ceiling: 800 lines, see
   META-001 §4.18.1 (SKILL.md row); soft warn at 400"
+- `STD-SKILL-001 §8.2` -> "CONTRACT.md hard ceiling: 500 lines, see
+  META-001 §4.18.1 (CONTRACT.md row); soft warn at 300" (added
+  2026-06-21, O-017 Phase D2)
 - `STD-FE-001 §6` -> own 150/250 source-code table, consistent with
   §4.18.1 source-code row; future revisions should cross-link
 - `STD-DOC-002 §11` -> Markdown formatting exceptions (separate
   concern; cross-link only if conflict)
 
-Change history for §4.18: see §15 v2.0.4 entry.
+#### 4.18.6 CONTRACT.md cap rationale (added 2026-06-21, O-017 Phase D2)
+
+The 500-line cap was set by measuring the 2 pilot contracts as of v2.5.0:
+`commit-work/CONTRACT.md` 368 lines (Phase B1, git-hook domain),
+`session-handoff/CONTRACT.md` 466 lines (Phase C1, agent-loop domain). The
+500-line cap gives ~7% headroom over the largest pilot. The original O-017
+proposal of 200 was invalidated by the actual pilots (both would violate by
+1.8×–2.3×); per LESSON-001 (root-cause fix scales as O(1)), the cap was
+adjusted to fit measured reality rather than compressing the structural
+10-section shape (trigger/hook/guards/standards/success + 5 auxiliary
+sections, all mandatory per `skills/docs/CONTRACT-TEMPLATE.md`). If a future
+CONTRACT.md exceeds 500, externalise auxiliary sections (change history,
+cross-refs, honest uncertainties) to `references/contract-<aspect>.md` —
+these are NOT parser-bound (see §4.18.3). Change history for §4.18: see §15.
 
 ---
 
