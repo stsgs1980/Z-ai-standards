@@ -380,66 +380,156 @@ Priority semantics:
 
 ### 9.2 P0 — Critical (blocks v2.5.0 release)
 
-#### 9.2.1 Snapshot test for `verify-id-graph.js`
+> **Status as of 2026-06-21:** All three P0 items below are
+> **IMPLEMENTED**. See per-item status badges. The remaining
+> remediation work (flip `verify-skills.js` from soft-default to
+> `--strict` mode) is tracked in §9.2.2 below.
+
+#### 9.2.1 Snapshot test for `verify-id-graph.js` — IMPLEMENTED
+
+**Status:** ✅ IMPLEMENTED in `verify-id-graph.js` v1.1.4 + CI step
+in `.github/workflows/verify-id-graph.yml`.
 
 **Why:** Without this, refactoring `verify-id-graph.js` risks silent
 regressions. The graph structure is deterministic — same input must
 produce same output. A snapshot test makes any change in the output
 loud and reviewable.
 
-**Implementation:**
+**Implementation (shipped):**
+
+- Added `--snapshot=<file>`, `--compare=<file>`, `--update-snapshot`
+  flags to `verify-id-graph.js` (v1.1.4).
+- Snapshot file format: same JSON structure as `--json` output, plus
+  `snapshot_meta` block with `script_version` and `created_at`.
+- Comparison is structural: summary block (exact match), checks block
+  (id+status+description+details-as-sorted-set), warnings block
+  (sorted set of `{code, message}` pairs).
+- Baseline file: `standards/_snapshots/id-graph-baseline.json`
+  (committed, 61 IDs / 115 edges / 2 warnings as of 2026-06-21).
+- CI step added to `.github/workflows/verify-id-graph.yml` after the
+  `verify-id-graph.js` run.
+- Smoke-tested locally: self-compare PASS, modified baseline FAIL
+  with 4-diff output, `--update-snapshot` round-trips.
+
+**Workflow:**
 
 ```bash
-# Create baseline
-node standards/scripts/verify-id-graph.js --snapshot=baseline.json
+# Create baseline (one-time, or after intentional graph change)
+node standards/scripts/verify-id-graph.js --snapshot=standards/_snapshots/id-graph-baseline.json
 
-# CI compares
-node standards/scripts/verify-id-graph.js --compare=baseline.json
+# CI check (every push — automatic)
+node standards/scripts/verify-id-graph.js --compare=standards/_snapshots/id-graph-baseline.json
+# Exits 1 if current graph differs from baseline.
+
+# Update baseline (after intentional change, reviewed in PR)
+node standards/scripts/verify-id-graph.js --update-snapshot \
+  --compare=standards/_snapshots/id-graph-baseline.json
 ```
 
-**Acceptance:** CI fails if current graph output differs from baseline
+**Acceptance:** CI fails if current graph differs from baseline
 unless `--update-snapshot` is explicitly passed (and the diff is
 reviewed in the PR).
 
-**Owner:** @tech-lead. **Target:** Q3 2026.
+#### 9.2.2 `verify-skills.js` — IMPLEMENTED (soft-default)
 
-#### 9.2.2 `verify-skills.js`
+**Status:** ✅ IMPLEMENTED in `standards/scripts/verify-skills.js`
+v1.0.0 + Phase 3 in `.githooks/pre-commit` + CI step in
+`.github/workflows/verify-id-graph.yml`. **Not yet `--strict`** —
+see remediation backlog below.
 
-**Why:** 35 of 36 skills have no validator. `SKILL.md` files can have
-broken frontmatter, invalid `Related:` edges, or contract violations
-without any automated check. The only existing validator
-(`skill-creator/scripts/quick_validate.py`) is skill-specific and not
-pluggable.
+**Why:** 35 of 36 skills had no validator. `SKILL.md` files could
+have broken frontmatter, invalid `Related:` edges, or contract
+violations without any automated check. The only existing validator
+(`skill-creator/scripts/quick_validate.py`) was skill-specific and
+not pluggable.
 
-**Scope (Phase D1, O-017):**
+**Scope (shipped):**
 
-- Validate frontmatter: `ID:`, `Version:`, `Level:`, `Related:`
-  present when required by STD-SKILL-001.
-- Validate `Related:` edges point at existing IDs (via
-  `verify-id-graph.js` API or shared module).
-- Validate 5-tuple contract for skills with `CONTRACT.md` (currently
-  only `commit-work`; generalises in Phase C).
-- Integrate with L0 pre-commit (BLOCK on FAIL).
+9 checks (S01-S09), mapping to STD-SKILL-001 §10.1 V11a-V14b:
 
-**Timeline:** Q3 2026, before v2.5.0 release. **Owner:** @backend.
+| Check | Source | Strictness | Description |
+|---|---|---|---|
+| S01 | V11a | HARD | SKILL.md exists in every skills/skills/{name}/ folder |
+| S02 | V11b | SOFT-default, HARD with `--strict` | frontmatter name matches folder name |
+| S03 | V11c | SOFT-default, HARD with `--strict` | STS skills have _sts suffix |
+| S04 | V13a | HARD | YAML frontmatter parses |
+| S05 | V13b | SOFT-default, HARD with `--strict` | Required fields: name, description, version |
+| S06 | V05a | SOFT | id format: ZAI-<DOMAIN>-<NNN> |
+| S07 | V13c | SOFT | compatibility: both\|sandbox\|ade |
+| S08 | V14a | SOFT | frontmatter id matches blockquote ID: |
+| S09 | V14b | HARD | frontmatter version matches blockquote Version: |
 
-#### 9.2.3 End-to-end test: modify standard → verify → CI
+**Soft-default rationale:** STD-SKILL-001 §10.1 marks S02/S03/S05 as
+HARD, but as of v1.0.0 the skills corpus has **15 pre-existing
+violations** (8 name/folder mismatches, 3 missing _sts suffixes, 4
+missing version fields). Until these are remediated, the verifier
+runs them as SOFT by default so CI does not block on pre-existing
+technical debt. Once remediated, flip `--strict` on in CI.
 
-**Why:** The manual test scenarios in §6 should be automated to catch
-regressions before they reach production. Without this, each verifier
-change is reviewed by hand, which does not scale.
+**Remediation backlog (to enable `--strict`):**
 
-**Implementation:** Reusable workflow in `.github/workflows/e2e.yml`
-that:
+- 6 STS skills with `name: foo_sts` (should be `name: foo` per
+  STD-SKILL-001 §3.3): `frontend-styling-expert_sts`,
+  `performance-code-generator_sts`, `phi-layout_sts`,
+  `prompt-engineering_sts`, `sync-toolkit_sts`, `workflow-discipline_sts`,
+  `zai-ui-composer_sts`
+- 1 skill with wrong `name` field: `phi-layout` (name="golden-grid",
+  expected "phi-layout")
+- 3 skills with `author: STS` but missing `_sts` folder suffix:
+  `anti-monolith`, `session-experience`, `session-log`
+- 4 skills missing `version:` field: `gepetto`, `reducing-entropy`,
+  `session-handoff`, `skill-creator`
 
-1. Creates a temporary standard with a deliberate violation.
-2. Runs `verify-standards.js` — expects FAIL with the right error
-   code.
-3. Fixes the violation.
-4. Runs `verify-standards.js` — expects PASS.
-5. Commits and pushes to a test branch — expects CI PASS.
+**Integration (shipped):**
 
-**Owner:** @devops. **Target:** Q3 2026.
+- `.githooks/pre-commit` Phase 3: runs `verify-skills.js` in
+  soft-default mode. Non-blocking at this stage (WARN only).
+- `.github/workflows/verify-id-graph.yml`: runs `verify-skills.js`
+  in soft-default mode. HARD failures (S01/S04/S09) block CI; SOFT
+  warnings (S02/S03/S05) do not yet.
+- `.github/workflows/e2e-verifiers.yml` Test 3+4: validates that
+  `--strict` mode catches S02 violations, and that cleanup restores
+  PASS.
+
+**Timeline for `--strict` flip:** Q3 2026, after the 15 violations
+above are remediated in a focused PR.
+
+#### 9.2.3 End-to-end test: modify standard → verify → CI — IMPLEMENTED
+
+**Status:** ✅ IMPLEMENTED in
+`.github/workflows/e2e-verifiers.yml` (5 tests, smoke-tested
+locally).
+
+**Why:** The manual test scenarios in §6 should be automated to
+catch regressions before they reach production. Without this, each
+verifier change is reviewed by hand, which does not scale.
+
+**Implementation (shipped):**
+
+Reusable workflow in `.github/workflows/e2e-verifiers.yml` with 5
+tests:
+
+1. **Test 1**: creates a 1004-line `_e2e_test_v11.md` in
+   `standards/standards/`, runs `verify-standards.js`, expects exit
+   1 with V11 in output. Cleans up.
+2. **Test 2**: runs `verify-standards.js` after cleanup, expects
+   PASS.
+3. **Test 3**: creates a `_e2e-test-skill/` folder with a SKILL.md
+   whose `name` field does not match the folder name, runs
+   `verify-skills.js --strict`, expects exit 1 with S02 in output.
+   Cleans up.
+4. **Test 4**: runs `verify-skills.js` after cleanup, expects PASS.
+5. **Test 5**: modifies `id-graph-baseline.json` (in-memory, not
+   committed), runs `verify-id-graph.js --compare`, expects exit 1
+   with MISMATCH in output. Restores baseline, re-runs, expects
+   PASS.
+
+**Triggers:** `workflow_dispatch` (manual), `pull_request` to main
+(only when `standards/scripts/**` or the e2e workflow itself
+changes — avoids wasted runner minutes on unrelated PRs).
+
+**Local smoke test:** all 5 tests verified PASS in the development
+session before commit.
 
 ### 9.3 P1 — Important (Q4 2026)
 
@@ -702,3 +792,4 @@ do not re-introduce them.
 |---|---|
 | 2026-06-21 | Initial creation. Merges two draft documents ("Полный CI/CD Pipeline" and "Уровни тестирования Z-ai-platform") into one canonical reference. Documents the actual existing workflow (`.github/workflows/verify-id-graph.yml`, 250 lines) instead of a hypothetical one. Includes §11 bug audit table documenting 12 factual errors in the drafts against actual repo state. |
 | 2026-06-21 | Rewrite of §9 — expanded from a flat 7-row table into a structured priority matrix (§9.1) with P0/P1/P2 sections (§9.2/9.3/9.4), each item carrying explicit owner, target quarter, and dependencies. Adds §9.2.2 `verify-skills.js` scope (35/36 skills have no validator — formalised as P0 blocker for v2.5.0). Adds §9.3.2 `run-contract.sh --dry-run` in CI (the `--dry-run` flag already exists in `run-contract.sh` §1, so this is a one-step CI addition with no script-side prerequisite). Adds §9.4.3 `--help` flag for verifiers (P2 UX improvement). Adds §10.8.1 LESSON-004a — refined two-layer guard (uncommitted-state check + `--force` flag) replacing the audit's initial `$PWD`-prefix proposal, which is fragile across clone paths and sandbox configurations. Cross-references `SESSION_NOTES.md` §12.8 for the full structured lesson entry. Updates §11 #12 to point at §10.8.1. |
+| 2026-06-21 | **All three P0 items in §9.2 marked IMPLEMENTED.** (1) §9.2.1 snapshot test: `verify-id-graph.js` v1.1.4 adds `--snapshot`/`--compare`/`--update-snapshot` flags, baseline at `standards/_snapshots/id-graph-baseline.json`, CI step in `verify-id-graph.yml`. (2) §9.2.2 `verify-skills.js` v1.0.0: new skills-side verifier with 9 checks (S01-S09 mapping to V11a-V14b), soft-default mode (S02/S03/S05 are SOFT until 15 pre-existing violations remediated, then `--strict` flip), Phase 3 in `.githooks/pre-commit`, CI step in `verify-id-graph.yml`. (3) §9.2.3 e2e test: `.github/workflows/e2e-verifiers.yml` with 5 tests (V11 violation, cleanup PASS, S02 violation, cleanup PASS, snapshot compare mismatch), smoke-tested locally. Remediation backlog for `--strict` flip: 6 STS skills with `name: foo_sts`, 1 `phi-layout` wrong name, 3 skills missing `_sts` suffix, 4 skills missing `version:` field. |

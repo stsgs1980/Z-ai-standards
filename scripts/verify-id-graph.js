@@ -59,7 +59,7 @@ const path = require('path');
 // CONSTANTS
 // ============================================================================
 
-const VERSION = '1.1.3';
+const VERSION = '1.1.4';
 const EFFECTIVE_DATE = '2026-06-17';
 
 // Allowed Related: edges per STD-META-001 §6.1
@@ -169,6 +169,9 @@ function parseArgs(argv) {
     verbose: false,
     repo: null,
     help: false,
+    snapshot: null,
+    compare: null,
+    updateSnapshot: false,
   };
   for (const arg of argv.slice(2)) {
     if (arg === '--help' || arg === '-h') opts.help = true;
@@ -176,12 +179,19 @@ function parseArgs(argv) {
     else if (arg === '--ci') opts.ci = true;
     else if (arg === '--fail-on-warnings') opts.failOnWarnings = true;
     else if (arg === '--verbose') opts.verbose = true;
+    else if (arg === '--update-snapshot') opts.updateSnapshot = true;
     else if (arg.startsWith('--root=')) opts.root = arg.slice(7);
     else if (arg.startsWith('--repo=')) opts.repo = arg.slice(7);
+    else if (arg.startsWith('--snapshot=')) opts.snapshot = arg.slice(11);
+    else if (arg.startsWith('--compare=')) opts.compare = arg.slice(10);
     else {
       console.error(`Unknown argument: ${arg}`);
       process.exit(2);
     }
+  }
+  // --update-snapshot implies --snapshot=baseline.json if no path given
+  if (opts.updateSnapshot && !opts.snapshot && !opts.compare) {
+    opts.snapshot = 'baseline.json';
   }
   return opts;
 }
@@ -200,12 +210,37 @@ Options:
   --fail-on-warnings   Exit 1 if any warning is emitted
   --verbose            Print full graph
   --repo=<name>        Limit to one repo (debug): standards|guard|skills|platform
+  --snapshot=<file>    Write current graph JSON to <file> (creates/overwrites)
+  --compare=<file>     Compare current graph to snapshot in <file>; exit 1 on diff
+  --update-snapshot    Equivalent to --snapshot=<file> for the path given by
+                       --compare, or --snapshot=baseline.json if neither given.
+                       Use this to refresh the baseline after an intentional
+                       graph change (e.g. adding a new standard ID).
   --help, -h           Show this help
 
+Snapshot testing (v1.1.4+):
+  The graph produced by this verifier is deterministic: the same input
+  (same set of .md files with the same IDs and Related: edges) MUST
+  produce the same JSON output. The --snapshot and --compare flags
+  exploit this to detect silent regressions during refactoring.
+
+  Workflow:
+    1. Baseline (one-time, or after intentional graph change):
+         node verify-id-graph.js --snapshot=baseline.json
+    2. CI check (every push):
+         node verify-id-graph.js --compare=baseline.json
+       Exits 1 if current graph differs from baseline.
+    3. Update baseline (after intentional change, reviewed in PR):
+         node verify-id-graph.js --update-snapshot --compare=baseline.json
+
+  The snapshot file includes a 'snapshot_meta' block with script_version
+  and created_at ISO timestamp. A version mismatch between script and
+  baseline is a WARNING, not a FAIL — the structure may still match.
+
 Exit codes:
-  0 — all HARD checks pass
-  1 — at least one HARD check failed
-  2 — configuration error
+  0 — all HARD checks pass (warnings may be present); snapshot compare OK
+  1 — at least one HARD check failed, OR snapshot compare mismatched
+  2 — configuration error (missing repos, parse error, bad CLI args)
 `);
 }
 
@@ -1317,7 +1352,7 @@ function emitJSON(opts) {
   const hardPass = Object.values(results.checks).filter(c => c.status === 'PASS').length;
   const hardFail = Object.values(results.checks).filter(c => c.status === 'FAIL').length;
 
-  return JSON.stringify({
+  const payload = {
     version: VERSION,
     effective_date: EFFECTIVE_DATE,
     summary: {
@@ -1335,7 +1370,109 @@ function emitJSON(opts) {
       details: c.details,
     })),
     warnings: results.warnings,
-  }, null, 2);
+  };
+
+  // When writing a snapshot, embed metadata so consumers can detect
+  // script-version drift without parsing the version field separately.
+  if (opts.snapshot || opts.updateSnapshot) {
+    payload.snapshot_meta = {
+      script_version: VERSION,
+      created_at: new Date().toISOString(),
+      purpose: 'Baseline for verify-id-graph.js --compare. Do not hand-edit; regenerate with --update-snapshot.',
+    };
+  }
+  return JSON.stringify(payload, null, 2);
+}
+
+// ============================================================================
+// SNAPSHOT COMPARE
+// ============================================================================
+
+/**
+ * Compare the current graph (as emitted by emitJSON) to a baseline file.
+ *
+ * Comparison is structural:
+ *   - summary block: exact match required (counts must be identical)
+ *   - checks block: every check id+status+description must match; details
+ *     arrays are compared as sorted sets (order-independent)
+ *   - warnings block: compared as sorted arrays of {code, message} pairs;
+ *     order does not matter, but the set must be identical
+ *
+ * script_version mismatch (in snapshot_meta) is a WARNING printed to stderr,
+ * not a comparison failure — the structure may still match.
+ *
+ * Returns { ok: true } or { ok: false, diff: [string, ...] }.
+ */
+function compareSnapshot(currentJSON, baselinePath) {
+  const diffs = [];
+  let baseline;
+  try {
+    baseline = JSON.parse(fs.readFileSync(baselinePath, 'utf8'));
+  } catch (e) {
+    return {
+      ok: false,
+      diff: [`[snapshot] Could not read baseline file ${baselinePath}: ${e.message}`],
+    };
+  }
+
+  // Version mismatch warning (non-fatal)
+  if (baseline.snapshot_meta && baseline.snapshot_meta.script_version &&
+      baseline.snapshot_meta.script_version !== VERSION) {
+    console.error(`[snapshot] WARNING: baseline was created with version ${baseline.snapshot_meta.script_version}, current is ${VERSION}. Structure may still match.`);
+  }
+
+  // Compare summary
+  const curSum = currentJSON.summary;
+  const baseSum = baseline.summary || {};
+  for (const key of ['ids_extracted', 'related_edges', 'aligned_with_edges', 'hard_pass', 'hard_fail', 'warnings']) {
+    if (curSum[key] !== baseSum[key]) {
+      diffs.push(`[snapshot] summary.${key}: baseline=${baseSum[key]}, current=${curSum[key]}`);
+    }
+  }
+
+  // Compare checks (by id)
+  const curChecks = new Map((currentJSON.checks || []).map(c => [c.id, c]));
+  const baseChecks = new Map((baseline.checks || []).map(c => [c.id, c]));
+  const allCheckIds = new Set([...curChecks.keys(), ...baseChecks.keys()]);
+  for (const id of [...allCheckIds].sort()) {
+    const cur = curChecks.get(id);
+    const base = baseChecks.get(id);
+    if (!base) {
+      diffs.push(`[snapshot] check ${id}: present in current, MISSING in baseline`);
+      continue;
+    }
+    if (!cur) {
+      diffs.push(`[snapshot] check ${id}: MISSING in current, present in baseline`);
+      continue;
+    }
+    if (cur.status !== base.status) {
+      diffs.push(`[snapshot] check ${id}.status: baseline=${base.status}, current=${cur.status}`);
+    }
+    if (cur.description !== base.description) {
+      diffs.push(`[snapshot] check ${id}.description changed`);
+    }
+    // details: compare as sorted arrays
+    const curDetails = (cur.details || []).slice().sort();
+    const baseDetails = (base.details || []).slice().sort();
+    if (JSON.stringify(curDetails) !== JSON.stringify(baseDetails)) {
+      diffs.push(`[snapshot] check ${id}.details differ (baseline ${baseDetails.length} entries, current ${curDetails.length})`);
+    }
+  }
+
+  // Compare warnings (as sorted set of {code, message})
+  const normWarn = (w) => (w.code + '::' + (w.message || w.msg || JSON.stringify(w)));
+  const curWarn = (currentJSON.warnings || []).map(normWarn).sort();
+  const baseWarn = (baseline.warnings || []).map(normWarn).sort();
+  if (JSON.stringify(curWarn) !== JSON.stringify(baseWarn)) {
+    const curSet = new Set(curWarn);
+    const baseSet = new Set(baseWarn);
+    const added = curWarn.filter(w => !baseSet.has(w));
+    const removed = baseWarn.filter(w => !curSet.has(w));
+    if (added.length) diffs.push(`[snapshot] warnings ADDED: ${added.length} (first: ${added[0].slice(0, 100)})`);
+    if (removed.length) diffs.push(`[snapshot] warnings REMOVED: ${removed.length} (first: ${removed[0].slice(0, 100)})`);
+  }
+
+  return { ok: diffs.length === 0, diff: diffs };
 }
 
 // ============================================================================
@@ -1397,10 +1534,49 @@ function main() {
   phase10_healthWarnings(repos);
 
   // Emit output
+  // For snapshot/compare modes we need the JSON payload regardless of
+  // --json flag, so we always compute it.
+  const jsonPayload = JSON.parse(emitJSON({...opts, json: true}));
+
   if (opts.json) {
-    console.log(emitJSON(opts));
-  } else {
+    console.log(JSON.stringify(jsonPayload, null, 2));
+  } else if (!opts.snapshot && !opts.compare && !opts.updateSnapshot) {
     console.log(emitHumanReadable(opts));
+  }
+
+  // Snapshot write (always before compare, so --update-snapshot --compare
+  // both writes the new baseline AND verifies it round-trips).
+  if (opts.snapshot || (opts.updateSnapshot && opts.compare)) {
+    const target = opts.snapshot || opts.compare;
+    try {
+      // Force snapshot_meta to be included in the written file
+      const withMeta = JSON.parse(emitJSON({snapshot: true}));
+      fs.writeFileSync(target, JSON.stringify(withMeta, null, 2) + '\n', 'utf8');
+      if (!opts.json) {
+        console.error(`[snapshot] Wrote baseline to ${target} (${withMeta.summary.ids_extracted} IDs, ${withMeta.summary.related_edges} edges, ${withMeta.summary.warnings} warnings)`);
+      }
+    } catch (e) {
+      console.error(`[snapshot] Could not write to ${target}: ${e.message}`);
+      process.exit(2);
+    }
+  }
+
+  // Compare (only when not updating)
+  if (opts.compare && !opts.updateSnapshot) {
+    const result = compareSnapshot(jsonPayload, opts.compare);
+    if (!result.ok) {
+      console.error(`[snapshot] MISMATCH vs ${opts.compare} (${result.diff.length} difference(s)):`);
+      for (const d of result.diff) {
+        console.error('  ' + d);
+      }
+      console.error('');
+      console.error('[snapshot] If this change is intentional, run:');
+      console.error(`  node verify-id-graph.js --update-snapshot --compare=${opts.compare}`);
+      console.error('[snapshot] Then commit the updated baseline.');
+      process.exit(1);
+    } else if (!opts.json) {
+      console.error(`[snapshot] OK — current graph matches ${opts.compare}`);
+    }
   }
 
   // Exit code
