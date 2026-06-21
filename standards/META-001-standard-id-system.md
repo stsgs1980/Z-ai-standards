@@ -252,90 +252,36 @@ handled by the ID migration protocol (§8), not by exempting the file.
 > matrix row are exempt by rule; this list exists so the rule cannot
 > lie about what it covers.
 
-**Append-only session logs (3 files):**
+**Append-only session logs (3 files, 4 827 lines):** `docs/session/worklog.md` (3241),
+`docs/session/DECISIONS_LOG.md` (810), `docs/session/SESSION_NOTES.md` (776).
 
-| Lines | Path |
-|---|---|
-| 3241 | `docs/session/worklog.md` |
-| 810 | `docs/session/DECISIONS_LOG.md` |
-| 776 | `docs/session/SESSION_NOTES.md` |
+**Append-only migration log (1 file):** `standards/MIGRATIONS.md` (142).
 
-**Append-only migration log (1 file):**
+**Router INDEX.md (3 files):** `standards/docs/sandbox/INDEX.md` (142),
+`skills/skills/INDEX.md` (119), `guard/rules/INDEX.md` (43).
 
-| Lines | Path |
-|---|---|
-| 142 | `standards/MIGRATIONS.md` |
+**Externalised references (43 files, 14 182 lines):** spread across 9 skills.
+Top 10 by size: `phi-layout/references/grid-patterns.md` (1393),
+`react-dev/references/react-router.md` (1002),
+`phi-layout/references/golden-ratio-layouts.md` (692),
+`phi-layout/references/fibonacci-scale.md` (677),
+`react-dev/references/react-19-patterns.md` (638),
+`react-dev/references/tanstack-router.md` (587),
+`react-dev/references/event-handlers.md` (574),
+`mermaid-diagrams/references/advanced-features.md` (556),
+`mermaid-diagrams/references/erd-diagrams.md` (510),
+`react-dev/references/hooks.md` (456). The remaining 33 files range
+46–450 lines. Full list regenerable via `scripts/audit_md_files.py`.
 
-**Router INDEX.md (3 files):**
-
-| Lines | Path |
-|---|---|
-| 142 | `standards/docs/sandbox/INDEX.md` |
-| 119 | `skills/skills/INDEX.md` |
-| 43 | `guard/rules/INDEX.md` |
-
-**Externalised references (43 files, 14 182 lines):**
-
-| Lines | Path |
-|---|---|
-| 1393 | `skills/skills/phi-layout/references/grid-patterns.md` |
-| 1002 | `skills/skills/react-dev/references/react-router.md` |
-| 692 | `skills/skills/phi-layout/references/golden-ratio-layouts.md` |
-| 677 | `skills/skills/phi-layout/references/fibonacci-scale.md` |
-| 638 | `skills/skills/react-dev/references/react-19-patterns.md` |
-| 587 | `skills/skills/react-dev/references/tanstack-router.md` |
-| 574 | `skills/skills/react-dev/references/event-handlers.md` |
-| 556 | `skills/skills/mermaid-diagrams/references/advanced-features.md` |
-| 510 | `skills/skills/mermaid-diagrams/references/erd-diagrams.md` |
-| 456 | `skills/skills/react-dev/references/hooks.md` |
-| 450 | `skills/skills/mermaid-diagrams/references/flowcharts.md` |
-| 430 | `skills/skills/skill-creator/references/schemas.md` |
-| 430 | `skills/skills/qa-test-planner/references/test_case_templates.md` |
-| 423 | `skills/skills/qa-test-planner/references/bug_report_templates.md` |
-| 410 | `skills/skills/mermaid-diagrams/references/c4-diagrams.md` |
-| 394 | `skills/skills/mermaid-diagrams/references/sequence-diagrams.md` |
-| 372 | `skills/skills/phi-layout/references/components-bento.md` |
-| 371 | `skills/skills/qa-test-planner/references/regression_testing.md` |
-| 361 | `skills/skills/mermaid-diagrams/references/class-diagrams.md` |
-| 345 | `skills/skills/qa-test-planner/references/figma_validation.md` |
-| 334 | `skills/skills/phi-layout/references/components-grid.md` |
-| 318 | `skills/skills/phi-layout/references/components-dark-mode.md` |
-| 246 | `skills/skills/phi-layout/references/components-split-column.md` |
-| 192 | `skills/skills/mermaid-diagrams/references/architecture-diagrams.md` |
-| 175 | `skills/skills/gepetto/references/research-protocol.md` |
-| 169 | `skills/skills/skill-creator/references/id-assignment-guide.md` |
-| 169 | `skills/skills/zai-skill-registry/references/id-assignment-guide.md` |
-| 161 | `skills/skills/phi-layout/references/components-server.md` |
-| 156 | `skills/skills/session-log/references/templates.md` |
-| 149 | `skills/skills/gepetto/references/section-splitting.md` |
-| 139 | `skills/skills/session-handoff/references/handoff-template.md` |
-| 134 | `skills/skills/gepetto/references/section-index.md` |
-| 126 | `skills/skills/gepetto/references/external-review.md` |
-| 118 | `skills/skills/database-schema-designer/references/schema-design-checklist.md` |
-| 109 | `skills/skills/phi-layout/references/components-tailwind.md` |
-| 80 | `skills/skills/session-handoff/references/resume-checklist.md` |
-| 59 | `skills/skills/gepetto/references/interview-protocol.md` |
-| 59 | `skills/skills/reducing-entropy/references/expensive-to-add-later.md` |
-| 56 | `skills/skills/reducing-entropy/references/design-is-taking-apart.md` |
-| 48 | `skills/skills/reducing-entropy/references/data-over-abstractions.md` |
-| 46 | `skills/skills/reducing-entropy/references/simplicity-vs-easy.md` |
-| 13 | `skills/skills/commit-work/references/commit-message-template.md` |
-
-**Standards companion files (5 files, 1 867 lines):**
-
-> Companion files are NOT parser-bound — they inherit parent ID via
-> "Companion to: STD-XXX-NNN" header line. They live outside
-> `references/` because they belong to standards, not skills. Listed
-> here so the rule cannot lie about what it covers. See §4.18.3 for
-> the parser-bound file split protocol that justifies this category.
-
-| Lines | Path |
-|---|---|
-| 947 | `standards/standards/DESIGN-001-profile-terminal-dashboard.md` |
-| 389 | `standards/standards/DOC-002-eslint-integration.md` |
-| 216 | `standards/standards/META-001-id-registry.md` |
-| 209 | `standards/standards/DESIGN-001-profile-cards.md` |
-| 106 | `standards/standards/META-001-faq.md` |
+**Standards companion files (5 files, 1 867 lines):** Companion files
+are NOT parser-bound — they inherit parent ID via "Companion to:
+STD-XXX-NNN" header line. They live outside `references/` because they
+belong to standards, not skills. Listed here so the rule cannot lie
+about what it covers. See §4.18.3 for the parser-bound file split
+protocol that justifies this category. Files:
+`DESIGN-001-profile-terminal-dashboard.md` (947),
+`DOC-002-eslint-integration.md` (389), `META-001-id-registry.md` (216),
+`DESIGN-001-profile-cards.md` (209), `META-001-faq.md` (106).
 
 #### 4.18.5 Domain standard references
 
@@ -346,6 +292,9 @@ Domain standards MUST reference this section instead of duplicating:
 - `STD-SKILL-001 §8.2` -> "CONTRACT.md hard ceiling: 500 lines, see
   META-001 §4.18.1 (CONTRACT.md row); soft warn at 300" (added
   2026-06-21, O-017 Phase D2)
+- `STD-SKILL-001 §8.2` -> "README.md hard ceiling: 400 lines, see
+  META-001 §4.18.1 (README.md row); soft warn at 250" (added
+  2026-06-22, S10c activation — see §4.18.7)
 - `STD-FE-001 §6` -> own 150/250 source-code table, consistent with
   §4.18.1 source-code row; future revisions should cross-link
 - `STD-DOC-002 §11` -> Markdown formatting exceptions (separate
@@ -365,6 +314,25 @@ sections, all mandatory per `skills/docs/CONTRACT-TEMPLATE.md`). If a future
 CONTRACT.md exceeds 500, externalise auxiliary sections (change history,
 cross-refs, honest uncertainties) to `references/contract-<aspect>.md` —
 these are NOT parser-bound (see §4.18.3). Change history for §4.18: see §15.
+
+#### 4.18.7 README.md cap rationale (added 2026-06-22, S10c activation)
+
+The 400-line cap on `README.md` existed in §4.18.1 since 2026-06-21 but was
+not enforced by `verify-skills.js` until 2026-06-22 (S10c, v1.1.1) because
+2 pre-existing violations blocked activation: `gepetto/README.md` 485 lines
+(+85) and `react-dev/README.md` 404 lines (+4). Both were remediated on
+2026-06-22 (gepetto 485→302, react-dev 404→392), unblocking S10c as HARD.
+
+The 400-line ceiling reflects README's purpose as an **onboarding/overview
+document**. Detailed integration examples, lengthy code samples, and
+exhaustive feature catalogues belong in `references/` (loaded on-demand,
+exempt per §4.18.1). If a future README exceeds 400, move detailed
+integration examples to a new file under `references/` (topic-specific,
+e.g. `references/integration-<tool>.md`). Remediation approach for gepetto:
+consolidated 3 overlapping "Implementing the Plan" / "Integration with
+ralph-loop" / "Integration with Ralphy" sections into one with key
+differences in a comparison table; react-dev: condensed one multi-item
+bullet list into a paragraph (was only 4 lines over).
 
 ---
 

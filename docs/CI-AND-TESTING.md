@@ -594,23 +594,26 @@ checks. Safe to run in CI without side effects.
 
 **Owner:** @devops. **Target:** Q4 2026.
 
-#### 9.3.3 Tiered hard caps for skills/ (V12) — IMPLEMENTED (2026-06-21, O-017 Phase D2)
+#### 9.3.3 Tiered hard caps for skills/ (V12) — IMPLEMENTED + EXTENDED (2026-06-21, O-017 Phase D2; S10c added 2026-06-22)
 
-**Status:** ✅ IMPLEMENTED in `verify-skills.js` v1.1.0 (S10a + S10b checks).
+**Status:** ✅ IMPLEMENTED in `verify-skills.js` v1.1.1 (S10a + S10b + S10c checks).
 
 **What was added:**
 
 | Check | Cap | Scope | Rationale |
 |---|---|---|---|
 | S10a (V12a) | SKILL.md ≤ 800 lines | all 36 skill folders | META-001 §4.18.1 SKILL.md row (existing ceiling, NEW runtime enforcement — replaces deferred `PROC-LINECOUNT-004`) |
-| S10b (V12b) | CONTRACT.md ≤ 500 lines | 2 skills with CONTRACT.md | META-001 §4.18.1 CONTRACT.md row (NEW row added 2026-06-21) |
+| S10b (V12b) | CONTRACT.md ≤ 500 lines | 2 skills with CONTRACT.md | META-001 §4.18.1 CONTRACT.md row (added 2026-06-21) |
+| S10c (V12c) | README.md ≤ 400 lines | 10 skills with README.md | META-001 §4.18.1 README.md row (existing ceiling, NEW runtime enforcement — added 2026-06-22 after gepetto+react-dev remediation) |
 
 **Why tiered, not flat (per O-015 + LESSON-001):** A flat 1000-line cap
 (like V11 in `verify-standards.js`) doesn't fit the heterogeneous skills/
 corpus. SKILL.md is a trigger surface (must load in one read, 800 cap).
 CONTRACT.md is a structural document (10 mandatory sections per
-`skills/docs/CONTRACT-TEMPLATE.md`, 500 cap). References are loaded on
-demand and exempt per §4.18.1 — no cap.
+`skills/docs/CONTRACT-TEMPLATE.md`, 500 cap). README.md is an
+onboarding/overview document (400 cap — detailed examples belong in
+`references/`). References are loaded on demand and exempt per §4.18.1 —
+no cap.
 
 **Why 500 for CONTRACT.md (not 200 as O-017 originally proposed):** The
 original O-017 proposal suggested 200 lines, but both pilot contracts
@@ -621,37 +624,43 @@ adjusted to fit measured reality rather than compressing the structural
 10-section shape. The 500-line cap gives ~7% headroom over the largest
 pilot. See `META-001 §4.18.6` for the full rationale.
 
-**What was NOT added (deferred):**
+**Why S10c was activated on 2026-06-22 (not 2026-06-21 with S10a/S10b):**
+The 400-line README.md cap existed in §4.18.1 since 2026-06-21, but 2
+pre-existing violations blocked HARD enforcement from day 1
+(`gepetto/README.md` 485 lines, `react-dev/README.md` 404 lines). Both
+were remediated on 2026-06-22 (gepetto 485→302 via consolidating 3
+overlapping integration sections; react-dev 404→392 via condensing one
+multi-item bullet list into a paragraph), unblocking S10c as HARD from
+day 1. See `META-001 §4.18.7` for the full rationale.
 
-- **README.md ≤ 400 lines** (existing §4.18.1 row, NOT yet enforced).
-  Reason: 2 existing READMEs violate the 400 cap
-  (`gepetto/README.md` 485 lines, `react-dev/README.md` 404 lines).
-  These need remediation before enforcement can be turned on. Tracked
-  as future task (post-D2).
+**What was NOT added:**
+
 - **References cap.** References are exempt per §4.18.1 — no cap. The
   O-017 proposal's "references ≤ 2000" was wrong (contradicts §4.18.1);
   corrected in this implementation.
 
 **Companion standard changes:**
 
-- `META-001 §4.18.1` — added CONTRACT.md row (500/300)
-- `META-001 §4.18.5` — added cross-link to STD-SKILL-001 §8.2 for CONTRACT.md
-- `META-001 §4.18.6` — new subsection, cap rationale
-- `STD-SKILL-001 §8.2` — added CONTRACT.md ceiling line
-- `STD-SKILL-001 §10.1` — replaced deferred `PROC-LINECOUNT-004` row with active `verify-skills.js S10a/S10b` rows
-- `verify-skills.js` — v1.0.0 → v1.1.0, added S10 check (HARD from day 1)
+- `META-001 §4.18.1` — README.md row pre-existing; CONTRACT.md row added 2026-06-21
+- `META-001 §4.18.5` — added cross-links to STD-SKILL-001 §8.2 for CONTRACT.md (2026-06-21) and README.md (2026-06-22)
+- `META-001 §4.18.6` — CONTRACT.md cap rationale (added 2026-06-21)
+- `META-001 §4.18.7` — README.md cap rationale (added 2026-06-22)
+- `STD-SKILL-001 §8.2` — added CONTRACT.md ceiling line (2026-06-21) + README.md ceiling line (2026-06-22)
+- `STD-SKILL-001 §10.1` — replaced deferred `PROC-LINECOUNT-004` row with active `verify-skills.js S10a/S10b/S10c` rows
+- `verify-skills.js` — v1.0.0 → v1.1.0 (2026-06-21, S10a+S10b) → v1.1.1 (2026-06-22, +S10c)
 
-**Verification (post-implementation):**
+**Verification (post-S10c implementation, 2026-06-22):**
 
 ```
-verify-skills.js --strict: 8/8 HARD PASS (incl. S10a + S10b)
-  S10a: all 36 SKILL.md files ≤ 800 lines (max: 782, z-ai-web-dev-sdk)
-  S10b: all 2 CONTRACT.md files ≤ 500 lines (max: 466, session-handoff)
-verify-standards.js: 8/8 PASS (META-001 compressed to 994 lines after §4.18.6 rationale trim)
-verify-id-graph.js: 13/13 HARD + snapshot OK (4 new W13 warnings added to baseline — false positives from prose mentions of CONTRACT.md paths in standards/ docs)
+verify-skills.js --strict: 9/9 HARD PASS (incl. S10a + S10b + S10c)
+  S10a: all 36 SKILL.md files ≤ 800 lines
+  S10b: all 2 CONTRACT.md files ≤ 500 lines
+  S10c: all 10 README.md files ≤ 400 lines (max: 392, react-dev)
+verify-standards.js: 8/8 PASS (META-001 = 962 lines after §4.18.7 addition + §4.18.4 exempt-list compression)
+verify-id-graph.js: 13/13 HARD + snapshot OK
 ```
 
-**Owner:** @tech-lead. **Status:** COMPLETE 2026-06-21.
+**Owner:** @tech-lead. **Status:** COMPLETE 2026-06-22 (S10a+S10b on 2026-06-21, S10c on 2026-06-22).
 
 ### 9.4 P2 — Nice to have (Q1 2027)
 

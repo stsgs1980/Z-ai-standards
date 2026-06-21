@@ -14,7 +14,7 @@
  *   analogue of verify-standards.js — same pattern, different corpus.
  *
  *   The script scans the skills/ submodule (sibling of standards/) and
- *   runs 10 checks per SKILL.md:
+ *   runs 11 checks per SKILL.md:
  *
  *     S01 (V11a)  SKILL.md exists in every skills/skills/{name}/ folder
  *     S02 (V11b)  frontmatter `name` matches folder name
@@ -29,6 +29,7 @@
  *     S10 (V12)   Tiered hard caps (META-001 §4.18.1):
  *                   S10a: SKILL.md ≤ 800 lines (HARD, all skills)
  *                   S10b: CONTRACT.md ≤ 500 lines (HARD, if CONTRACT.md exists)
+ *                   S10c: README.md ≤ 400 lines (HARD, if README.md exists)
  *                 References are exempt per §4.18.1 — no check.
  *
  *   Checks S01, S02, S03, S04, S05, S09, S10 are HARD (exit 1 on fail).
@@ -37,6 +38,7 @@
  * SCOPE
  *   - skills/skills/{name}/SKILL.md  (one per skill folder, 36 folders today)
  *   - skills/skills/{name}/CONTRACT.md  (optional, 2 skills today)
+ *   - skills/skills/{name}/README.md  (optional, present in most skills)
  *   - Does NOT validate the skills/docs/ companion files (those are
  *     prose, not skill definitions).
  *   - Does NOT validate skill scripts (run-contract.sh etc.) — those
@@ -64,8 +66,8 @@
 const fs = require('fs');
 const path = require('path');
 
-const VERSION = '1.1.0';
-const EFFECTIVE_DATE = '2026-06-21';
+const VERSION = '1.1.1';
+const EFFECTIVE_DATE = '2026-06-22';
 
 // ============================================================================
 // PATH RESOLUTION
@@ -544,8 +546,9 @@ function runChecks(platformRoot, opts) {
   // S10 (V12): Tiered hard caps per META-001 §4.18.1
   //   S10a: SKILL.md   ≤ 800 lines  HARD (all skills)
   //   S10b: CONTRACT.md ≤ 500 lines  HARD (if CONTRACT.md exists)
+  //   S10c: README.md   ≤ 400 lines  HARD (if README.md exists)
   //
-  // RATIONALE (2026-06-21, O-017 Phase D2)
+  // RATIONALE (2026-06-21, O-017 Phase D2 + 2026-06-22 README cap)
   //   META-001 §4.18.1 already specifies the SKILL.md ≤ 800 ceiling,
   //   but enforcement was deferred (PROC-LINECOUNT-004 not implemented).
   //   S10a promotes this ceiling from documentation to a runtime HARD
@@ -560,19 +563,25 @@ function runChecks(platformRoot, opts) {
   //   measured reality rather than compressing the pilots. See
   //   META-001 §4.18.6 for the full rationale.
   //
+  //   S10c (added 2026-06-22) enforces README.md ≤ 400. The cap existed
+  //   in §4.18.1 since 2026-06-21 but was deferred pending remediation
+  //   of 2 pre-existing violations (gepetto 485, react-dev 404). Both
+  //   were remediated on 2026-06-22 (gepetto → 302, react-dev → 392);
+  //   S10c is now active as HARD from day 1.
+  //
   //   References are EXEMPT per §4.18.1 (references/**.md row) — no
-  //   check applied. README.md ≤ 400 cap exists in §4.18.1 but is
-  //   NOT enforced by S10 yet (deferred to a future task; 2 existing
-  //   READMEs violate the 400 cap and need remediation first).
+  //   check applied.
   //
   // SCOPE
   //   - skills/skills/{name}/SKILL.md (every skill folder)
   //   - skills/skills/{name}/CONTRACT.md (only if present, 2 today)
+  //   - skills/skills/{name}/README.md (only if present, most skills)
   //   - References are explicitly NOT scanned (exempt per §4.18.1)
   //
   // THRESHOLDS
   //   SKILL.md:    800 lines (matches §4.18.1 SKILL.md row exactly)
-  //   CONTRACT.md: 500 lines (matches §4.18.1 CONTRACT.md row, new)
+  //   CONTRACT.md: 500 lines (matches §4.18.1 CONTRACT.md row)
+  //   README.md:   400 lines (matches §4.18.1 README.md row)
   //
   // FAILURE MODE
   //   If a file exceeds its cap, the offender is reported with the
@@ -582,15 +591,20 @@ function runChecks(platformRoot, opts) {
   //     (b) For CONTRACT.md, externalise auxiliary sections (change
   //         history, cross-refs, honest uncertainties) to references/
   //         — these are NOT parser-bound, see META-001 §4.18.6
+  //     (c) For README.md, move detailed integration examples to
+  //         references/ — README is for onboarding/overview only.
   // ----------------------------------------------------------------
   (function S10() {
     const SKILLMD_CAP = 800;
     const CONTRACTMD_CAP = 500;
+    const READMEMD_CAP = 400;
 
     const skillMdOffenders = [];
     const contractMdOffenders = [];
+    const readmeMdOffenders = [];
     let skillMdChecked = 0;
     let contractMdChecked = 0;
+    let readmeMdChecked = 0;
 
     for (const s of skillDirs) {
       // S10a: SKILL.md
@@ -616,6 +630,17 @@ function runChecks(platformRoot, opts) {
           contractMdOffenders.push(`${s.name}/CONTRACT.md: ${lineCount} lines (exceeds ${CONTRACTMD_CAP}-line cap, externalise auxiliary sections to references/ — see META-001 §4.18.6)`);
         }
       }
+
+      // S10c: README.md (optional)
+      const readmeMdPath = path.join(s.path, 'README.md');
+      if (fs.existsSync(readmeMdPath)) {
+        readmeMdChecked++;
+        const content = fs.readFileSync(readmeMdPath, 'utf8');
+        const lineCount = content === '' ? 0 : content.split('\n').length - (content.endsWith('\n') ? 1 : 0);
+        if (lineCount > READMEMD_CAP) {
+          readmeMdOffenders.push(`${s.name}/README.md: ${lineCount} lines (exceeds ${READMEMD_CAP}-line cap, move detailed examples to references/ — README is for onboarding/overview only)`);
+        }
+      }
     }
 
     // S10a: SKILL.md
@@ -634,6 +659,15 @@ function runChecks(platformRoot, opts) {
       contractMdOffenders.length === 0
         ? (contractMdChecked === 0 ? 'no skills have CONTRACT.md (optional)' : `all ${contractMdChecked} CONTRACT.md files ≤ ${CONTRACTMD_CAP} lines`)
         : `${contractMdOffenders.length} file(s) over cap: ${contractMdOffenders.join('; ')}`
+    );
+
+    // S10c: README.md
+    check('S10c',
+      `README.md ≤ ${READMEMD_CAP} lines (META-001 §4.18.1, README.md row) — checked ${readmeMdChecked} README.md files`,
+      readmeMdOffenders.length === 0,
+      readmeMdOffenders.length === 0
+        ? (readmeMdChecked === 0 ? 'no skills have README.md (optional)' : `all ${readmeMdChecked} README.md files ≤ ${READMEMD_CAP} lines`)
+        : `${readmeMdOffenders.length} file(s) over cap: ${readmeMdOffenders.join('; ')}`
     );
   })();
 }
@@ -680,6 +714,7 @@ Checks (S01-S10, mapping to STD-SKILL-001 §10.1 V11a-V14b + META-001 §4.18.1 V
     S09 (V14b)  frontmatter version matches blockquote Version:
     S10a (V12)  SKILL.md ≤ 800 lines (META-001 §4.18.1, SKILL.md row)
     S10b (V12)  CONTRACT.md ≤ 500 lines (META-001 §4.18.1, CONTRACT.md row)
+    S10c (V12)  README.md ≤ 400 lines (META-001 §4.18.1, README.md row)
 
   SOFT-default, HARD with --strict — see rationale below:
     S02 (V11b)  frontmatter name matches folder name (without _sts suffix)
@@ -691,15 +726,17 @@ Checks (S01-S10, mapping to STD-SKILL-001 §10.1 V11a-V14b + META-001 §4.18.1 V
     S07 (V13c)  compatibility field: both|sandbox|ade
     S08 (V14a)  frontmatter id matches blockquote ID:
 
-S10 rationale (added 2026-06-21, O-017 Phase D2):
-  S10 promotes the META-001 §4.18.1 SKILL.md ≤ 800 ceiling from
-  documentation to a runtime HARD invariant (replacing the deferred
-  PROC-LINECOUNT-004). S10b adds a new CONTRACT.md ≤ 500 cap,
-  validated against 2 pilot contracts (commit-work 368, session-
-  handoff 466 — see META-001 §4.18.6). Original O-017 proposal of
-  200 was invalidated by the actual pilots; per LESSON-001, the cap
-  was adjusted to fit measured reality. References are exempt per
-  §4.18.1 — not scanned.
+S10 rationale (added 2026-06-21, O-017 Phase D2; S10c added 2026-06-22):
+  S10 promotes the META-001 §4.18.1 ceilings from documentation to
+  runtime HARD invariants (replacing the deferred PROC-LINECOUNT-004).
+  S10a enforces SKILL.md ≤ 800. S10b enforces CONTRACT.md ≤ 500,
+  validated against 2 pilot contracts (commit-work 368, session-handoff
+  466 — see META-001 §4.18.6). S10c (added 2026-06-22) enforces
+  README.md ≤ 400 — activated as HARD from day 1 after remediating the
+  2 pre-existing violations (gepetto 485→302, react-dev 404→392).
+  Original O-017 proposal of 200 for CONTRACT.md was invalidated by the
+  actual pilots; per LESSON-001, the cap was adjusted to fit measured
+  reality. References are exempt per §4.18.1 — not scanned.
 
 Soft-default rationale for S02/S03/S05:
   STD-SKILL-001 §10.1 marks these as HARD, but as of v1.0.0 the skills
