@@ -684,6 +684,46 @@ node standards/scripts/verify-standards.js --help
 
 Low effort, high UX. **Owner:** @backend. **Target:** Q1 2027.
 
+#### 9.4.4 `verify-id-graph.js` modularization — IMPLEMENTED (2026-06-21, O-018)
+
+**Status:** ✅ COMPLETE — `verify-id-graph.js` v1.1.5 → v1.1.6.
+
+**What was done:**
+
+Previous O-018 attempt (2026-06-21) extracted 4 lib/ files (constants, graph-algorithms, parsers, snapshot — 500 lines), reducing main file from 1593 → 1354 lines. This continuation extracted 4 more blocks:
+
+| New lib/ file | Lines | Content |
+|---|---|---|
+| `lib/health-warnings.js` | 349 | Phase 10 W11-W15 (size anomaly, missing §XA, broken refs, OPEN issues, naming drift) + W13 root-cause fix |
+| `lib/declarations.js` | 251 | extractDeclaration (3 header formats) + parseMigrations (YAML blocks) |
+| `lib/output.js` | 152 | emitHumanReadable + emitJSON (pure functions, take results as param) |
+| `lib/file-scanner.js` | 138 | listFiles + globFiles + matchesPattern (zero-dep glob) |
+
+**Main file size:** 1355 → 829 lines (-526 lines, -39%). Under 1000-line target.
+
+**W13 root-cause fix (LESSON-001 applied):**
+
+Previous W13 implementation maintained a whitelist of ~30 known false-positive references — every new prose mention of a skills/ file path in a standards/ doc required a new whitelist entry (unbounded growth, LESSON-001 anti-pattern).
+
+Root-cause fix in this iteration:
+1. **Expanded candidates list** to include `path.join(platformRoot, 'skills', 'skills', refPath)` — resolves path-like refs (`commit-work/CONTRACT.md`, `session-handoff/CONTRACT.md`, `gepetto/README.md`, `react-dev/README.md`) to actual files in skills/skills/ tree.
+2. **Fixed submodule path resolution** — submodules are mounted INSIDE `Z-ai-platform/` (per `.gitmodules`: skills/ at `Z-ai-platform/skills/`, guard/ at `Z-ai-platform/guard/`), NOT as siblings at `../Z-ai-skills/` or `../Z-ai-guard/`. Original candidates list used `../Z-ai-skills/` which never resolved. Added correct paths `path.join(platformRoot, 'skills', ...)` and `path.join(platformRoot, 'guard', ...)`.
+
+**W13 false-positive count: 11 → 0.** All 11 prior false positives now resolve correctly through the candidates list. Whitelist kept small (~15 entries) for genuinely planned/historical/generic refs (planned scripts like `validate.sh`, `install.sh`; historical extraction sources like `AGENT_RULES.md`; generic file-type names like `SKILL.md`, `CONTRACT.md`).
+
+**Honest finding:** Total code footprint grew slightly (verify-id-graph.js 829 + lib/ 1390 = 2219 lines vs previous 1354 + lib/ 500 = 1854 lines, +365 lines / +20%). This is because new lib/ files have comprehensive JSDoc docstrings (every function gets a block explaining semantics + edge cases + dependencies). The docstrings are the test plan for future unit tests. Pure line-count reduction was NOT the goal — modularization for testability and isolation was. The main file being under 1000 lines means a reader can scan it end-to-end in one sitting.
+
+**Verification:**
+```
+verify-standards.js: 8/8 PASS
+verify-id-graph.js: 13/13 HARD + 0 warnings + snapshot OK
+  (was: 13/13 HARD + 11 warnings before W13 fix)
+verify-skills.js --strict: 8/8 HARD PASS
+Snapshot baseline: 61 IDs, 115 edges, 0 warnings (was 11)
+```
+
+**Owner:** @tech-lead. **Status:** COMPLETE 2026-06-21.
+
 ---
 
 ## 10. Known limitations and gotchas

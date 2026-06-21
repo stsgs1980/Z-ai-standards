@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * ============================================================================
- * verify-id-graph.js — Cross-Repo ID Graph Validator v1.0.0
+ * verify-id-graph.js — Cross-Repo ID Graph Validator v1.1.6
  * ============================================================================
  *
  * ID: TOOL-VERIFY-004
@@ -88,12 +88,16 @@ const {
 
 const { tarjanSCC } = require('./lib/graph-algorithms');
 const { compareSnapshot: compareSnapshotLib } = require('./lib/snapshot');
+const { phase10_healthWarnings } = require('./lib/health-warnings');
+const { emitHumanReadable: emitHumanReadableLib, emitJSON: emitJSONLib } = require('./lib/output');
+const { listFiles, globFiles, matchesPattern } = require('./lib/file-scanner');
+const { extractDeclaration, parseMigrations } = require('./lib/declarations');
 
 // ============================================================================
 // CONSTANTS (script-level — not shared with other verifiers)
 // ============================================================================
 
-const VERSION = '1.1.5';
+const VERSION = '1.1.6';
 const EFFECTIVE_DATE = '2026-06-21';
 
 // ============================================================================
@@ -342,81 +346,9 @@ function findRepos(platformRoot, opts) {
 // ============================================================================
 // FILE SCANNING
 // ============================================================================
-
-function listFiles(rootDir, patterns) {
-  const files = [];
-  for (const pattern of patterns) {
-    files.push(...globFiles(rootDir, pattern));
-  }
-  return [...new Set(files)];  // dedup
-}
-
-function globFiles(rootDir, pattern) {
-  // Simple glob implementation: supports ** and basic patterns
-  // For .md patterns, walk dir tree
-  const results = [];
-
-  function walk(dir, depth = 0) {
-    if (depth > 15) return;  // safety limit
-    let entries;
-    try {
-      entries = fs.readdirSync(dir, { withFileTypes: true });
-    } catch (e) {
-      return;
-    }
-
-    for (const entry of entries) {
-      // Skip common uninteresting dirs
-      if (entry.name === 'node_modules' || entry.name === '.git' ||
-          entry.name === '_research' || entry.name === 'upload' ||
-          entry.name === 'tool-results' || entry.name === 'download') {
-        continue;
-      }
-
-      const full = path.join(dir, entry.name);
-
-      if (entry.isDirectory()) {
-        walk(full, depth + 1);
-      } else if (entry.isFile()) {
-        const rel = path.relative(rootDir, full);
-        if (matchesPattern(rel, pattern)) {
-          results.push(full);
-        }
-      }
-    }
-  }
-
-  // Special case: pattern starts at root like 'STANDARDS.md' or '*.md'
-  if (!pattern.includes('/')) {
-    const direct = path.join(rootDir, pattern);
-    if (fs.existsSync(direct)) {
-      results.push(direct);
-    }
-    // Also walk for *.md patterns
-    if (pattern === '*.md') {
-      walk(rootDir);
-    }
-  } else {
-    walk(rootDir);
-  }
-
-  return results;
-}
-
-function matchesPattern(relPath, pattern) {
-  // Convert glob to regex: ** → .*, * → [^/]*, . → \.
-  // Special case: **/  should match zero or more directories (not require at least one)
-  let regex = pattern
-    .replace(/\./g, '\\.')
-    .replace(/\\\*\*\\\//g, '{{DOUBLESTAR_SLASH}}')  // **/  (after . escaping, * is still *)
-    .replace(/\*\*\//g, '{{DOUBLESTAR_SLASH}}')        // **/  (raw, just in case)
-    .replace(/\*\*/g, '{{DOUBLESTAR}}')
-    .replace(/\*/g, '[^/]*')
-    .replace(/{{DOUBLESTAR_SLASH}}/g, '(?:.*/)?')      // **/  →  zero or more dirs
-    .replace(/{{DOUBLESTAR}}/g, '.*');
-  regex = '^' + regex + '$';
-  return new RegExp(regex).test(relPath);
-}
+// Delegated to lib/file-scanner.js (O-018 modularization, 2026-06-21).
+// listFiles, globFiles, matchesPattern are imported from lib/file-scanner.js.
+// See lib/file-scanner.js for source.
 
 // ============================================================================
 // HEADER EXTRACTION (3 formats per spec §4.1)
@@ -426,178 +358,16 @@ function matchesPattern(relPath, pattern) {
 // required from ./lib/parsers (O-018 modularization). They are unchanged
 // — see lib/parsers.js for source.
 
-function extractDeclaration(filePath, repoName) {
-  const content = fs.readFileSync(filePath, 'utf8');
-  if (!content.trim()) return null;
-
-  let decl = null;
-  let format = null;
-
-  // Try HTML comment first (rules)
-  const htmlFields = parseHTMLComment(content);
-  if (htmlFields && htmlFields.id) {
-    decl = htmlFields;
-    format = 'html-comment';
-  }
-
-  // Try YAML frontmatter (skills)
-  if (!decl) {
-    const yaml = parseYAMLFrontmatter(content);
-    if (yaml && yaml.id) {
-      // For ZAI skills with YAML frontmatter, also parse blockquote for Related:/Aligned_with:
-      const bq = parseBlockquoteHeader(content);
-      // Prefer YAML list (related:); fall back to blockquote Related:
-      let yamlRelated = [];
-      if (Array.isArray(yaml.related)) {
-        yamlRelated = yaml.related
-          .flatMap(v => (v.match(/\b(STD|RULE|PROC|TOOL|ZAI)-[A-Z]+-\d{3}\b/g) || []));
-      } else if (yaml.related) {
-        yamlRelated = yaml.related.match(/\b(STD|RULE|PROC|TOOL|ZAI)-[A-Z]+-\d{3}\b/g) || [];
-      }
-      let yamlAligned = [];
-      if (Array.isArray(yaml.aligned_with)) {
-        yamlAligned = yaml.aligned_with
-          .flatMap(v => (v.match(/\b(STD|RULE|PROC|TOOL|ZAI)-[A-Z]+-\d{3}\b/g) || []));
-      } else if (yaml.aligned_with) {
-        yamlAligned = yaml.aligned_with.match(/\b(STD|RULE|PROC|TOOL|ZAI)-[A-Z]+-\d{3}\b/g) || [];
-      }
-      const bqRelated = bq.Related
-        ? (bq.Related.match(/\b(STD|RULE|PROC|TOOL|ZAI)-[A-Z]+-\d{3}\b/g) || [])
-        : [];
-      const bqAligned = bq.Aligned_with
-        ? (bq.Aligned_with.match(/\b(STD|RULE|PROC|TOOL|ZAI)-[A-Z]+-\d{3}\b/g) || [])
-        : [];
-      // Merge and dedupe (YAML takes precedence, blockquote fills gaps)
-      const relatedIds = [...new Set([...yamlRelated, ...bqRelated])];
-      const alignedIds = [...new Set([...yamlAligned, ...bqAligned])];
-
-      decl = {
-        id: yaml.id,
-        version: yaml.version,
-        related: relatedIds,
-        aligned_with: alignedIds,
-        compatibility: yaml.compatibility || null,
-        trigger: yaml.trigger ? yaml.trigger.split(',').map(s => s.trim()) : null,
-        author: yaml.author || null,
-        level: yaml.level ? String(yaml.level).replace(/[\[\]\*]/g, '').trim() : null,
-      };
-      format = 'yaml';
-      // Cross-check frontmatter id vs blockquote ID
-      if (bq.ID && bq.ID !== decl.id) {
-        decl._fmId = decl.id;
-        decl._bqId = bq.ID;
-      }
-      if (bq.Version && bq.Version !== decl.version) {
-        decl._fmVer = decl.version;
-        decl._bqVer = bq.Version;
-      }
-    }
-  }
-
-  // Try blockquote (standards)
-  if (!decl) {
-    const bq = parseBlockquoteHeader(content);
-    if (bq.ID) {
-      // Parse Related: — extract only ID-shaped tokens (ignore prose)
-      const relatedIds = bq.Related
-        ? (bq.Related.match(/\b(STD|RULE|PROC|TOOL|ZAI)-[A-Z]+-\d{3}\b/g) || [])
-        : [];
-      const alignedIds = bq.Aligned_with
-        ? (bq.Aligned_with.match(/\b(STD|RULE|PROC|TOOL|ZAI)-[A-Z]+-\d{3}\b/g) || [])
-        : [];
-
-      decl = {
-        id: bq.ID,
-        version: bq.Version || null,
-        level: bq.Level ? bq.Level.replace(/[\[\]\*]/g, '').trim() : null,
-        related: relatedIds,
-        aligned_with: alignedIds,
-        compatibility: null,
-        trigger: null,
-        author: null,
-      };
-      format = 'blockquote';
-    }
-  }
-
-  if (!decl) return null;
-
-  // Parse ID components
-  const m = decl.id.match(ID_REGEX);
-  if (!m) {
-    // G12 candidate — typo-IDs handled in Phase 4
-    return {
-      id: decl.id,
-      prefix: null,
-      domain: null,
-      number: null,
-      malformed: true,
-      file: filePath,
-      repo: repoName,
-      header_format: format,
-      ...decl,
-    };
-  }
-
-  return {
-    id: decl.id,
-    prefix: m[1],
-    domain: m[2],
-    number: parseInt(m[3], 10),
-    version: decl.version,
-    level: decl.level,
-    related: decl.related || [],
-    aligned_with: decl.aligned_with || [],
-    compatibility: decl.compatibility || null,
-    trigger: decl.trigger || null,
-    author: decl.author || null,
-    file: filePath,
-    repo: repoName,
-    header_format: format,
-    malformed: false,
-    _fmId: decl._fmId || null,
-    _bqId: decl._bqId || null,
-    _fmVer: decl._fmVer || null,
-    _bqVer: decl._bqVer || null,
-  };
-}
+// extractDeclaration and parseMigrations are now required from
+// ./lib/declarations (O-018 modularization continuation, 2026-06-21).
+// These are the impure (fs-reading) parsers. See lib/declarations.js
+// for source.
 
 // ============================================================================
 // REFERENCE EXTRACTION (any mention of an ID in any file)
 // ============================================================================
 
 // extractReferences is now required from ./lib/parsers (O-018).
-
-// ============================================================================
-// MIGRATIONS PARSING
-// ============================================================================
-
-function parseMigrations(filePath) {
-  if (!fs.existsSync(filePath)) return [];
-  const content = fs.readFileSync(filePath, 'utf8');
-  const migrations = [];
-  // Find YAML blocks inside ```yaml ... ```
-  const blocks = content.match(/```yaml\n([\s\S]*?)```/g) || [];
-  for (const block of blocks) {
-    const yaml = block.replace(/^```yaml\n/, '').replace(/\n```$/, '');
-    const entry = {};
-    for (const line of yaml.split('\n')) {
-      const m = line.match(/^(\w+):\s*(.*)$/);
-      if (m) {
-        let val = m[2].trim();
-        if (val === '|' || val === '>') {
-          // Multiline value — skip for simplicity
-          continue;
-        }
-        entry[m[1]] = val;
-      }
-    }
-    if (entry.old_id && entry.action) {
-      migrations.push(entry);
-    }
-  }
-  return migrations;
-}
 
 // ============================================================================
 // TARJAN'S SCC ALGORITHM (for cycle detection)
@@ -887,326 +657,31 @@ function phase9_orphanWarnings(idMap) {
 // ============================================================================
 // PHASE 10 — PROJECT HEALTH WARNINGS (W11-W15, v1.1.0)
 // ============================================================================
-// These catch growth/decay signals that G01-G15 do not cover:
-//   W11 — Size anomaly (file > 1000 lines warn, > 1500 critical warn)
-//   W12 — Missing §XA Known Issues section
-//   W13 — Broken cross-doc file references (link to non-existent .md/.sh)
-//   W14 — Excessive OPEN Known Issues (> 5 = debt accumulation signal)
-//   W15 — Naming drift (file does not match <DOMAIN>-<NNN>-<name>.md)
+// Delegated to lib/health-warnings.js (O-018 modularization, 2026-06-21).
+// The wrapper passes the main verifier's warn() function so warnings land
+// in the global results state. See lib/health-warnings.js for source.
 //
-// These are SOFT warnings — they do NOT fail CI. Use --fail-on-warnings to promote.
+// v1.1.6 (2026-06-21, O-018): W13 root-cause fix. Expanded candidates list
+// to include skills/skills/ tree (resolves path-like refs like
+// `commit-work/CONTRACT.md`, `session-handoff/CONTRACT.md`,
+// `gepetto/README.md` to actual files). Whitelist shrunk from ~30 entries
+// to ~15 (only truly generic/historical refs remain). Per LESSON-001
+// (root-cause fix scales as O(1), whitelist symptom-fix scales as O(N)).
 // ============================================================================
-
-const VALID_DOMAINS = new Set([
-  'META', 'ARCH', 'DOC', 'SKILL', 'ENV', 'GIT', 'DESIGN',
-  'FE', 'A11Y', 'ERR', 'SEC', 'TEST', 'AGENT',
-]);
-
-function phase10_healthWarnings(repos) {
-  if (!repos.standards) return;
-  const standardsTreeRoot = repos.standards;
-
-  // Collect all .md files under standards/ tree (covers standards/standards/*.md,
-  // standards/docs/**/*.md, standards/templates/*.md)
-  const mdFiles = [];
-  function walk(dir, depth) {
-    if (depth > 8) return;
-    let entries;
-    try { entries = fs.readdirSync(dir, { withFileTypes: true }); }
-    catch (e) { return; }
-    for (const entry of entries) {
-      if (entry.name === 'node_modules' || entry.name === '.git' ||
-          entry.name === '_design' || entry.name === 'legacy') continue;
-      const full = path.join(dir, entry.name);
-      if (entry.isDirectory()) walk(full, depth + 1);
-      else if (entry.name.endsWith('.md')) mdFiles.push(full);
-    }
-  }
-  walk(standardsTreeRoot, 0);
-
-  for (const filePath of mdFiles) {
-    const fileName = path.basename(filePath);
-    let content;
-    try { content = fs.readFileSync(filePath, 'utf8'); }
-    catch (e) { continue; }
-    const lineCount = content.split('\n').length;
-
-    // W15: naming drift — applies only to standards/standards/ (normative files)
-    // Skip docs/, templates/, README.md, INDEX.md (non-normative).
-    // Also skip companion files — they live under standards/standards/ but
-    // are NOT parser-bound standards (no STD- ID in header). They inherit
-    // a parent ID via "Companion to:" header line (directly to STD-X, or
-    // transitively via another companion like DESIGN-001-profile-cards.md
-    // which is companion-of-companion). Treating them as normative would
-    // fire W12 (missing §XA Known Issues) and W15 (naming drift) on every
-    // companion, requiring per-file whitelists.
-    // Root-cause fix (LESSON-001 principle): refine isNormative scope.
-    // See SESSION_NOTES.md §12.4 for the lesson that motivated this.
-    const isCompanion = /^>\s*Companion to:/m.test(content);
-    const isNormative = filePath.includes(path.join('standards', 'standards') + path.sep) && !isCompanion;
-    if (isNormative) {
-      const nameMatch = fileName.match(/^([A-Z0-9]+)-(\d{3})-(.+)\.md$/);
-      if (!nameMatch) {
-        if (fileName !== 'README.md' && fileName !== 'INDEX.md') {
-          warn('W15', `${fileName}: does not match <DOMAIN>-<NNN>-<name>.md naming convention`);
-        }
-      } else {
-        const domain = nameMatch[1];
-        if (!VALID_DOMAINS.has(domain)) {
-          warn('W15', `${fileName}: unknown domain "${domain}" (valid: ${[...VALID_DOMAINS].join(', ')})`);
-        }
-      }
-    }
-
-    // W11: size anomaly (applies to all .md files)
-    if (lineCount > 1500) {
-      warn('W11', `${fileName}: ${lineCount} lines (CRITICAL — exceeds 1500-line cap, split required)`);
-    } else if (lineCount > 1000) {
-      warn('W11', `${fileName}: ${lineCount} lines (exceeds 1000-line soft cap, consider splitting)`);
-    }
-
-    // W12: missing §XA Known Issues section (applies only to normative standards)
-    if (isNormative) {
-      // Pattern matches: ## 10A. Known Issues, ## 11A. Known Issues, ## XA. Known Issues
-      const hasKnownIssues = /^\s*##\s+\d*[A-Z]\.?\s*Known\s+Issues/im.test(content);
-      if (!hasKnownIssues) {
-        warn('W12', `${fileName}: no §XA Known Issues section (convention per ENV-002 v1.2 §10A)`);
-      }
-    }
-
-    // W14: excessive OPEN Known Issues
-    const openMatches = content.match(/\[OPEN\]/g);
-    if (openMatches && openMatches.length > 5) {
-      warn('W14', `${fileName}: ${openMatches.length} OPEN Known Issues (exceeds 5-issue soft cap — debt accumulation signal)`);
-    }
-
-    // W13: broken cross-doc file references
-    // Matches `path/to/file.md` or `path/to/file.sh` in inline code.
-    // Skips: URLs, absolute paths, .ts/.js/.json imports, version-history fragments.
-    const refPattern = /`([a-zA-Z0-9_\-\/]+\.(md|sh))`/g;
-    // Whitelist (v1.1.2): known historical / generic / planned references that
-    // are not expected to resolve to a real file. These are documented in the
-    // standard bodies themselves as "historical" or "planned" mentions.
-    const W13_WHITELIST = new Set([
-      'AGENT_RULES.md',           // historical extraction source (referenced in ENV-002 v1.0 changelog)
-      'STANDARDS.md',             // historical root index, replaced by README.md
-      'SKILL.md',                 // generic skill-format filename (not a specific file)
-      'CHANGELOG.md',             // replaced by MIGRATIONS.md in this repo
-      'init-fullstack_1775040338514.sh',  // historical timestamp-pinned Z.ai infra script
-      'init-fullstack_*.sh',      // glob form of same
-      'validate.sh',              // planned script (tracked in ARCH-001-002)
-      'install.sh',               // planned script
-      'doctor.sh',                // planned script
-      'install-hooks.sh',         // planned script (githooks setup)
-      'line-count-check.sh',      // planned script (size guard)
-      'scripts/setup-git.sh',     // planned script (git config bootstrap)
-      // Cross-repo MIGRATIONS.md — each repo MAY have one but not required
-      'Z-ai-platform/MIGRATIONS.md',
-      'Z-ai-guard/MIGRATIONS.md',
-      'Z-ai-skills/MIGRATIONS.md',
-      // Skills tree paths referenced for documentation but not required to exist
-      'Z-ai-skills/skills/INDEX.md',
-      'Z-ai-skills/skills/skill-id-system/SKILL.md',
-      'Z-ai-skills/skills/skill-creator/SKILL.md',
-      // Templates referenced for context but not yet shipped
-      'agents/templates/context-handoff-template.md',
-      // Pre-restructure filename still referenced in historical context
-      'Z-ai-standards/standards/SKILL_ID_SYSTEM_STANDARD.md',
-      'Z-ai-standards/known-issues.md',
-      // RULE-MONOLITH-016 lives in Z-ai-guard/rules/, not Z-ai-platform/
-      'Z-ai-platform/RULE-MONOLITH-016.md',
-      // skill-creator.md is a planning reference, not yet shipped
-      'Z-ai-platform/skill-creator.md',
-      // v1.1.2 additions: planned/historical refs surfaced by ARCH-001 §5A cascade section
-      'Z-ai-platform/doctor.sh',          // planned diagnostics script (referenced in verify-id-graph-spec)
-      'Z-ai-guard/rules/RULE-ENV-008.md', // planned rule for bootstrap enforcement (see ARCH-001 §5A.4)
-      'guard/rules/RULE-ENV-008.md',      // same, relative form
-      'RULE-ENV-008.md',                  // bare form, see ARCH-001 §8 recovery procedures
-      'INDEX.md',                         // bare INDEX.md — disambiguate via context (docs/sandbox/ or skills/)
-      'skills/INDEX.md',                  // skills tree index, lives in Z-ai-skills/skills/INDEX.md (not yet shipped)
-      // v1.1.3 additions: planned companion file referenced in DESIGN-001-profile-terminal-dashboard.md TDP-002
-      'DESIGN-001-cards-reference.md',    // planned split target if companion file grows past 1200 lines (see TDP-002)
-    ]);
-    // v1.1.4 (2026-06-21): Root-cause fix for false-positive W13 in change-history sections.
-    // Before scanning, strip the body of any `## N. Version History`, `## N. Change History`,
-    // or `## Changelog` section. Such sections naturally mention old/renamed/split filenames
-    // as historical facts (e.g. "Removed: `react-components.md` (was 1449; now 55-line INDEX)").
-    // These are NOT navigational references and should not trigger W13.
-    //
-    // Without this, every change-log entry that mentions a filename requires a new
-    // whitelist entry -- unbounded growth. Skipping the section is the proper fix.
-    //
-    // We keep the `## N. ...` header line itself (so the section is still visible in
-    // the scanned content) but drop all body lines until the next `## ` header or EOF.
-    const changeHistoryRe = /^##\s+\d+\.?\s*(Version History|Change History|Changelog)\s*$/im;
-    const stripCh = (txt) => {
-      const lines = txt.split('\n');
-      const out = [];
-      let skipping = false;
-      for (const line of lines) {
-        if (skipping) {
-          // End skip when we hit the next `## ` header (any level-2 header).
-          if (/^##\s/.test(line)) {
-            skipping = false;
-            out.push(line);
-          }
-          // else: drop the line (it's inside the change-history body)
-        } else {
-          out.push(line);
-          if (changeHistoryRe.test(line)) {
-            skipping = true;
-          }
-        }
-      }
-      return out.join('\n');
-    };
-    const w13Content = stripCh(content);
-    let m;
-    const seen = new Set(); // dedupe within one file
-    while ((m = refPattern.exec(w13Content)) !== null) {
-      const refPath = m[1];
-      if (seen.has(refPath)) continue;
-      seen.add(refPath);
-      // Skip URLs and absolute paths
-      if (refPath.startsWith('http://') || refPath.startsWith('https://')) continue;
-      if (refPath.startsWith('/home/') || refPath.startsWith('/tmp/') ||
-          refPath.startsWith('/usr/') || refPath.startsWith('/etc/')) continue;
-      // Skip whitelisted historical/generic/planned references (v1.1.2)
-      if (W13_WHITELIST.has(refPath)) continue;
-      // Resolve against multiple candidate roots (v1.1.1: added cross-repo)
-      // Cross-repo refs are paths starting with Z-ai-platform/, Z-ai-guard/,
-      // Z-ai-skills/, or plain docs/session/worklog.md, MIGRATIONS.md, etc.
-      // that point to artifacts in other repos of the 4-repo split.
-      const platformRoot = path.dirname(standardsTreeRoot); // Z-ai-platform/
-      const candidates = [
-        path.join(standardsTreeRoot, refPath),                       // from repo root (e.g. standards/docs/sandbox/x.md)
-        path.join(standardsTreeRoot, 'standards', refPath),          // from standards/ subdir
-        path.join(standardsTreeRoot, 'docs', refPath),               // from docs/
-        path.join(standardsTreeRoot, 'scripts', refPath),            // from scripts/
-        path.join(standardsTreeRoot, 'templates', refPath),          // from templates/
-        path.join(standardsTreeRoot, 'guides', refPath),             // from guides/
-        path.join(path.dirname(filePath), refPath),                  // from current file's dir
-        // Cross-repo resolution (v1.1.1)
-        path.join(platformRoot, refPath),                            // Z-ai-platform/<refpath>
-        path.join(platformRoot, refPath.replace(/^Z-ai-platform\//, '')),    // strip prefix
-        path.join(platformRoot, refPath.replace(/^Z-ai-standards\//, 'standards/')),
-        path.join(platformRoot, refPath.replace(/^Z-ai-guard\//, '../Z-ai-guard/')),
-        path.join(platformRoot, refPath.replace(/^Z-ai-skills\//, '../Z-ai-skills/')),
-        // Special: worklog.md -> docs/session/worklog.md
-        path.join(platformRoot, 'docs', 'session', refPath),
-        // Special: MIGRATIONS.md -> can be in any repo
-        path.join(platformRoot, refPath.replace(/^MIGRATIONS\.md$/, 'standards/MIGRATIONS.md')),
-      ];
-      const exists = candidates.some(p => {
-        try { return fs.existsSync(p); } catch (e) { return false; }
-      });
-      if (!exists) {
-        warn('W13', `${fileName}: references \"${refPath}\" which does not exist in standards/ tree`);
-      }
-    }
-  }
-}
 
 // ============================================================================
 // OUTPUT FORMATTING
 // ============================================================================
+// Delegated to lib/output.js (O-018 modularization, 2026-06-21).
+// Thin wrappers pass the main verifier's results state + version constants.
+// See lib/output.js for source.
 
 function emitHumanReadable(opts) {
-  const out = [];
-  out.push(`verify-id-graph.js v${VERSION}`);
-  out.push(`Effective date: ${EFFECTIVE_DATE}`);
-  out.push(`Repos scanned: ${results.stats.repos_scanned}`);
-  out.push(`IDs extracted: ${results.stats.ids_extracted}`);
-  out.push(`Related: edges: ${results.stats.related_edges}`);
-  out.push(`Aligned_with: edges: ${results.stats.aligned_with_edges}`);
-  out.push('');
-
-  // Per-prefix counts
-  const counts = {};
-  for (const decl of results.declarations) {
-    counts[decl.prefix] = (counts[decl.prefix] || 0) + 1;
-  }
-  out.push(`By prefix: ${Object.entries(counts).map(([k, v]) => `${k}=${v}`).join(', ')}`);
-  out.push('');
-
-  out.push('--- Hard Checks (G01-G15) ---');
-  for (const [id, check] of Object.entries(results.checks)) {
-    const mark = check.status === 'PASS' ? '✓' : '✗';
-    out.push(`  ${mark} ${id}: ${check.description}`);
-    if (check.status === 'FAIL') {
-      for (const d of check.details.slice(0, 5)) {
-        out.push(`      ${d}`);
-      }
-      if (check.details.length > 5) {
-        out.push(`      ... and ${check.details.length - 5} more`);
-      }
-    }
-  }
-  out.push('');
-
-  out.push('--- Soft Warnings (W01-W15) ---');
-  if (results.warnings.length === 0) {
-    out.push('  (none)');
-  } else {
-    const byId = {};
-    for (const w of results.warnings) {
-      if (!byId[w.id]) byId[w.id] = [];
-      byId[w.id].push(w);
-    }
-    for (const [id, ws] of Object.entries(byId)) {
-      out.push(`  ${id}: ${ws.length} warning(s)`);
-      for (const w of ws.slice(0, 3)) {
-        out.push(`      ${w.detail}`);
-      }
-      if (ws.length > 3) {
-        out.push(`      ... and ${ws.length - 3} more`);
-      }
-    }
-  }
-  out.push('');
-
-  // Summary
-  const hardPass = Object.values(results.checks).filter(c => c.status === 'PASS').length;
-  const hardFail = Object.values(results.checks).filter(c => c.status === 'FAIL').length;
-  out.push(`Result: ${hardFail === 0 ? 'PASS' : 'FAIL'} (${hardPass}/${hardPass + hardFail} hard checks, ${results.warnings.length} warnings)`);
-
-  return out.join('\n');
+  return emitHumanReadableLib(results, VERSION, EFFECTIVE_DATE, opts);
 }
 
 function emitJSON(opts) {
-  const hardPass = Object.values(results.checks).filter(c => c.status === 'PASS').length;
-  const hardFail = Object.values(results.checks).filter(c => c.status === 'FAIL').length;
-
-  const payload = {
-    version: VERSION,
-    effective_date: EFFECTIVE_DATE,
-    summary: {
-      ids_extracted: results.stats.ids_extracted,
-      related_edges: results.stats.related_edges,
-      aligned_with_edges: results.stats.aligned_with_edges,
-      hard_pass: hardPass,
-      hard_fail: hardFail,
-      warnings: results.warnings.length,
-    },
-    checks: Object.entries(results.checks).map(([id, c]) => ({
-      id,
-      status: c.status,
-      description: c.description,
-      details: c.details,
-    })),
-    warnings: results.warnings,
-  };
-
-  // When writing a snapshot, embed metadata so consumers can detect
-  // script-version drift without parsing the version field separately.
-  if (opts.snapshot || opts.updateSnapshot) {
-    payload.snapshot_meta = {
-      script_version: VERSION,
-      created_at: new Date().toISOString(),
-      purpose: 'Baseline for verify-id-graph.js --compare. Do not hand-edit; regenerate with --update-snapshot.',
-    };
-  }
-  return JSON.stringify(payload, null, 2);
+  return emitJSONLib(results, VERSION, EFFECTIVE_DATE, opts);
 }
 
 // ============================================================================
@@ -1292,7 +767,7 @@ function main() {
   phase7_alignedWithSymmetry(idMap);
   phase8_compatibilityDAG(idMap);
   phase9_orphanWarnings(idMap);
-  phase10_healthWarnings(repos);
+  phase10_healthWarnings(repos, warn);
 
   // Emit output
   // For snapshot/compare modes we need the JSON payload regardless of
