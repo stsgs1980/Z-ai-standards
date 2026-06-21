@@ -357,15 +357,160 @@ and you will not know about it.
 
 ## 9. Recommended additions (not yet implemented)
 
-| Test | Why | Phase |
+### 9.1 Implementation priority matrix
+
+| Test | Priority | Owner | Target | Dependencies |
+|------|----------|-------|--------|--------------|
+| Snapshot test for `verify-id-graph.js` | **P0** | @tech-lead | Q3 2026 | Phase D1 |
+| End-to-end test: modify standard → verify → CI | **P0** | @devops | Q3 2026 | Phase D2 |
+| `verify-skills.js` | **P0** | @backend | Q3 2026 | Phase D1 (O-017) |
+| Symlink integrity check in CI | **P1** | @devops | Q4 2026 | Phase D2 |
+| `run-contract.sh` in CI | **P1** | @devops | Q4 2026 | Phase C |
+| `registry.json` consistency test | **P2** | @backend | Q1 2027 | Phase E |
+| Version-bump detection | **P2** | @tech-lead | Q1 2027 | Phase D1 |
+| `--help` flag for verifiers | **P2** | @backend | Q1 2027 | Phase D1 |
+
+Priority semantics:
+
+| Priority | Meaning | Action |
 |---|---|---|
-| **Snapshot test for `verify-id-graph.js`** | Determinism: same input → same output. Without this, refactoring the script risks silent regressions. | Phase D1 |
-| **End-to-end test: modify standard → verify → CI pass/fail** | Automates the manual test scenarios in §6. Reusable workflow composition. | Phase D2 |
-| **Symlink integrity check in CI** | Bootstrap creates symlinks; a broken link is silent until a user hits it. | Phase D2 |
-| **`registry.json` consistency test** | When `registry.json` is created, test that it matches actual `skills/` contents. | Phase E |
-| **Version-bump detection** | If a standard's content changed but `version:` was not bumped → WARN (content drift). | Phase D1 |
-| **`verify-skills.js`** | Skills-side verifier analogous to `verify-standards.js`. Catches missing frontmatter, broken `Related:` edges in skills, contract violations. | Phase D1 (O-017) |
-| **`run-contract.sh` in CI** | Currently L1 contract runs only locally. Adding it to CI would catch contract drift between local hooks and CI verifiers. | Phase C |
+| **P0** | Critical — blocks next release | Must be implemented before v2.5.0 |
+| **P1** | Important — Q4 2026 | Scheduled for Phase D2 |
+| **P2** | Nice to have — Q1 2027 | Roadmap backlog |
+
+### 9.2 P0 — Critical (blocks v2.5.0 release)
+
+#### 9.2.1 Snapshot test for `verify-id-graph.js`
+
+**Why:** Without this, refactoring `verify-id-graph.js` risks silent
+regressions. The graph structure is deterministic — same input must
+produce same output. A snapshot test makes any change in the output
+loud and reviewable.
+
+**Implementation:**
+
+```bash
+# Create baseline
+node standards/scripts/verify-id-graph.js --snapshot=baseline.json
+
+# CI compares
+node standards/scripts/verify-id-graph.js --compare=baseline.json
+```
+
+**Acceptance:** CI fails if current graph output differs from baseline
+unless `--update-snapshot` is explicitly passed (and the diff is
+reviewed in the PR).
+
+**Owner:** @tech-lead. **Target:** Q3 2026.
+
+#### 9.2.2 `verify-skills.js`
+
+**Why:** 35 of 36 skills have no validator. `SKILL.md` files can have
+broken frontmatter, invalid `Related:` edges, or contract violations
+without any automated check. The only existing validator
+(`skill-creator/scripts/quick_validate.py`) is skill-specific and not
+pluggable.
+
+**Scope (Phase D1, O-017):**
+
+- Validate frontmatter: `ID:`, `Version:`, `Level:`, `Related:`
+  present when required by STD-SKILL-001.
+- Validate `Related:` edges point at existing IDs (via
+  `verify-id-graph.js` API or shared module).
+- Validate 5-tuple contract for skills with `CONTRACT.md` (currently
+  only `commit-work`; generalises in Phase C).
+- Integrate with L0 pre-commit (BLOCK on FAIL).
+
+**Timeline:** Q3 2026, before v2.5.0 release. **Owner:** @backend.
+
+#### 9.2.3 End-to-end test: modify standard → verify → CI
+
+**Why:** The manual test scenarios in §6 should be automated to catch
+regressions before they reach production. Without this, each verifier
+change is reviewed by hand, which does not scale.
+
+**Implementation:** Reusable workflow in `.github/workflows/e2e.yml`
+that:
+
+1. Creates a temporary standard with a deliberate violation.
+2. Runs `verify-standards.js` — expects FAIL with the right error
+   code.
+3. Fixes the violation.
+4. Runs `verify-standards.js` — expects PASS.
+5. Commits and pushes to a test branch — expects CI PASS.
+
+**Owner:** @devops. **Target:** Q3 2026.
+
+### 9.3 P1 — Important (Q4 2026)
+
+#### 9.3.1 Symlink integrity check in CI
+
+**Why:** `bootstrap.sh` creates symlinks from `skills/` into the
+sandbox runtime. A broken link is silent until a user hits it at
+runtime, at which point the failure mode is confusing ("skill not
+found" rather than "symlink broken").
+
+**Implementation:** Add to `verify-id-graph.yml`:
+
+```bash
+find skills -type l ! -exec test -e {} \; -print | wc -l   # expect 0
+```
+
+If count != 0, fail the workflow with a list of broken links.
+
+**Owner:** @devops. **Target:** Q4 2026.
+
+#### 9.3.2 `run-contract.sh` in CI
+
+**Why:** Local hooks may diverge from CI checks. A developer who runs
+`git commit --no-verify` bypasses L0/L0.5 locally; L2 CI catches
+verifier regressions but NOT contract-layer drift. Running
+`run-contract.sh --dry-run` in CI ensures the two stay in sync.
+
+**Implementation:** Add to `verify-id-graph.yml`:
+
+```bash
+- name: L1 contract check (Phase B)
+  run: |
+    skills/skills/commit-work/scripts/run-contract.sh --dry-run
+```
+
+The `--dry-run` flag is already implemented (run-contract.sh §1, modes
+block) and performs no mutation — it only runs the guard and standard
+checks. Safe to run in CI without side effects.
+
+**Owner:** @devops. **Target:** Q4 2026.
+
+### 9.4 P2 — Nice to have (Q1 2027)
+
+#### 9.4.1 `registry.json` consistency test
+
+When `registry.json` is created (Phase E), test that it matches actual
+`skills/` contents. Prevents drift between catalog and filesystem.
+
+**Owner:** @backend. **Target:** Q1 2027.
+
+#### 9.4.2 Version-bump detection
+
+If a standard's content changed but `version:` was not bumped, emit a
+WARN. Catches content drift without version tracking. This is the
+soft-warning counterpart to V05 (which only checks that `version:` is
+present, not that it is current).
+
+**Owner:** @tech-lead. **Target:** Q1 2027.
+
+#### 9.4.3 `--help` flag for verifiers
+
+Add `--help` to `verify-standards.js` and `verify-id-graph.js` so
+contributors can discover usage without reading the full doc:
+
+```bash
+node standards/scripts/verify-standards.js --help
+# Usage: node verify-standards.js [mode]
+#   mode: 'strict' (default) | 'permissive' | 'ci'
+```
+
+Low effort, high UX. **Owner:** @backend. **Target:** Q1 2027.
 
 ---
 
@@ -419,6 +564,31 @@ grep -P '[\x{1F600}-\x{1F64F}\x{2600}-\x{27BF}]' file.md
 grep -E '[\u{1F600}-\x{1F64F}\u{2600}-\x{27BF}]' file.md
 ```
 
+### 10.5.1 W13 false positive on cross-submodule references
+
+`verify-id-graph.js` W13 (broken cross-doc reference) scans only the
+`standards/` tree. References to files in `skills/` or `guard/`
+submodules (e.g. `` `run-contract.sh` ``, `` `CONTRACT.md` ``) fire
+W13 even when the file exists in its submodule. This is a known
+architectural limitation of the verifier, not a bug in the document.
+
+Workaround options (in order of preference):
+
+1. **Reference by full submodule-relative path** (e.g.
+   `` `skills/skills/commit-work/scripts/run-contract.sh` ``) — W13
+   still fires because the path does not exist in `standards/`, but
+   the reader can follow the path manually.
+2. **Add to `W13_WHITELIST`** in `verify-id-graph.js` (see lines
+   ~1130-1169 for the existing whitelist) — O(N) fix, acceptable for
+   stable cross-submodule paths.
+3. **Extend W13 to scan all submodules** — proper root-cause fix,
+   scheduled for Phase D1 when `verify-skills.js` is built (the two
+   verifiers will share a common path-resolution module).
+
+This document currently uses option 1 (full submodule-relative
+paths) where practical, and accepts W13 warnings for short basename
+references in narrative text.
+
 ### 10.6 Performance benchmark threshold
 
 The drafts proposed a 3.0s threshold for `verify-id-graph.js` on
@@ -450,6 +620,56 @@ git stash pop
 branch pointer AND overwrites the working tree. Triggered twice in
 Phase B smoke testing. See `SESSION_NOTES.md` §12.7.
 
+### 10.8.1 LESSON-004a: automated guard layer for destructive scripts
+
+LESSON-004's stash-then-reset recipe depends on operator discipline.
+For scripts in the repo that perform destructive operations
+(`bootstrap.sh`, `run-contract.sh`, future CI workflows), the safety
+should be **encoded in the script itself**, not relied upon as a
+manual habit.
+
+**Two-layer guard (refined from the CI/CD audit):**
+
+```bash
+# Layer 1 (root cause): refuse if uncommitted changes exist.
+# Catches the actual failure mode — losing work the operator
+# did not realise was uncommitted.
+if ! git diff --quiet || ! git diff --cached --quiet; then
+  echo "[ERROR] Uncommitted changes detected. Stash or commit first." >&2
+  exit 1
+fi
+
+# Layer 2 (defense in depth): require explicit --force flag for
+# any rm -rf on tracked or top-level paths. Converts accidental
+# invocation from 'silent catastrophe' to 'loud refusal'.
+if [[ "$1" != "--force" ]]; then
+  echo "[ERROR] Destructive operations require --force flag." >&2
+  exit 1
+fi
+```
+
+The two layers are independent and complementary:
+
+- Layer 1 catches the common case (forgot to commit).
+- Layer 2 catches the rare case (wrong working directory or wrong
+  script invoked).
+- Either alone is insufficient: Layer 1 without Layer 2 still allows
+  `--force` workflows to wipe a clean tree; Layer 2 without Layer 1
+  still allows a `--force` invocation to wipe uncommitted work.
+
+**What this is NOT:** This is not a `$PWD`-prefix check (the initial
+audit proposal). `$PWD` matching is fragile — clone paths vary across
+machines and sandboxes, and any prefix that matches the live tree also
+matches legitimately similar sandbox paths (e.g.
+`/home/z/sandbox/Z-ai-platform-test`). The uncommitted-state check is
+path-independent and catches the root cause directly.
+
+**Candidate for promotion:** Phase C may encode this as guard check G0
+in `skills/skills/commit-work/CONTRACT.md`, subsuming the manual
+stash-then-reset recipe from LESSON-004 into automated enforcement.
+
+See `SESSION_NOTES.md` §12.8 for the full structured lesson entry.
+
 ---
 
 ## 11. Bug audit of the original drafts
@@ -472,7 +692,7 @@ do not re-introduce them.
 | 9 | L8 chat compliance checks `chat-logs/agent-responses.log` | File does not exist anywhere in the repo. | Removed (speculative test deleted) |
 | 10 | No `permissions:` block in workflow | PR comment step needs `pull-requests: write`. | §4.3 |
 | 11 | `npm install -g yq` in L2 | `verify-id-graph.js` does not use `yq`. Wasted install time. | Not in actual workflow (§4) |
-| 12 | `rm -rf /home/z/my-project/Z-ai-platform` in L6 bootstrap test | Wipes the live working tree. Same trap as LESSON-004. | §6.1, §10.8 |
+| 12 | `rm -rf /home/z/my-project/Z-ai-platform` in L6 bootstrap test | Wipes the live working tree. Same trap as LESSON-004. Automated two-layer guard proposed in §10.8.1 (LESSON-004a). | §6.1, §10.8, §10.8.1 |
 
 ---
 
@@ -481,3 +701,4 @@ do not re-introduce them.
 | Date | Change |
 |---|---|
 | 2026-06-21 | Initial creation. Merges two draft documents ("Полный CI/CD Pipeline" and "Уровни тестирования Z-ai-platform") into one canonical reference. Documents the actual existing workflow (`.github/workflows/verify-id-graph.yml`, 250 lines) instead of a hypothetical one. Includes §11 bug audit table documenting 12 factual errors in the drafts against actual repo state. |
+| 2026-06-21 | Rewrite of §9 — expanded from a flat 7-row table into a structured priority matrix (§9.1) with P0/P1/P2 sections (§9.2/9.3/9.4), each item carrying explicit owner, target quarter, and dependencies. Adds §9.2.2 `verify-skills.js` scope (35/36 skills have no validator — formalised as P0 blocker for v2.5.0). Adds §9.3.2 `run-contract.sh --dry-run` in CI (the `--dry-run` flag already exists in `run-contract.sh` §1, so this is a one-step CI addition with no script-side prerequisite). Adds §9.4.3 `--help` flag for verifiers (P2 UX improvement). Adds §10.8.1 LESSON-004a — refined two-layer guard (uncommitted-state check + `--force` flag) replacing the audit's initial `$PWD`-prefix proposal, which is fragile across clone paths and sandbox configurations. Cross-references `SESSION_NOTES.md` §12.8 for the full structured lesson entry. Updates §11 #12 to point at §10.8.1. |
