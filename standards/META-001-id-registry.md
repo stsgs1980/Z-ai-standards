@@ -73,17 +73,23 @@ verbatim (no renumbering) to keep all existing references stable.
 |---|---|---|---|---|
 | PROC-SETUP-001 | Z-ai-guard/setup.sh | 2.0 | [C] | ACTIVE (planned) — file not yet created |
 | PROC-UPDATE-002 | Z-ai-guard/update.sh | 2.1 | [C] | ACTIVE (planned) — file not yet created |
-| PROC-COCHANGE-003 | Z-ai-guard/scripts/co-change-check.sh | 1.0 | [C] | ACTIVE (planned) — file not yet created |
-| PROC-LINECOUNT-004 | Z-ai-guard/scripts/line-count-check.sh | 1.0 | [C] | ACTIVE (planned) — file not yet created |
+| PROC-COCHANGE-003 | Z-ai-guard/scripts/co-change-check.sh | 1.0 | [C] | ACTIVE — file created 2026-06-22 (implements RULE-MONOLITH-010) |
+| PROC-LINECOUNT-004 | Z-ai-guard/scripts/line-count-check.sh | 1.0 | [C] | ACTIVE — file created 2026-06-22 (implements RULE-MONOLITH-012, delegates to TOOL-VERIFY-002/004) |
 | PROC-PLATFORM-INSTALL-005 | Z-ai-platform/install.sh | 1.0 | [C] | RETIRED 2026-06-19 (superseded by `bootstrap.sh` — single entry point covers install + update + restore) |
 | PROC-PLATFORM-UPDATE-006 | Z-ai-platform/update.sh | 1.0 | [C] | RETIRED 2026-06-19 (superseded by `bootstrap.sh`) |
 | PROC-PLATFORM-DOCTOR-007 | Z-ai-platform/doctor.sh | 1.0 | [C] | RETIRED 2026-06-19 (superseded by `status.sh` — diagnostic-only entry point) |
 
 > **Phantom-ID fix (META v2.0.2, 2026-06-19):** Rows previously marked
 > `ACTIVE` for PROC-SETUP-001, PROC-UPDATE-002, PROC-COCHANGE-003,
-> PROC-LINECOUNT-004 referenced files that do not exist in Z-ai-guard.
-> Status is now `ACTIVE (planned)` to reflect reality. The four procedures
-> are pending migration M003 (see `Z-ai-standards/MIGRATIONS.md`).
+> PROC-LINECOUNT-004 referenced files that did not exist in Z-ai-guard.
+> Status was `ACTIVE (planned)` to reflect reality.
+>
+> **M003 partial completion (2026-06-22):** PROC-COCHANGE-003 and
+> PROC-LINECOUNT-004 are now `ACTIVE` — files created in `Z-ai-guard/scripts/`
+> with companion instruction docs in `Z-ai-guard/instructions/`.
+> PROC-SETUP-001 and PROC-UPDATE-002 remain `ACTIVE (planned)` pending
+> implementation; they are guard-side install/update procedures not yet
+> scoped (see M003 in `Z-ai-standards/MIGRATIONS.md`).
 >
 > **PROC-PLATFORM-005/006/007 retirement (META v2.0.2, 2026-06-19):**
 > Three platform-side procedures were planned in v2.0.0 but never
