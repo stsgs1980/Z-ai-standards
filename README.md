@@ -9,6 +9,27 @@ for the Z-ai ecosystem. Standards describe **what is true** in a domain —
 they are slower-moving, more stable, and may be referenced by rules, procedures,
 tools, and skills in lower layers.
 
+
+[![Next.js](https://img.shields.io/badge/Next.js-black?style=flat-square)](https://nextjs.org)
+[![React](https://img.shields.io/badge/React-61DAFB?style=flat-square)](https://react.dev)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green?style=flat-square)](LICENSE)
+
+
+## Table of Contents
+
+- [Repository Layout](#repository-layout)
+- [Standards Installation Order](#standards-installation-order)
+- [Currently Released Standards](#currently-released-standards)
+- [Cross-Domain Navigation](#cross-domain-navigation)
+- [Verification](#verification)
+- [Adding a New Standard](#adding-a-new-standard)
+- [Migration Window](#migration-window)
+- [Changelog](#changelog)
+- [Features](#features)
+- [Tech Stack](#tech-stack)
+- [Getting Started](#getting-started)
+- [License](#license)
+
 ## Repository Layout
 
 ```text
@@ -195,3 +216,40 @@ Active migrations are tracked in `MIGRATIONS.md`. The current window:
 | 2.1.0 | 2026-06-18 | Flat layout: renamed all 20 standards to `<DOMAIN>-<NNN>-<name>.md` convention. Merged 3 STUBs (DOC-002, ENV-001, ENV-002) with their working drafts — full content now in formalized file. Merged `META-001-standard-id-system.md` (v1.2 working draft) into `META-001-standard-id-system.md` (v2.0 formalized) — §XA Known Issues preserved. Split ARCH into ARCH-001 (architecture) + ARCH-002 (implementation order, new ID). Updated README with install order table for all 20 standards. |
 | 2.0.1 | 2026-06-18 | Restructured `standards/` into per-domain subfolders. Moved `templates/README_TEMPLATE.md` to `templates/`. Moved `guides/CODE_EXAMPLES_GUIDE.md` to `guides/`. Removed `legacy/` subfolder. |
 | 2.0.0 | 2026-06-17 | Initial formalized release. 6 standards formalized as `STD-*-vX.Y.md`. |
+
+
+## Features
+
+- Feature 1 - description
+- Feature 2 - description
+
+
+## Tech Stack
+
+- **Framework** - Next.js
+- **Tools** - React
+
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js 20+ or Bun
+
+### Installation
+
+```bash
+git clone https://github.com/stsgs1980/Z-ai-standards.git
+cd Z-ai-standards
+bun install
+```
+
+### Run
+
+```bash
+bun run dev
+```
+
+## License
+
+[MIT](LICENSE)
