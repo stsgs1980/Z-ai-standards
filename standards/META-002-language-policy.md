@@ -248,7 +248,19 @@ If a contributor disagrees with a language review comment:
 
 ---
 
-## 8. Version History
+## 8A. Known Issues
+
+This section documents discovered inconsistencies, missing content, and proposed corrections. Each issue has an ID, status, and proposed action. Issues resolved in the current version are marked `[RESOLVED]`; outstanding issues are marked `[OPEN]`.
+
+### META-002-001 `[OPEN]` — Related field trimmed to break G03 cycle
+
+**Problem:** STD-META-002 originally listed STD-GIT-001, STD-DOC-002, and STD-AGENT-001 in its `Related:` field. These created bidirectional edges (the targets also referenced META-002), forming a strongly connected component of 5 standards detected by G03 (cycle in Related graph).
+
+**Resolution:** Removed STD-GIT-001, STD-DOC-002, and STD-AGENT-001 from the `Related:` field. The cross-references remain in the body text (Section 7) but are no longer graph edges. Only STD-META-001 remains as a dependency edge.
+
+---
+
+## 9. Version History
 
 | Version | Date | Changes |
 |---------|------|---------|

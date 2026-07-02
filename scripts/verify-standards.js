@@ -503,7 +503,7 @@ function extractSection(content, sectionNumber) {
   if (startIdx5 !== -1 && endIdx5 !== -1 && endIdx5 > startIdx5) {
     section5 = readme.slice(startIdx5, endIdx5);
   }
-  const templateBlock = (section5.match(/````markdown\n([\s\S]*?)\n````/) || [])[1] || '';
+  const templateBlock = (section5.match(/````markdown\r?\n([\s\S]*?)\r?\n````/) || [])[1] || '';
   const badgeUrls = (templateBlock.match(/!\[([^\]]*)\]\(https:\/\/img\.shields\.io\/[^)]+\)/g) || []);
   const hasAtLeast1Badge = badgeUrls.length >= 1;
 
