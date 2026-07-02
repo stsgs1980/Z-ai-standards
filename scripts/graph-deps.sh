@@ -74,7 +74,6 @@ if ! command -v dot >/dev/null 2>&1; then
   exit 2
 fi
 
-mkdir -p "$OUT_DIR"
 
 OPEN_FLAG=0
 DOT_ONLY=0
@@ -87,6 +86,9 @@ for arg in "$@"; do
     *) echo "[graph-deps] unknown flag: $arg"; exit 2 ;;
   esac
 done
+
+# Create output directory AFTER argument parsing (so --out= override is honored)
+mkdir -p "$OUT_DIR"
 
 # --- step 1: extract graph data via verify-id-graph.js --json ---------------
 echo "[graph-deps] step 1/3: extracting ID graph from verify-id-graph.js ..."
