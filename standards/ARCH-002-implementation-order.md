@@ -1,11 +1,11 @@
 # Standard: Implementation Order v2.6
 
 > ID: STD-ARCH-002
-> Version: 2.6
-> Previous: 2.5
+> Version: 2.7
+> Previous: 2.6
 > Level: **[C] Critical**
-> Last Updated: 2026-06-19
-> Effective Date: 2026-06-19
+> Last Updated: 2026-07-02
+> Effective Date: 2026-07-02
 > Status: **APPROVED**
 > verified_by: scripts/verify-id-graph.js#G01,G02
 > Related: STD-META-001 (ID system), STD-ARCH-001 (architecture)
@@ -14,7 +14,7 @@ This standard defines two distinct ordering concerns:
 
 1. **Standards Installation Order** (§1) — the order in which the 20 normative standards MUST be read and accepted when onboarding a new project or agent. Each standard depends on concepts introduced by earlier standards.
 
-2. **Project Setup Sequence** (§2-§6) — the 6-step sequence for assembling a project (read standards → deploy worklog → reproducibility → unicode policy → markdown → README). This sequence governs how the standards are *applied* to a codebase, not how they are *learned*.
+2. **Project Setup Sequence** (§2-§6) — the 6-step sequence for assembling a project (read standards -> deploy worklog -> reproducibility -> unicode policy -> markdown -> README). This sequence governs how the standards are *applied* to a codebase, not how they are *learned*.
 
 Violating either order leads to rework.
 
@@ -22,7 +22,7 @@ Violating either order leads to rework.
 
 ## 1. Standards Installation Order
 
-The 20 normative standards below MUST be installed (read, understood, and accepted) in this order. Each row cites the prerequisite standards whose concepts the current standard depends on.
+The 21 normative standards below MUST be installed (read, understood, and accepted) in this order. Each row cites the prerequisite standards whose concepts the current standard depends on.
 
 > **Implicit prerequisite (v2.6, 2026-06-19):** `STD-META-001` is required by
 > every other standard (it defines the ID system that all standards use to
@@ -36,25 +36,26 @@ The 20 normative standards below MUST be installed (read, understood, and accept
 | # | ID | File | Prerequisites | Why this position |
 |---|---|---|---|---|
 | 1 | STD-META-001 | `META-001-standard-id-system.md` | — | Defines the ID system. Every other standard is referenced by its `STD-*` ID, so the ID system must be accepted first. |
-| 2 | STD-ARCH-001 | `ARCH-001-architecture-and-repo-layout.md` | META-001 | Defines the 4-repo split (platform + standards + guard + skills). Needed before any cross-repo work. |
-| 3 | STD-ARCH-002 | `ARCH-002-implementation-order.md` (this file) | META-001, ARCH-001 | Defines the order in which all remaining standards are installed. You are reading it. |
-| 4 | STD-DOC-002 | `DOC-002-markdown-standard.md` | META-001, ARCH-002 | Governs how every `.md` file (including other standards) is formatted. Must be accepted before reading standards whose formatting depends on it. |
-| 5 | STD-DOC-003 | `DOC-003-unicode-policy.md` | DOC-002 | Defines character rules (no emoji, no box-drawing, etc.). Pairs with DOC-002 — must be accepted alongside it. |
-| 6 | STD-SKILL-001 | `SKILL-001-skill-format.md` | META-001, DOC-002 | Defines skill format. Needed before any skill is authored or consumed. |
-| 7 | STD-ENV-001 | `ENV-001-reproducibility.md` | ARCH-001, DOC-002 | Defines L1-L4 reproducibility layers (env, code, delivery, process). Foundation for everything that runs. |
-| 8 | STD-ENV-002 | `ENV-002-zai-integration.md` | ENV-001, ARCH-002 | Sandbox-specific rules. Builds on ENV-001 — assumes reproducibility baseline. Also depends on ARCH-002 for the project-setup sequence (§2-§6) it inherits (bootstrap.sh, status.sh are ENV-002 §3.0 artifacts that follow ARCH-002's setup sequence). |
-| 9 | STD-GIT-001 | `GIT-001-github.md` | ENV-001, DOC-002 | Commit/branch/push policy for production repos. Needed before any commit. |
-| 10 | STD-GIT-002 | `GIT-002-github-sandbox.md` | GIT-001, ENV-002 | Sandbox-specific git rules (deadlock prevention). Builds on GIT-001. |
-| 11 | STD-DESIGN-001 | `DESIGN-001-design-system.md` | DOC-002, DOC-003 | Design tokens (color, typography, spacing). Must be defined before frontend consumes them. |
-| 12 | STD-FE-001 | `FE-001-frontend.md` | ENV-001, DOC-002, DESIGN-001 | Frontend code rules. Consumes design tokens — requires DESIGN-001 first. |
-| 13 | STD-A11Y-001 | `A11Y-001-wcag-2-1-aa.md` | FE-001, DESIGN-001 | WCAG 2.1 AA compliance. Verified against frontend components — requires FE-001. (Note: A11Y-001 also references STD-TEST-001 for testing practices, but TEST-001 is installed later at #18 — the reference is forward, not a prerequisite. See A11Y-001 §11 for the testing cross-link.) |
-| 14 | STD-ERR-001 | `ERR-001-error-handling.md` | FE-001, DOC-002 | Error classification, try-catch, logging. Applied in API routes and frontend boundaries. |
-| 15 | STD-ERR-002 | `ERR-002-error-recovery.md` | ERR-001 | Retry, circuit breaker, fallback. Builds on error handling concepts. |
-| 16 | STD-SEC-001 | `SEC-001-security-core.md` | ENV-001, GIT-001, DOC-002 | OWASP Top 10, secrets, validation. Needs env + git for context. |
-| 17 | STD-SEC-002 | `SEC-002-security-extended.md` | SEC-001 | Auth, RBAC, rate limiting. Extended threats — builds on core security. |
-| 18 | STD-TEST-001 | `TEST-001-testing.md` | FE-001, ERR-001, DOC-002 | Coverage gates, test isolation. Tests verify everything else — installed late. |
-| 19 | STD-AGENT-001 | `AGENT-001-subagent.md` | ENV-001, GIT-001, DOC-002 | Subagent contracts. Assumes env + git + doc format already accepted. |
-| 20 | STD-AGENT-002 | `AGENT-002-orchestration.md` | AGENT-001, ERR-001 | Multi-agent patterns. Builds on subagent contracts + error propagation. |
+| 2 | STD-META-002 | `META-002-language-policy.md` | META-001 | Defines the language policy for all artifacts (documentation, commits, branches, code). Must be accepted before standards whose language rules it governs (DOC-002, GIT-001, AGENT-001). |
+| 3 | STD-ARCH-001 | `ARCH-001-architecture-and-repo-layout.md` | META-001 | Defines the 4-repo split (platform + standards + guard + skills). Needed before any cross-repo work. |
+| 4 | STD-ARCH-002 | `ARCH-002-implementation-order.md` (this file) | META-001, ARCH-001 | Defines the order in which all remaining standards are installed. You are reading it. |
+| 5 | STD-DOC-002 | `DOC-002-markdown-standard.md` | META-001, META-002, ARCH-002 | Governs how every `.md` file (including other standards) is formatted. Must be accepted before reading standards whose formatting depends on it. |
+| 6 | STD-DOC-003 | `DOC-003-unicode-policy.md` | DOC-002 | Defines character rules (no emoji, no box-drawing, etc.). Pairs with DOC-002 — must be accepted alongside it. |
+| 7 | STD-SKILL-001 | `SKILL-001-skill-format.md` | META-001, DOC-002 | Defines skill format. Needed before any skill is authored or consumed. |
+| 8 | STD-ENV-001 | `ENV-001-reproducibility.md` | ARCH-001, DOC-002 | Defines L1-L4 reproducibility layers (env, code, delivery, process). Foundation for everything that runs. |
+| 9 | STD-ENV-002 | `ENV-002-zai-integration.md` | ENV-001, ARCH-002 | Sandbox-specific rules. Builds on ENV-001 — assumes reproducibility baseline. Also depends on ARCH-002 for the project-setup sequence (§2-§6) it inherits (bootstrap.sh, status.sh are ENV-002 §3.0 artifacts that follow ARCH-002's setup sequence). |
+| 10 | STD-GIT-001 | `GIT-001-github.md` | ENV-001, META-002, DOC-002 | Commit/branch/push policy for production repos. Needed before any commit. Language rules per STD-META-002. |
+| 11 | STD-GIT-002 | `GIT-002-github-sandbox.md` | GIT-001, ENV-002 | Sandbox-specific git rules (deadlock prevention). Builds on GIT-001. |
+| 12 | STD-DESIGN-001 | `DESIGN-001-design-system.md` | DOC-002, DOC-003 | Design tokens (color, typography, spacing). Must be defined before frontend consumes them. |
+| 13 | STD-FE-001 | `FE-001-frontend.md` | ENV-001, DOC-002, DESIGN-001 | Frontend code rules. Consumes design tokens — requires DESIGN-001 first. |
+| 14 | STD-A11Y-001 | `A11Y-001-wcag-2-1-aa.md` | FE-001, DESIGN-001 | WCAG 2.1 AA compliance. Verified against frontend components — requires FE-001. (Note: A11Y-001 also references STD-TEST-001 for testing practices, but TEST-001 is installed later at #20 — the reference is forward, not a prerequisite. See A11Y-001 §11 for the testing cross-link.) |
+| 15 | STD-ERR-001 | `ERR-001-error-handling.md` | FE-001, DOC-002 | Error classification, try-catch, logging. Applied in API routes and frontend boundaries. |
+| 16 | STD-ERR-002 | `ERR-002-error-recovery.md` | ERR-001 | Retry, circuit breaker, fallback. Builds on error handling concepts. |
+| 17 | STD-SEC-001 | `SEC-001-security-core.md` | ENV-001, GIT-001, DOC-002 | OWASP Top 10, secrets, validation. Needs env + git for context. |
+| 18 | STD-SEC-002 | `SEC-002-security-extended.md` | SEC-001 | Auth, RBAC, rate limiting. Extended threats — builds on core security. |
+| 19 | STD-TEST-001 | `TEST-001-testing.md` | FE-001, ERR-001, DOC-002 | Coverage gates, test isolation. Tests verify everything else — installed late. |
+| 20 | STD-AGENT-001 | `AGENT-001-subagent.md` | ENV-001, META-002, GIT-001, DOC-002 | Subagent contracts. Assumes env + git + doc format + language policy already accepted. |
+| 21 | STD-AGENT-002 | `AGENT-002-orchestration.md` | AGENT-001, ERR-001 | Multi-agent patterns. Builds on subagent contracts + error propagation. |
 
 ### Non-normative companions (not in install order)
 
@@ -82,25 +83,26 @@ These two artifacts are NOT standards — they are applied as needed during proj
 
 ```text
 META-001 (1)
-  └── ARCH-001 (2)
-        └── ARCH-002 (3) [this file]
-              ├── DOC-002 (4)
-              │     └── DOC-003 (5)
-              ├── SKILL-001 (6)
-              ├── ENV-001 (7)
-              │     └── ENV-002 (8)
-              ├── GIT-001 (9)  ← needs ENV-001
-              │     └── GIT-002 (10)  ← needs ENV-002
-              ├── DESIGN-001 (11)  ← needs DOC-002, DOC-003
-              │     └── FE-001 (12)  ← needs ENV-001, DESIGN-001
-              │           └── A11Y-001 (13)
-              ├── ERR-001 (14)  ← needs FE-001
-              │     └── ERR-002 (15)
-              ├── SEC-001 (16)  ← needs ENV-001, GIT-001
-              │     └── SEC-002 (17)
-              ├── TEST-001 (18)  ← needs FE-001, ERR-001
-              └── AGENT-001 (19)  ← needs ENV-001, GIT-001
-                    └── AGENT-002 (20)  ← needs AGENT-001, ERR-001
+  ├── META-002 (2) [language policy]
+  └── ARCH-001 (3)
+        └── ARCH-002 (4) [this file]
+              ├── DOC-002 (5)  ← needs META-002
+              │     └── DOC-003 (6)
+              ├── SKILL-001 (7)
+              ├── ENV-001 (8)
+              │     └── ENV-002 (9)
+              ├── GIT-001 (10)  ← needs ENV-001, META-002
+              │     └── GIT-002 (11)  ← needs ENV-002
+              ├── DESIGN-001 (12)  ← needs DOC-002, DOC-003
+              │     └── FE-001 (13)  ← needs ENV-001, DESIGN-001
+              │           └── A11Y-001 (14)
+              ├── ERR-001 (15)  ← needs FE-001
+              │     └── ERR-002 (16)
+              ├── SEC-001 (17)  ← needs ENV-001, GIT-001
+              │     └── SEC-002 (18)
+              ├── TEST-001 (19)  ← needs FE-001, ERR-001
+              └── AGENT-001 (20)  ← needs ENV-001, META-002, GIT-001
+                    └── AGENT-002 (21)  ← needs AGENT-001, ERR-001
 ```
 
 ---
@@ -134,6 +136,7 @@ Define rules. Not modified when starting a new project — only read and accepte
 | STD-ARCH-001 | ARCH-001-architecture-and-repo-layout.md | [C] | 4-repo split, submodule topology, layer model |
 | STD-ARCH-002 | ARCH-002-implementation-order.md | [C] | Standards installation order (this file) |
 | STD-META-001 | META-001-standard-id-system.md | [C] | Standard ID system |
+| STD-META-002 | META-002-language-policy.md | [C] | Language policy: documentation, commits, branches, code, user communication |
 | STD-ENV-002 | ENV-002-zai-integration.md | [C] | Z.ai sandbox integration |
 | STD-AGENT-001 | AGENT-001-subagent.md | [C] | Subagent types, contract, lifecycle, constraints |
 | STD-AGENT-002 | AGENT-002-orchestration.md | [C] | Multi-agent coordination, dependencies, state |
@@ -150,7 +153,7 @@ Work tools. Copied into the project and used from day one.
 
 ### Relationship Between Groups
 
-- Group A submits to Group B (all .md files must comply with MARKDOWN_STANDARD and No-Unicode Policy)
+- Group A submits to Group B (all .md files must comply with MARKDOWN_STANDARD and Unicode Policy)
 - Group B does not know about Group A (standards do not mention worklog)
 - Group A references Group B (README_WORKLOG mentions standards)
 
@@ -213,7 +216,7 @@ Work tools. Copied into the project and used from day one.
 
 **What is done:**
 
-- Add custom ESLint rule no-unicode-policy/no-unicode (error)
+- Add custom ESLint rule unicode-policy/no-unicode (error)
 - Replace all emoji in UI components with Lucide SVG icons
 - Replace unicode statuses with text tags: [OK], [FAIL], [TODO]
 - Run bun run lint for verification
@@ -405,7 +408,7 @@ This section documents discovered inconsistencies, missing content, and proposed
 
 ### ARCH-001 `[RESOLVED in v2.3]` — Cross-References referenced 11 steps that did not exist
 
-**Problem:** Prior to v2.3, §7 (Cross-References) cited "Step 7" through "Step 11" for various standards (STD-ERR-001 → Step 7, STD-SEC-001 → Step 8, STD-TEST-001 → Step 9, STD-DOC-005 → Step 10, STD-AGENT-001/002 → Step 11). However, §2 (Full Sequence) defined only 6 steps (Step 1 through Step 6). The Cross-References table was therefore referring to a stale 11-step model that no longer existed in the document.
+**Problem:** Prior to v2.3, §7 (Cross-References) cited "Step 7" through "Step 11" for various standards (STD-ERR-001 -> Step 7, STD-SEC-001 -> Step 8, STD-TEST-001 -> Step 9, STD-DOC-005 -> Step 10, STD-AGENT-001/002 -> Step 11). However, §2 (Full Sequence) defined only 6 steps (Step 1 through Step 6). The Cross-References table was therefore referring to a stale 11-step model that no longer existed in the document.
 
 **Resolution:** Rewrote §7 Cross-References to map each standard to the correct step in the 6-step model. Most standards that were previously "Step 7+" are now applied during Step 3 (REPRODUCIBILITY), because that is when infrastructure, API routes, error handling, security validation, and tests are first established. README Template (STD-DOC-004) is mapped to Step 6. Code Examples (STD-DOC-005) applies throughout Steps 3-6.
 
@@ -431,7 +434,7 @@ This section documents discovered inconsistencies, missing content, and proposed
 
 **Problem:** After the ARCH-001 fix, Step 3 now bundles REPRODUCIBILITY + Frontend + Design System + Error Handling + Error Recovery + Security Core + Security Extended + Testing + WCAG. This is a lot for one step. In practice, these are sub-steps executed in sequence, but the document presents Step 3 as a single unit.
 
-**Proposed solution:** Either (a) split Step 3 into sub-steps 3a (REPRODUCIBILITY), 3b (Frontend + Design System), 3c (Error + Security), 3d (Testing + WCAG) — with explicit ordering; or (b) add a note under Step 3 that says "Step 3 is composite; sub-steps within it follow the order: env → frontend → error/security → testing". Option (b) is the lighter touch.
+**Proposed solution:** Either (a) split Step 3 into sub-steps 3a (REPRODUCIBILITY), 3b (Frontend + Design System), 3c (Error + Security), 3d (Testing + WCAG) -- with explicit ordering; or (b) add a note under Step 3 that says "Step 3 is composite; sub-steps within it follow the order: env -> frontend -> error/security -> testing". Option (b) is the lighter touch.
 
 ### ARCH-006 `[OPEN]` — No explicit "Path B" sub-step mapping for STD-DESIGN-001
 
@@ -468,7 +471,8 @@ This section documents discovered inconsistencies, missing content, and proposed
 
 | Version | Date | Change |
 |---|---|---|
-| 2.0 | 2026-06-17 | Initial 4-repo split release. Combined 6-step Project Setup Sequence with 20-standard installation order. |
+| 2.0 | 2026-06-17 | Initial 4-repo split release. Combined 6-step Project Setup Sequence with 21-standard installation order. |
 | 2.3 | 2026-06-18 | Resolved ARCH-001 through ARCH-004 known issues. Renamed STD-ARCH-001 stub to ARCH-002 (correcting earlier mislabel). |
 | 2.5 | 2026-06-19 | Resolved ARCH-005 partial; added §6 Path B integration. |
 | 2.6 | 2026-06-19 | Resolved ARCH-008. Reconciliation audit: implicit-META convention documented in §1; ENV-002 prereq added ARCH-002; A11Y-001 forward-ref to TEST-001 clarified; DOC-002 header added ARCH-002 to `Related:`. Reconciliation script added at `scripts/reconcile_arch002_vs_headers.py`. |
+| 2.7 | 2026-07-02 | Added STD-META-002 (Language Policy) as position #2 in installation order. Updated prerequisites for DOC-002, GIT-001, AGENT-001 to include META-002. Updated dependency graph. Added to Group B table. Total standards: 20 -> 21. |

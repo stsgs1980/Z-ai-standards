@@ -3,7 +3,7 @@
 > ID: STD-DESIGN-001
 > Version: 3.1.1
 > Level: **[C] Critical** + **[W] Warning**
-> Related: Markdown Standard v2.3 (STD-DOC-002), No-Unicode Policy v2.3 (STD-DOC-003), STD-META-001 (ID system)
+> Related: Markdown Standard v2.3 (STD-DOC-002), Unicode Policy v2.3 (STD-DOC-003), STD-META-001 (ID system)
 > Companion files: `DESIGN-001-profile-terminal-dashboard.md` (Terminal Dashboard example Profile, §14-§26 except §19), `DESIGN-001-profile-cards.md` (§19 Card Archetypes, sub-companion added in v3.1.1)
 
 This standard consists of two layers: **Core** (framework-agnostic, design-language-agnostic rules that apply to any project) and **Profile** (product-specific token values, component maps, and design language choices). The Core is universal; the Profile is a concrete instantiation that is swapped per project.
@@ -771,7 +771,7 @@ This section documents discovered inconsistencies, missing content, and proposed
 
 **Problem:** STD-DESIGN-001 was not present in the ID registry (STD-META-001 §4). The `DESIGN` domain was not listed in §3 (Reserved Domains). A shipped, actively-maintained standard had no registered ID — citations in other standards (e.g., STD-FE-001 §11) referenced an ID that the registry did not recognize.
 
-**Resolution:** STD-META-001 v1.2 added `DESIGN` to §3 and created §4.11 "Design System (DESIGN)" with the `STD-DESIGN-001` entry (v3.0.0 → v3.0.1, [C]+[W], ACTIVE). Cross-reference between STD-META-001 and STD-DESIGN-001 is now bidirectional.
+**Resolution:** STD-META-001 v1.2 added `DESIGN` to §3 and created §4.11 "Design System (DESIGN)" with the `STD-DESIGN-001` entry (v3.0.0 -> v3.0.1, [C]+[W], ACTIVE). Cross-reference between STD-META-001 and STD-DESIGN-001 is now bidirectional.
 
 ### DES-003 `[OPEN]` — Cross-References section omits STD-META-001
 

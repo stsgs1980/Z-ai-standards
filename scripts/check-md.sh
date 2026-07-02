@@ -17,7 +17,7 @@
 #
 #     2. ESLint (auto-detected via npx) — §10
 #        - markdown/* rules via eslint-plugin-markdown
-#        - Custom no-unicode-policy rules (error severity, §10.6)
+#        - Custom unicode-policy rules (error severity, §10.6)
 #        - Skipped silently if npx or eslint-plugin-markdown is missing
 #
 #     3. lint-md.js (custom Node linter) — §10.7

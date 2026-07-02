@@ -1,4 +1,4 @@
-# Standard: No-Unicode Policy v2.3
+# Standard: Unicode Policy v2.3
 
 > ID: STD-DOC-003
 > Version: 2.3.0
@@ -27,7 +27,7 @@ This standard establishes rules for using Unicode graphic characters across all 
 
 | Document | Level | Scope |
 |----------|-------|-------|
-| **No-Unicode Policy v2.2** (this document) | [C] Critical, [W] Warning, [I] Info | UI, production code, AI-chat, prototypes |
+| **Unicode Policy v2.2** (this document) | [C] Critical, [W] Warning, [I] Info | UI, production code, AI-chat, prototypes |
 | **MARKDOWN_STANDARD v2.3** | [C] Critical | README.md, project documentation |
 
 ---
@@ -243,6 +243,7 @@ This subsection defines the rules for AI-agent chat dialogue with the user (the 
 2. **No Unicode pseudo-graphics for trees or boxes in plain chat text.** Tree structures (file trees, call hierarchies) MUST use ASCII indentation with `+--`, `|`, and `\-` inside a fenced `text` code block. Box-drawing characters (U+2500–U+257F) are PROHIBITED in chat output.
 3. **Code blocks MUST specify a language** (per STD-DOC-002 §5.4). Unknown language — use `text` or `bash` fallback. This applies equally to inline command examples and to multi-line code.
 4. **File paths in chat MUST be quoted** with backticks (e.g. `src/lib/utils.ts`) — never wrapped in guillemets or decorated with arrow glyphs.
+<!-- eslint-disable-next-line unicode-policy/unicode-graphics-in-md -->
 5. **Headings inside long chat answers** (more than ~30 lines) MUST use Markdown `##` / `###` syntax, not Unicode decorators or horizontal rules made of `━`, `═`, etc.
 6. **Tables MUST use standard Markdown pipe syntax** — never Unicode box-drawing characters to simulate table borders.
 
@@ -253,6 +254,7 @@ This subsection defines the rules for AI-agent chat dialogue with the user (the 
 - When the agent makes a mistake or discovers an inconsistency in its own prior output, it MUST explicitly acknowledge the correction in plain text ("Correction:", "Update:") rather than with emoji or symbols.
 - When the agent refuses a request (security, policy, capability), the refusal MUST be in plain text with a brief reason — no warning glyphs, no crossed-out emoji.
 
+<!-- eslint-disable unicode-policy/emoji-in-md, unicode-policy/unicode-graphics-in-md -->
 **8.4.4. Forbidden Chat Patterns**
 
 | Pattern | Why forbidden | Correct replacement |
@@ -264,6 +266,7 @@ This subsection defines the rules for AI-agent chat dialogue with the user (the 
 | `⚠️ Warning: ...` | Emoji as warning marker | `[WARNING] ...` |
 | Horizontal rule made of `━` × N | Unicode decoration | Markdown `---` |
 | Table with `│` and `─` borders | Unicode pseudo-graphics table | Standard Markdown pipe table |
+<!-- eslint-enable unicode-policy/emoji-in-md, unicode-policy/unicode-graphics-in-md -->
 
 **8.4.5. Enforcement**
 
@@ -273,7 +276,7 @@ Chat dialogue is enforced at level `[W] Warning`: violations do not block the ag
 
 - §4 (What is Prohibited) defines the character categories — §8.4 narrows them to chat output specifically.
 - §6 (Allowed Characters) defines the whitelist — §8.4.1 restates the chat-relevant subset.
-- §10.1 (ESLint rule `no-unicode-policy`) does NOT run on chat output (chat is not a file). Enforcement is manual / audit-based.
+- §10.1 (ESLint rule `unicode-policy`) does NOT run on chat output (chat is not a file). Enforcement is manual / audit-based.
 - §13.3 (Compliance Checklist for AI-communication) is the operational checklist — §8.4 is the normative specification behind it.
 
 ---
@@ -313,29 +316,29 @@ Chat dialogue is enforced at level `[W] Warning`: violations do not block the ag
 
 ## 10. Control and Enforcement
 
-### 10.1. ESLint Custom Rule: `no-unicode-policy`
+### 10.1. ESLint Custom Rule: `unicode-policy`
 
-This is the primary automated enforcement mechanism for the No-Unicode Policy. The rule file lives at `eslint-rules/no-unicode-policy.js` in the project root and exports multiple sub-rules covering different contexts and severity levels.
+This is the primary automated enforcement mechanism for the Unicode Policy. The rule file lives at `eslint-rules/unicode-policy.js` in the project root and exports multiple sub-rules covering different contexts and severity levels.
 
 #### 10.1.1. Full Rule Implementation
 
 ```javascript
-// eslint-rules/no-unicode-policy.js
+// eslint-rules/unicode-policy.js
 module.exports = {
   configs: {
     recommended: {
-      plugins: ["no-unicode-policy"],
+      plugins: ["unicode-policy"],
       rules: {
-        "no-unicode-policy/no-emoji": "error",
-        "no-unicode-policy/no-unicode-graphics": "error",
-        "no-unicode-policy/no-emoji-in-md": "warn",
-        "no-unicode-policy/no-unicode-graphics-in-md": "warn",
+        "unicode-policy/emoji": "error",
+        "unicode-policy/unicode-graphics": "error",
+        "unicode-policy/emoji-in-md": "warn",
+        "unicode-policy/unicode-graphics-in-md": "warn",
       },
     },
   },
   rules: {
     // -------------------------------------------------------
-    // Rule 1: no-emoji
+    // Rule 1: emoji
     // Context: Production code (.ts, .tsx, .js, .jsx)
     // Level: [C] Critical — blocks merge
     // Detects emoji in string literals, template literals, and JSX text nodes.
@@ -555,12 +558,12 @@ module.exports = {
 
 #### 10.1.2. Rule Architecture and Severity Mapping
 
-The ESLint rules in `no-unicode-policy.js` are designed to mirror the tiered strictness levels from section 3 of this standard. The mapping between standard levels and ESLint severity is fundamental to understanding how the nested standards work:
+The ESLint rules in `unicode-policy.js` are designed to mirror the tiered strictness levels from section 3 of this standard. The mapping between standard levels and ESLint severity is fundamental to understanding how the nested standards work:
 
 | Standard Level | ESLint Severity | Effect on CI | Example Rule |
 |----------------|-----------------|--------------|--------------|
-| [C] Critical | `error` | Blocks merge | `no-unicode-policy/no-emoji` |
-| [W] Warning | `warn` | Reports but does not block | `no-unicode-policy/no-emoji-in-md` |
+| [C] Critical | `error` | Blocks merge | `unicode-policy/emoji` |
+| [W] Warning | `warn` | Reports but does not block | `unicode-policy/emoji-in-md` |
 | [I] Info | `off` | Not enforced by ESLint | No rule (manual convention only) |
 
 **Why this mapping matters:** The same underlying violation (e.g., an emoji character) triggers different ESLint severities depending on context. An emoji in a React component is `error` (it will appear in the UI — [C] Critical). The same emoji in a README is `warn` (it is documentation — [W] Warning). The rule implementation is context-aware through separate rule names, not through runtime severity logic.
@@ -599,7 +602,7 @@ The rules detect characters in the following Unicode ranges:
 
 ### 10.2. ESLint Configuration Integration
 
-The `no-unicode-policy.js` rule is designed to work with both flat config (ESLint 9+) and legacy config (ESLint 8). See **STD-DOC-002 section 10.3** for the complete configuration examples. The key points of integration are:
+The `unicode-policy.js` rule is designed to work with both flat config (ESLint 9+) and legacy config (ESLint 8). See **STD-DOC-002 section 10.3** for the complete configuration examples. The key points of integration are:
 
 1. **Production code files** (`.ts`, `.tsx`, `.js`, `.jsx`): Rules `no-emoji` and `no-unicode-graphics` are set to `error`
 2. **Markdown files** (`.md`): Rules `no-emoji-in-md` and `no-unicode-graphics-in-md` are set to `warn`
@@ -609,12 +612,12 @@ This three-tier configuration ensures that the nested standards are enforced cor
 
 ### 10.3. Interaction with `no-irregular-whitespace`
 
-ESLint has a built-in rule `no-irregular-whitespace` that catches some Unicode whitespace characters (NBSP, ZWSP, line/paragraph separators, etc.). This rule complements the custom `no-unicode-policy` rules:
+ESLint has a built-in rule `no-irregular-whitespace` that catches some Unicode whitespace characters (NBSP, ZWSP, line/paragraph separators, etc.). This rule complements the custom `unicode-policy` rules:
 
 | Rule | What it catches | Where it applies |
 |------|-----------------|------------------|
-| `no-unicode-policy/no-emoji` | Emoji pictograms | String literals, template literals, JSX |
-| `no-unicode-policy/no-unicode-graphics` | Box-drawing, arrows, geometric shapes | String literals, template literals, JSX |
+| `unicode-policy/emoji` | Emoji pictograms | String literals, template literals, JSX |
+| `unicode-policy/no-unicode-graphics` | Box-drawing, arrows, geometric shapes | String literals, template literals, JSX |
 | `no-irregular-whitespace` | NBSP, ZWSP, line/paragraph separator, BOM | All source code |
 
 **Recommendation:** Enable `no-irregular-whitespace: "error"` alongside the custom rules. It catches whitespace-related Unicode issues that the custom rules do not cover.
@@ -665,7 +668,7 @@ ESLint has a built-in rule `no-irregular-whitespace` that catches some Unicode w
 When an exception is approved (section 11.3), the corresponding ESLint rule can be disabled inline. The disable comment must reference the approved exception.
 
 ```typescript
-// eslint-disable-next-line no-unicode-policy/no-emoji -- Approved exception: ISSUE-1234, email campaign requires emoji
+// eslint-disable-next-line unicode-policy/emoji -- Approved exception: ISSUE-1234, email campaign requires emoji
 const emailSubject = "Welcome to our platform!";
 ```
 
@@ -745,12 +748,12 @@ const emailSubject = "Welcome to our platform!";
 | 2.1.1 | 2025-01 | Fixed invalid CSS `:loaded` to `onerror`, added TemplateLiteral and JSXText checks to ESLint rule, removed emoji from document body, removed double separator |
 | 2.1.2 | 2025-01 | Added AI-communication (chat) as [W] level context; AI-agent responses must not contain emoji and Unicode graphics; user messages not regulated |
 | 2.1.3 | 2025-01 | Stack signature parameterized: standard defines format `Built with: <technologies>`, specific stack is project responsibility; default value moved to README_TEMPLATE |
-| 2.2.0 | 2026-06 | Major ESLint integration update: expanded custom rule `no-unicode-policy.js` with 4 sub-rules (no-emoji, no-unicode-graphics, no-emoji-in-md, no-unicode-graphics-in-md); added severity mapping table (section 10.1.2); added Unicode range reference table (section 10.1.3); added ESLint config integration notes (section 10.2); added `no-irregular-whitespace` interaction notes (section 10.3); added inline disable policy with issue reference requirement (section 11.4); added project type to ESLint config mapping (section 12); updated compliance checklist with ESLint items; added automated enforcement difficulty to section 5; updated cross-references to STD-DOC-002 v2.3 |
+| 2.2.0 | 2026-06 | Major ESLint integration update: expanded custom rule `unicode-policy.js` with 4 sub-rules (no-emoji, no-unicode-graphics, no-emoji-in-md, no-unicode-graphics-in-md); added severity mapping table (section 10.1.2); added Unicode range reference table (section 10.1.3); added ESLint config integration notes (section 10.2); added `no-irregular-whitespace` interaction notes (section 10.3); added inline disable policy with issue reference requirement (section 11.4); added project type to ESLint config mapping (section 12); updated compliance checklist with ESLint items; added automated enforcement difficulty to section 5; updated cross-references to STD-DOC-002 v2.3 |
 | 2.3.0 | 2026-06 | Added Section 8.4 "Chat Dialogue Requirements" — normative specification for AI-agent chat output: character set, structural rules, forbidden patterns, enforcement. Expanded §13 checklist "For AI-communication (chat) [W]" from 2 items to 9 items aligned with §8.4. |
 
 ---
 
-**Document complies with No-Unicode Policy v2.3**
+**Document complies with Unicode Policy v2.3**
 
 ---
 
@@ -766,15 +769,15 @@ This section documents discovered inconsistencies, missing content, and proposed
 
 ### UNI-002 `[OPEN]` — ESLint rule does not cover chat output
 
-**Problem:** The custom ESLint rule `no-unicode-policy.js` (§10.1) runs on source files (`.ts`, `.tsx`) and Markdown files (`.md`). Chat output is not a file — it never passes through ESLint. Enforcement is therefore manual and audit-based, which is inconsistent with the automated enforcement model used for code and documentation.
+**Problem:** The custom ESLint rule `unicode-policy.js` (§10.1) runs on source files (`.ts`, `.tsx`) and Markdown files (`.md`). Chat output is not a file — it never passes through ESLint. Enforcement is therefore manual and audit-based, which is inconsistent with the automated enforcement model used for code and documentation.
 
 **Proposed solution:** Implement a chat-output linter as a separate tool (e.g., `lint-chat.js`) that takes agent responses from the chat log and runs the same Unicode checks. Integrate into the agent's post-response hook. Until then, §8.4.5 documents the manual enforcement policy.
 
 ### UNI-003 `[OPEN]` — Version reference in `DESIGN-001-design-system.md` is stale
 
-**Problem:** `DESIGN-001-design-system.md` (STD-DESIGN-001) header and §8 reference "No-Unicode Policy v2.1". The actual version of this standard is v2.3.0.
+**Problem:** `DESIGN-001-design-system.md` (STD-DESIGN-001) header and §8 reference "Unicode Policy v2.1". The actual version of this standard is v2.3.0.
 
-**Proposed solution:** Update `DESIGN-001-design-system.md` header and §8 to reference "No-Unicode Policy v2.3". See STD-DESIGN-001 Known Issues entry DES-001 for the cross-reference.
+**Proposed solution:** Update `DESIGN-001-design-system.md` header and §8 to reference "Unicode Policy v2.3". See STD-DESIGN-001 Known Issues entry DES-001 for the cross-reference.
 
 ### UNI-004 `[OPEN]` — Registry version mismatch in `META-001-standard-id-system.md`
 
@@ -788,6 +791,6 @@ This section documents discovered inconsistencies, missing content, and proposed
 
 | Standard | Relationship |
 |----------|-------------|
-| STD-DOC-002 | Markdown Standard: delegates character rules to this standard; keeps .md-specific formatting rules. Section 10 (ESLint Integration) in STD-DOC-002 references the custom rule defined in this document (section 10.1). The `eslint.config.js` examples in STD-DOC-002 section 10.3 import the `no-unicode-policy.js` rule file defined in this document. |
+| STD-DOC-002 | Markdown Standard: delegates character rules to this standard; keeps .md-specific formatting rules. Section 10 (ESLint Integration) in STD-DOC-002 references the custom rule defined in this document (section 10.1). The `eslint.config.js` examples in STD-DOC-002 section 10.3 import the `unicode-policy.js` rule file defined in this document. |
 | STD-META-001 | Standard ID System: registry entry for STD-DOC-003 must be kept in sync with the version in this document's header. |
 | STD-DESIGN-001 | Design System Standard: §8 (Icon and Graphics Rules) and §9 (Markdown Compliance) reference this standard's character and icon rules. |

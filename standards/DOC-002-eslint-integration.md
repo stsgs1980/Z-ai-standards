@@ -34,7 +34,7 @@ references stable.
 
 ## 10. ESLint Integration for Markdown Linting
 
-This section describes how to configure ESLint to automatically enforce the rules defined in this standard and the nested **No-Unicode Policy (STD-DOC-003)**. ESLint acts as the automated enforcement layer for the rules that are otherwise checked manually in code review.
+This section describes how to configure ESLint to automatically enforce the rules defined in this standard and the nested **Unicode Policy (STD-DOC-003)**. ESLint acts as the automated enforcement layer for the rules that are otherwise checked manually in code review.
 
 ### 10.1. Why ESLint for Markdown?
 
@@ -56,8 +56,8 @@ npm install --save-dev eslint
 # Markdown processor — lets ESLint parse .md files
 npm install --save-dev eslint-plugin-markdown
 
-# Custom rule for No-Unicode Policy enforcement (see STD-DOC-003 section 10.1)
-# This file lives in your project at: eslint-rules/no-unicode-policy.js
+# Custom rule for Unicode Policy enforcement (see STD-DOC-003 section 10.1)
+# This file lives in your project at: eslint-rules/unicode-policy.js
 ```
 
 **Dependency chain:**
@@ -65,7 +65,7 @@ npm install --save-dev eslint-plugin-markdown
 ```text
 eslint
   └── eslint-plugin-markdown       (parses .md into virtual JS AST)
-       └── no-unicode-policy.js    (custom rule from STD-DOC-003)
+       └── unicode-policy.js    (custom rule from STD-DOC-003)
 ```
 
 ### 10.3. ESLint Configuration (Flat Config — eslint.config.js)
@@ -75,7 +75,7 @@ ESLint 9+ uses the flat config format. The configuration below maps this standar
 ```javascript
 // eslint.config.js
 import markdown from "eslint-plugin-markdown";
-import noUnicodePolicy from "./eslint-rules/no-unicode-policy.js";
+import unicodePolicy from "./eslint-rules/unicode-policy.js";
 
 export default [
   // --- Global ignores ---
@@ -102,8 +102,8 @@ export default [
       "markdown/code-block-language": "warn",
 
       // STD-DOC-003: No emoji/Unicode graphics in code blocks
-      "no-unicode-policy/no-emoji": "error",
-      "no-unicode-policy/no-unicode-graphics": "error",
+      "unicode-policy/emoji": "error",
+      "unicode-policy/no-unicode-graphics": "error",
 
       // General quality rules for code inside .md blocks
       "no-undef": "off",            // code snippets in docs may be incomplete
@@ -115,17 +115,17 @@ export default [
   {
     files: ["**/*.md"],             // the .md files themselves (not code blocks)
     plugins: {
-      "no-unicode-policy": noUnicodePolicy,
+      "unicode-policy": unicodePolicy,
     },
     rules: {
       // STD-DOC-003 section 4: No emoji in Markdown documentation
       // Severity: error ([C] Critical) — same rule, same severity as source code.
       // To soften enforcement for a legacy project migration, override in the
       // project's local eslint.config.js to "warn" with a documented cutover date.
-      "no-unicode-policy/no-emoji-in-md": "error",
+      "unicode-policy/emoji-in-md": "error",
 
       // STD-DOC-003 section 4: No Unicode icons in Markdown documentation
-      "no-unicode-policy/no-unicode-graphics-in-md": "error",
+      "unicode-policy/no-unicode-graphics-in-md": "error",
     },
   },
 
@@ -133,14 +133,14 @@ export default [
   {
     files: ["**/*.{ts,tsx,js,jsx}"],
     plugins: {
-      "no-unicode-policy": noUnicodePolicy,
+      "unicode-policy": unicodePolicy,
     },
     rules: {
       // STD-DOC-003 [C] Critical: No emoji in production code / UI strings
-      "no-unicode-policy/no-emoji": "error",
+      "unicode-policy/emoji": "error",
 
       // STD-DOC-003 [C] Critical: No Unicode graphics in production code
-      "no-unicode-policy/no-unicode-graphics": "error",
+      "unicode-policy/no-unicode-graphics": "error",
 
       // STD-DOC-002 indirectly: no irregular whitespace (NBSP, ZWSP, etc.)
       "no-irregular-whitespace": "error",
@@ -163,8 +163,8 @@ module.exports = {
       // Code blocks inside .md files
       files: ["**/*.md/**"],
       rules: {
-        "no-unicode-policy/no-emoji": "error",
-        "no-unicode-policy/no-unicode-graphics": "error",
+        "unicode-policy/emoji": "error",
+        "unicode-policy/no-unicode-graphics": "error",
         "no-undef": "off",
         "no-unused-vars": "off",
         "no-console": "off",
@@ -175,16 +175,16 @@ module.exports = {
       files: ["**/*.md"],
       rules: {
         // [C] Critical — same rule, same severity as source code (see §10.6)
-        "no-unicode-policy/no-emoji-in-md": "error",
-        "no-unicode-policy/no-unicode-graphics-in-md": "error",
+        "unicode-policy/emoji-in-md": "error",
+        "unicode-policy/no-unicode-graphics-in-md": "error",
       },
     },
     {
       // Source code files
       files: ["**/*.{ts,tsx,js,jsx}"],
       rules: {
-        "no-unicode-policy/no-emoji": "error",
-        "no-unicode-policy/no-unicode-graphics": "error",
+        "unicode-policy/emoji": "error",
+        "unicode-policy/no-unicode-graphics": "error",
         "no-irregular-whitespace": "error",
       },
     },
@@ -238,7 +238,7 @@ module.exports = {
 
 #### 10.5.2. Rule: `no-emoji-in-md`
 
-Scans the raw text of `.md` files (outside code blocks) for emoji characters. This is the Markdown-specific version of the No-Unicode Policy rule — it operates at level [C] Critical per STD-DOC-002 section 9.1.
+Scans the raw text of `.md` files (outside code blocks) for emoji characters. This is the Markdown-specific version of the Unicode Policy rule — it operates at level [C] Critical per STD-DOC-002 section 9.1.
 
 ```javascript
 // eslint-rules/no-emoji-in-md.js
@@ -283,15 +283,15 @@ module.exports = {
 
 ### 10.6. Nested Standards: How ESLint Rules Map to This Document
 
-The relationship between this standard (STD-DOC-002) and the No-Unicode Policy (STD-DOC-003) is reflected in the ESLint severity levels:
+The relationship between this standard (STD-DOC-002) and the Unicode Policy (STD-DOC-003) is reflected in the ESLint severity levels:
 
 | Standard Section | Rule | ESLint Severity | Rationale |
 |------------------|------|-----------------|-----------|
-| STD-DOC-002 Section 3 (Prohibited: Emoji) | `no-unicode-policy/no-emoji-in-md` | `error` | [C] level — same as source code |
-| STD-DOC-002 Section 3 (Prohibited: Unicode icons) | `no-unicode-policy/no-unicode-graphics-in-md` | `error` | [C] level — same as source code |
+| STD-DOC-002 Section 3 (Prohibited: Emoji) | `unicode-policy/emoji-in-md` | `error` | [C] level — same as source code |
+| STD-DOC-002 Section 3 (Prohibited: Unicode icons) | `unicode-policy/no-unicode-graphics-in-md` | `error` | [C] level — same as source code |
 | STD-DOC-002 Section 5.4 (Code block language) | `code-block-language` | `warn` | [W] level for documentation |
-| STD-DOC-003 Section 4 (Prohibited: Emoji in code) | `no-unicode-policy/no-emoji` | `error` | [C] level for production code |
-| STD-DOC-003 Section 4 (Prohibited: Unicode graphics in code) | `no-unicode-policy/no-unicode-graphics` | `error` | [C] level for production code |
+| STD-DOC-003 Section 4 (Prohibited: Emoji in code) | `unicode-policy/emoji` | `error` | [C] level for production code |
+| STD-DOC-003 Section 4 (Prohibited: Unicode graphics in code) | `unicode-policy/no-unicode-graphics` | `error` | [C] level for production code |
 | STD-DOC-002/003 (Irregular whitespace) | `no-irregular-whitespace` | `error` | Always critical |
 
 **Key principle of uniform severity:** A rule originating from STD-DOC-003 ([C] Critical) applies with the same severity regardless of context — source code or documentation. The rationale: if emoji are prohibited, they are prohibited everywhere. Downgrading severity for .md files created an enforcement gap where violations in documentation were not caught before merge. The `lint-md.js` script defaults to `--level=C` and can be overridden with `--level=W` for projects that intentionally want softer enforcement.
@@ -346,7 +346,7 @@ jobs:
 ESLint supports inline disable comments, but they must be used sparingly and with justification, consistent with the escalation policy in section 9.1.
 
 ```markdown
-<!-- eslint-disable-next-line no-unicode-policy/no-emoji-in-md -->
+<!-- eslint-disable-next-line unicode-policy/emoji-in-md -->
 This line intentionally contains an emoji for demonstration purposes.
 ```
 
@@ -382,7 +382,7 @@ npx eslint '**/*.md' --plugin markdown --fix
 | ESLint does not scan .md files | Missing `eslint-plugin-markdown` | Install and configure the plugin (section 10.3) |
 | False positives on emoji in code blocks | `.md` rule scanning code blocks | Ensure `no-emoji-in-md` strips code blocks (section 10.5.2) |
 | `no-undef` errors in .md code snippets | ESLint treats code blocks as real JS | Add `"no-undef": "off"` in `.md/**` override (section 10.3) |
-| Custom rule not found | Incorrect plugin path | Verify `eslint-rules/no-unicode-policy.js` exists and is imported correctly |
+| Custom rule not found | Incorrect plugin path | Verify `eslint-rules/unicode-policy.js` exists and is imported correctly |
 | Flat config vs legacy config conflict | Mixed config formats | Use only one format — flat config (`eslint.config.js`) for ESLint 9+ |
 
 ---

@@ -4,7 +4,7 @@
 > Version: 1.1
 > Level: **[C] Critical**
 > Last Updated: 2026-06
-> Related: STD-ENV-001 (environment), STD-GIT-001 (github), STD-DOC-002 (markdown), STD-META-001 (ID system)
+> Related: STD-ENV-001 (environment), STD-GIT-001 (github), STD-DOC-002 (markdown), STD-META-001 (ID system), STD-META-002 (language policy)
 
 ---
 
@@ -351,6 +351,7 @@ This section documents discovered inconsistencies, missing content, and proposed
 | STD-GIT-002 | Sandbox git safety: deadlock prevention for parallel subagents |
 | STD-ERR-001 | Error classification and recovery in subagent results |
 | STD-META-001 | Standard ID System: registry entry for STD-AGENT-001 must be kept in sync with the version in this document's header. Also tracks the planned ZAI-MEM-* skill IDs once implemented (see SAG-001). |
+| STD-META-002 | Language Policy: subagent prompts, results, and WORKLOG in English |
 | STD-DOC-003 | Unicode Policy: no emoji or Unicode graphics in subagent output (includes §8.4 chat dialogue rules) |
 | STD-DOC-002 | Markdown Standard: proper formatting in all .md output from subagents |
 | STD-ENV-001 | Reproducibility: no hardcoded personal paths in generated code |

@@ -3,9 +3,10 @@
 > ID: STD-DOC-002
 > Version: 2.4.3
 > Level: **[C] Critical** (unified with STD-DOC-003 — same rule = same severity)
-> Related: STD-META-001 (ID system), STD-ARCH-002 (implementation order — DOC-002 is installed at position #4, after ARCH-002 defines the install sequence)
+> Related: STD-META-001 (ID system), STD-META-002 (language policy), STD-ARCH-002 (implementation order — DOC-002 is installed at position #4, after ARCH-002 defines the install sequence)
 > Last Updated: 2026-06-21
 > Effective Date: 2026-06-21
+<!-- eslint-disable-next-line unicode-policy/unicode-graphics-in-md -->
 > Note: Character rules (emoji, box-drawing, etc.) are delegated to STD-DOC-003. Per ARCH-002 install order, DOC-003 is read after DOC-002. The dependency edge is therefore DOC-003 → DOC-002 (DOC-003 depends on DOC-002's markdown scope).
 > Entry point: `bash scripts/check-md.sh [path]` — see §0 (TL;DR) and §10 (now in companion `DOC-002-eslint-integration.md`).
 > Companion file: `DOC-002-eslint-integration.md` (§10 ESLint Integration, extracted in v2.4.3 for W11 soft-cap cleanup).
@@ -82,13 +83,13 @@ This standard establishes rules for Markdown documentation formatting to ensure 
 | **[C] Critical** | README.md, CHANGELOG.md, docs/, project documentation | Blocks commit (husky + lint-staged) |
 
 **See also:**
-- **No-Unicode Policy v2.3** — for UI components [C], production code [C], AI-communication [W], prototypes [I]
+- **Unicode Policy v2.3** — for UI components [C], production code [C], AI-communication [W], prototypes [I]
 
 ---
 
 ## 3. Prohibited Elements
 
-Character prohibitions are defined in **No-Unicode Policy v2.3** (STD-DOC-003) sections 4-5. Level **[C] Critical** applies to documentation files — same severity as source code (same rule = same severity).
+Character prohibitions are defined in **Unicode Policy v2.3** (STD-DOC-003) sections 4-5. Level **[C] Critical** applies to documentation files — same severity as source code (same rule = same severity).
 
 **Summary (authoritative rules in STD-DOC-003):**
 
@@ -285,7 +286,7 @@ Badges are graphical indicators of project metadata (version, build status, lice
 | Source | Usage |
 |--------|-------|
 | shields.io | Recommended — generates PNG/SVG without emoji |
-| custom SVG | Allowed if compliant with No-Unicode Policy |
+| custom SVG | Allowed if compliant with Unicode Policy |
 
 ### 7.2. Prohibited
 
@@ -406,7 +407,7 @@ For the default value in this stack, see `templates/README_TEMPLATE.md`.
 **Quick summary** (full guide in companion):
 
 - **Why ESLint?** — Immediate editor feedback, pre-commit hooks, CI enforcement. ESLint is the automated executor of STD-DOC-002 + STD-DOC-003 rules.
-- **Dependencies:** `eslint`, `eslint-plugin-markdown`, custom `no-unicode-policy.js` rule
+- **Dependencies:** `eslint`, `eslint-plugin-markdown`, custom `unicode-policy.js` rule
 - **Config:** flat config (`eslint.config.js`) mapping §3 prohibited elements to warnings and STD-DOC-003 character rules to errors
 - **Entry point:** `bash scripts/check-md.sh [path]` (wrapper that runs static checks + ESLint + `lint-md.js`)
 - **CI integration:** GitHub Actions workflow example in companion §10.6
@@ -512,6 +513,7 @@ Built with: Next.js 16 + TypeScript + Tailwind CSS
 
 Violations:
 
+<!-- eslint-disable-next-line unicode-policy/emoji-in-md -->
 1. Emoji `✨` (ref) in H1 — §3
 2. `*` instead of `-` for unordered list (line 5) — §5.2
 3. `[v]` and `[x]` Unicode icons instead of `[OK]` / `[FAIL]` — §4.4
@@ -602,9 +604,9 @@ Both exit 0. The PR is now mergeable.
 | Version | Date | Changes |
 |--------|------|---------|
 | 1.0 | 2024-Q4 | Initial version |
-| 2.0 | 2025-01 | Level [W], link to No-Unicode Policy v2.0, ASCII diagram whitelist, [W] blocking policy, linting stages, code formatting rules |
+| 2.0 | 2025-01 | Level [W], link to Unicode Policy v2.0, ASCII diagram whitelist, [W] blocking policy, linting stages, code formatting rules |
 | 2.1 | 2025-01 | Allowed typographics in plain text; fixed `-` as sole list marker; clarified SVG via `![]()`; limited Stack Signature to root files; added `text/bash` fallback rule; removed redundant `v` from CI regex |
-| 2.1.1 | 2025-01 | Updated references from No-Unicode Policy v2.0 to v2.1; CI config updated with eslint-plugin-markdown; Unicode symbols in section 4.4 replaced with text descriptions (document must not violate its own standard); code blocks without language replaced with `text` |
+| 2.1.1 | 2025-01 | Updated references from Unicode Policy v2.0 to v2.1; CI config updated with eslint-plugin-markdown; Unicode symbols in section 4.4 replaced with text descriptions (document must not violate its own standard); code blocks without language replaced with `text` |
 | 2.1.2 | 2025-01 | Introduced `(ref)` exception for reference tables: characters in identifier cells allowed with marker; restored specific Unicode characters in prohibited/allowed element tables; `Incorrect` examples again show the actual prohibited character |
 | 2.1.3 | 2025-01 | Extended `(ref)` exception to code blocks: identifier characters allowed with marker in code blocks too; `Incorrect` examples in code blocks now contain the actual symbol with `(ref)`; restored Unicode symbols in EN table 4.4 |
 | 2.1.4 | 2025-01 | Stack signature parameterized: format `Built with: <technologies>`, specific stack is project responsibility; default value moved to README_TEMPLATE |
@@ -613,7 +615,7 @@ Both exit 0. The PR is now mergeable.
 | 2.3.0 | 2026-06 | Added comprehensive section 10 "ESLint Integration for Markdown Linting": flat config and legacy config examples, custom rules (code-block-language, no-emoji-in-md), nested standards mapping table, application stages with lint-staged and CI workflows, inline disable policy, manual run commands, troubleshooting; updated pre-merge checklist with ESLint items; updated references from STD-DOC-003 v2.1 to v2.2 |
 | 2.3.1 | 2026-06 | Updated in-body references from STD-DOC-003 v2.2 to v2.3 (header Related field, §3, §4.1, §4.2, §6.1, §6.2, §6.3, §7.2, §7.4, §11.1, §13 checklist). Added §14A Known Issues documenting MD-001 through MD-003. |
 | 2.3.2 | 2026-06 | §8 Stack Signature scope clarified: applies only to application repository README/CHANGELOG, NOT to standards/rules/skills/templates/meta-repos. Removed cargo-cult `Built with:` footer from this file (it is a governance doc, not an application). Project-wide cleanup documented in worklog task stack-signature-cleanup-2026-06-18. |
-| 2.4.0 | 2026-06 | Resolved MD-001 and MD-003 (both open since v2.3.1). **MD-001:** footer updated from `(level [W])` to `(level [C])`; §9.1 rewritten from `[W] non-blocking` to `[C] blocking` policy with `eslint-disable` + Tech Lead approval workflow and a per-project legacy soft-opt-out clause; §10.5.2 description updated from `[W] Warning` to `[C] Critical`; §10.8 rule 3 collapsed (no more `[W]`-in-docs carve-out); §10.9 comment updated; §13 checklist updated. ARCH-002 §1 Group B table and STD-META-001 §4.4 registry entry updated to `[C]`. **MD-003:** §10.3 flat config and §10.4 legacy config — `no-emoji-in-md` and `no-unicode-graphics-in-md` changed from `"warn"` to `"error"` (aligned with §10.6 mapping table). **New content:** §0 TL;DR with 5 must-not / 5 must / where-to-look table; §3 `(ref)` scope clarified with concrete appropriate / not-appropriate examples; §12.4 full before/after README example with 7 violations and verification commands. **Header:** Version 2.3.2 → 2.4.0. |
+| 2.4.0 | 2026-06 | Resolved MD-001 and MD-003 (both open since v2.3.1). **MD-001:** footer updated from `(level [W])` to `(level [C])`; §9.1 rewritten from `[W] non-blocking` to `[C] blocking` policy with `eslint-disable` + Tech Lead approval workflow and a per-project legacy soft-opt-out clause; §10.5.2 description updated from `[W] Warning` to `[C] Critical`; §10.8 rule 3 collapsed (no more `[W]`-in-docs carve-out); §10.9 comment updated; §13 checklist updated. ARCH-002 §1 Group B table and STD-META-001 §4.4 registry entry updated to `[C]`. **MD-003:** §10.3 flat config and §10.4 legacy config — `no-emoji-in-md` and `no-unicode-graphics-in-md` changed from `"warn"` to `"error"` (aligned with §10.6 mapping table). **New content:** §0 TL;DR with 5 must-not / 5 must / where-to-look table; §3 `(ref)` scope clarified with concrete appropriate / not-appropriate examples; §12.4 full before/after README example with 7 violations and verification commands. **Header:** Version 2.3.2 -> 2.4.0. |
 | 2.4.1 | 2026-06 | Added `scripts/check-md.sh` — bash wrapper that runs three layers in sequence: (1) bash-only static checks for the most common §5 violations (bare code fences, `*`/`+` list markers, closing `#` on headings, multiple H1, table pseudographics outside code blocks); (2) ESLint via `eslint-plugin-markdown` if installed; (3) `lint-md.js` if present at repo root. Layers 2 and 3 degrade gracefully to `[skip]` when their tools are missing, so the script works in fresh clones without `npm install`. §0 TL;DR updated to recommend `bash scripts/check-md.sh [path]` as the primary entry point. §10.7 Application Stages table extended with a new "Manual check" row. §13 Pre-merge checklist extended with a `check-md.sh` bullet. §14A new MD-004 issue documents the 5 pre-existing bare-fence violations the script discovered in `README.md` and `docs/verify-id-graph-spec-v1.0.md`. |
 | 2.4.3 | 2026-06-21 | W11 soft-cap cleanup. Extracted §10 ESLint Integration (354 lines, reference implementation detail) to companion file `DOC-002-eslint-integration.md`. Companion is NOT parser-bound — inherits parent ID via "Companion to: STD-DOC-002" header line, same pattern as DESIGN-001-profile-terminal-dashboard. §10 replaced with stub (quick summary + pointer to companion). File size: 1012 -> 658 lines. W11 soft warning cleared. Section numbers (§10.1 through §10.7) preserved verbatim; external refs resolve to companion. §0 TL;DR entry point note updated to mention §10 lives in companion. No new IDs. No graph edge changes. |
 
@@ -637,13 +639,13 @@ In addition, §9.1 was rewritten from a `[W] non-blocking` policy to a `[C] bloc
 
 ### MD-002 `[RESOLVED in v2.3.1]` — In-body references to STD-DOC-003 cited v2.2
 
-**Problem:** Prior to v2.3.1, the header `Related:` field said "No-Unicode Policy v2.2 (STD-DOC-003)". In-body references in §3, §4.1, §4.2, §6.1, §6.2, §6.3, §7.2, §7.4, §11.1, and §13 also cited v2.2. The actual version of STD-DOC-003 at the time of audit was v2.3.0.
+**Problem:** Prior to v2.3.1, the header `Related:` field said "Unicode Policy v2.2 (STD-DOC-003)". In-body references in §3, §4.1, §4.2, §6.1, §6.2, §6.3, §7.2, §7.4, §11.1, and §13 also cited v2.2. The actual version of STD-DOC-003 at the time of audit was v2.3.0.
 
 **Resolution:** Header `Related:` field updated to "No-Unicode Policy v2.3 (STD-DOC-003)". All in-body references to STD-DOC-003 v2.2 updated to v2.3.
 
 ### MD-003 `[RESOLVED in v2.4.0]` — §10.3 ESLint config sets Markdown emoji to `warn`, contradicts §10.6 mapping table
 
-**Problem:** Prior to v2.4.0, §10.3 (ESLint Configuration — Flat Config) set `no-unicode-policy/no-emoji-in-md` to `"warn"` and `no-unicode-policy/no-unicode-graphics-in-md` to `"warn"` for `**/*.md` files. However, §10.6 (Nested Standards mapping table) listed these same rules with severity `error` for STD-DOC-002 §3 (Prohibited: Emoji and Unicode icons). The §10.6 table footnote said "A rule originating from STD-DOC-003 ([C] Critical) applies with the same severity regardless of context — source code or documentation." This was internally inconsistent: §10.3 used `warn`, §10.6 said `error`.
+**Problem:** Prior to v2.4.0, §10.3 (ESLint Configuration — Flat Config) set `unicode-policy/no-emoji-in-md` to `"warn"` and `unicode-policy/no-unicode-graphics-in-md` to `"warn"` for `**/*.md` files. However, §10.6 (Nested Standards mapping table) listed these same rules with severity `error` for STD-DOC-002 §3 (Prohibited: Emoji and Unicode icons). The §10.6 table footnote said "A rule originating from STD-DOC-003 ([C] Critical) applies with the same severity regardless of context — source code or documentation." This was internally inconsistent: §10.3 used `warn`, §10.6 said `error`.
 
 **Resolution (v2.4.0):** Aligned §10.3 and §10.4 with §10.6 by changing both `no-emoji-in-md` and `no-unicode-graphics-in-md` from `"warn"` to `"error"` in both the flat config (§10.3) and the legacy config (§10.4). Added a note in §10.3 explaining: "Severity: error ([C] Critical) — same rule, same severity as source code. To soften enforcement for a legacy project migration, override in the project's local eslint.config.js to `warn` with a documented cutover date." This is consistent with MD-001's resolution (keep [C]).
 
@@ -671,5 +673,6 @@ These violations pre-date the wrapper script — they were not introduced by v2.
 
 | Standard | Relationship |
 |----------|-------------|
-| STD-DOC-003 | No-Unicode Policy: single source of truth for character rules. Sections 4-5 (prohibited elements), 6.1 (allowed characters), 6.2 (ASCII diagrams), 7 (icons/logos), 8.2-8.3 (sanitization regex), 10.1 (ESLint custom rule no-unicode-policy.js), 11.1 (unconditionally allowed) are cross-referenced from this standard |
+| STD-DOC-003 | Unicode Policy: single source of truth for character rules. Sections 4-5 (prohibited elements), 6.1 (allowed characters), 6.2 (ASCII diagrams), 7 (icons/logos), 8.2-8.3 (sanitization regex), 10.1 (ESLint custom rule unicode-policy.js), 11.1 (unconditionally allowed) are cross-referenced from this standard |
 | STD-META-001 | Standard ID System: registry entry for STD-DOC-002 must be kept in sync with the version in this document's header. See MD-001 for the level-ambiguity issue that requires registry attention. |
+| STD-META-002 | Language Policy: documentation in English |

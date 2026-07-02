@@ -3,7 +3,7 @@
 > ID: STD-DOC-004
 > Version: 3.0
 > Level: **[W] Warning**
-> Related: Markdown Standard (STD-DOC-002), No-Unicode Policy (STD-DOC-003)
+> Related: Markdown Standard (STD-DOC-002), Unicode Policy (STD-DOC-003)
 
 This template defines the structure for all project README files.
 
@@ -235,7 +235,7 @@ Before submitting, verify:
 | Standard | Relationship |
 |----------|-------------|
 | STD-DOC-002 | Markdown Standard: formatting rules for README content |
-| STD-DOC-003 | No-Unicode Policy: character rules (no emoji, no Unicode icons) |
+| STD-DOC-003 | Unicode Policy: character rules (no emoji, no Unicode icons) |
 | STD-ARCH-001 | Implementation Order: README assembly is Step 6 |
 
 ---

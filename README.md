@@ -127,7 +127,7 @@ Non-normative companions (not in install order):
 | STD-ARCH-002 | Implementation Order | 2.4.0 | 2026-06-18 | [C] Critical |
 | STD-SKILL-001 | Skill Format and Identification | 1.0.0 | 2026-06-17 | [B] Recommended |
 | STD-DOC-002 | Markdown Formatting | 2.3.1 | 2026-06-18 | [W] Warning |
-| STD-DOC-003 | No-Unicode Policy | 2.3.0 | 2026-06-18 | [C]+[W]+[I] |
+| STD-DOC-003 | Unicode Policy | 2.3.0 | 2026-06-18 | [C]+[W]+[I] |
 | STD-DOC-004 | README Template | 2.2.0 | 2026-06-18 | [W] (non-normative) |
 | STD-DOC-005 | Code Examples Guide | 1.3.0 | 2026-06-18 | [W] (non-normative) |
 | STD-ENV-001 | Reproducibility | 2.1.0 | 2026-06-18 | [C] Critical |

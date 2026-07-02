@@ -4,7 +4,7 @@
 > Version: 2.1
 > Level: **[C] Critical**
 > Last Updated: 2026-06
-> Related: STD-ENV-001 (environment), STD-DOC-002 (markdown), STD-META-001 (ID system)
+> Related: STD-ENV-001 (environment), STD-DOC-002 (markdown), STD-META-001 (ID system), STD-META-002 (language policy)
 
 ---
 
@@ -485,3 +485,4 @@ However, §3.1 (CRITICAL: Never Do This) lists `git reset --hard` without backup
 | STD-AGENT-001 | Subagent commit protocol |
 | STD-FE-001 | Post-refactor commit rules |
 | STD-META-001 | Standard ID System: registry entry for STD-GIT-001 must be kept in sync with the version in this document's header |
+| STD-META-002 | Language Policy: commit messages and branch names in English (cross-ref from Section 1.4, 2.1) |
