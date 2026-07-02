@@ -111,7 +111,7 @@ question carries an ID declared under STD-META-001.
 
 The Z-ai ecosystem consists of exactly four repositories. Adding or
 removing a repository requires a major-version bump of this standard
-(v1.x → v2.0) and a migration entry in `Z-ai-platform/MIGRATIONS.md`.
+(v1.x -> v2.0) and a migration entry in `Z-ai-platform/MIGRATIONS.md`.
 
 | Repository | URL | Layer | Purpose |
 |---|---|---|---|
@@ -533,7 +533,7 @@ inconsistencies that CI will catch, but recovery is annoying.
 4. **Commit with a descriptive message.** The message MUST mention the
    submodule name, the new SHA (short form), and the reason.
    ```bash
-   git commit -m "Bump standards: 447725b → abc1234 (add STD-ARCH-001 v1.0)"
+   git commit -m "Bump standards: 447725b -> abc1234 (add STD-ARCH-001 v1.0)"
    ```
 5. **Push the orchestrator.**
    ```bash
@@ -658,7 +658,7 @@ checked out simultaneously.
 | G02: All `Related:` references resolve | `verify-id-graph.js` | HARD | Every `Related:` target exists somewhere in the 4-repo graph |
 | G03: No cycles in `Related:` graph | `verify-id-graph.js` | HARD | The directed graph has no cycles |
 | G04: Layer matrix respected | `verify-id-graph.js` | HARD | `Related:` edges conform to STD-META-001 §6.1 |
-| G07: No STD → (RULE/PROC/TOOL/ZAI) | `verify-id-graph.js` | HARD | Standards are self-contained (this standard's §5.2) |
+| G07: No STD -> (RULE/PROC/TOOL/ZAI) | `verify-id-graph.js` | HARD | Standards are self-contained (this standard's §5.2) |
 | G14: Compatibility DAG valid for ZAI | `verify-id-graph.js` | HARD | Skill compatibility fields respect STD-META-001 §6.4 |
 | G15: Aligned_with has Related edge | `verify-id-graph.js` | HARD | Aligned_with declarations are backed by a dependency |
 
@@ -731,7 +731,7 @@ These references are intentional — they describe the target state of the casca
 - **RULE-MONOLITH-016** (in `Z-ai-guard`) — Submodule immutability rule.
   This standard formalizes the architecture that RULE-MONOLITH-016
   protects. The rule references this standard via its own `Related:`
-  field (RULE → STD is allowed per STD-META-001 §6.1).
+  field (RULE -> STD is allowed per STD-META-001 §6.1).
 - **RULE-MONOLITH-017** (in `Z-ai-guard`) — Upstream write protection
   rule. This standard defines the submodule topology that
   RULE-MONOLITH-017 governs write access to.

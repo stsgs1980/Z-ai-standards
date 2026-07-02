@@ -33,7 +33,7 @@ Each migration entry has the following fields:
 
 ## Active Migrations
 
-### M001: ZAI-META-001 → STD-SKILL-001 (superseded)
+### M001: ZAI-META-001 -> STD-SKILL-001 (superseded)
 
 ```yaml
 old_id: ZAI-META-001
@@ -56,7 +56,7 @@ warning. File remains resolvable.
 
 ---
 
-### M002: AHG RULE-001..RULE-017 → RULE-<DOMAIN>-NNN (renamed)
+### M002: AHG RULE-001..RULE-017 -> RULE-<DOMAIN>-NNN (renamed)
 
 ```yaml
 old_id: RULE-001 through RULE-017
@@ -67,23 +67,23 @@ window_close_version: Z-ai-guard v4.0.0
 reason: Flat numbering replaced with domain-prefixed numbering for clarity
 notes: |
   Mapping table (17 entries):
-    RULE-001  → RULE-ANSWER-001
-    RULE-002  → RULE-WORKLOG-002
-    RULE-003  → RULE-READ-003
-    RULE-004  → RULE-COMMIT-004
-    RULE-005  → RULE-LOOPS-005
-    RULE-006  → RULE-HONEST-006
-    RULE-007  → RULE-STRUCT-007
-    RULE-008  → RULE-ENV-008
-    RULE-009  → RULE-AGENT-009
-    RULE-010  → RULE-DOC-010
-    RULE-011  → RULE-INTEGRITY-011
-    RULE-012  → RULE-MONOLITH-012
-    RULE-013  → RULE-VERSION-013
-    RULE-014  → RULE-COMMIT-014
-    RULE-015  → RULE-DOC-015
-    RULE-016  → RULE-ARCH-016
-    RULE-017  → RULE-ARCH-017
+    RULE-001  -> RULE-ANSWER-001
+    RULE-002  -> RULE-WORKLOG-002
+    RULE-003  -> RULE-READ-003
+    RULE-004  -> RULE-COMMIT-004
+    RULE-005  -> RULE-LOOPS-005
+    RULE-006  -> RULE-HONEST-006
+    RULE-007  -> RULE-STRUCT-007
+    RULE-008  -> RULE-ENV-008
+    RULE-009  -> RULE-AGENT-009
+    RULE-010  -> RULE-DOC-010
+    RULE-011  -> RULE-INTEGRITY-011
+    RULE-012  -> RULE-MONOLITH-012
+    RULE-013  -> RULE-VERSION-013
+    RULE-014  -> RULE-COMMIT-014
+    RULE-015  -> RULE-DOC-015
+    RULE-016  -> RULE-ARCH-016
+    RULE-017  -> RULE-ARCH-017
 ```
 
 **Status**: Migration window NOT YET OPEN. Z-ai-guard repository not yet
@@ -102,17 +102,17 @@ created. This entry is a placeholder until AHG is migrated.
             │  PR introduces new ID + adds migration entry
             ▼
    ┌──────────────────────┐
-   │  MIGRATION WINDOW    │  ← Old ID still resolvable
-   │  (this file)         │  ← References produce W01 warning
-   │  old_id: ACTIVE      │  ← new_id: ACTIVE
+   │  MIGRATION WINDOW    │  <- Old ID still resolvable
+   │  (this file)         │  <- References produce W01 warning
+   │  old_id: ACTIVE      │  <- new_id: ACTIVE
    └────────┬─────────────┘
             │
             │  window_close_version released
             ▼
    ┌──────────────────────┐
-   │  POST-WINDOW         │  ← Old ID REMOVED from registry
-   │                      │  ← References produce G05 hard error
-   │  old_id: REMOVED     │  ← new_id: ACTIVE
+   │  POST-WINDOW         │  <- Old ID REMOVED from registry
+   │                      │  <- References produce G05 hard error
+   │  old_id: REMOVED     │  <- new_id: ACTIVE
    └──────────────────────┘
 ```
 
@@ -125,7 +125,7 @@ created. This entry is a placeholder until AHG is migrated.
 3. Update the registry in the owning standard (STD-META-001 §4 or STD-SKILL-001 §4)
 4. Mark the old ID's status as `[DEPRECATED]` or `[SUPERSEDED]` in the registry
 5. Run `node scripts/verify-id-graph.js` — must still pass
-6. Commit with message: `chore(migrations): M0XX <old_id> → <new_id> (<action>)`
+6. Commit with message: `chore(migrations): M0XX <old_id> -> <new_id> (<action>)`
 
 ---
 

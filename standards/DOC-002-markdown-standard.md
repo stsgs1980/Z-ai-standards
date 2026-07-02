@@ -6,8 +6,7 @@
 > Related: STD-META-001 (ID system), STD-META-002 (language policy), STD-ARCH-002 (implementation order — DOC-002 is installed at position #4, after ARCH-002 defines the install sequence)
 > Last Updated: 2026-06-21
 > Effective Date: 2026-06-21
-<!-- eslint-disable-next-line unicode-policy/unicode-graphics-in-md -->
-> Note: Character rules (emoji, box-drawing, etc.) are delegated to STD-DOC-003. Per ARCH-002 install order, DOC-003 is read after DOC-002. The dependency edge is therefore DOC-003 → DOC-002 (DOC-003 depends on DOC-002's markdown scope).
+> Note: Character rules (emoji, box-drawing, etc.) are delegated to STD-DOC-003. Per ARCH-002 install order, DOC-003 is read after DOC-002. The dependency edge is therefore DOC-003 -> DOC-002 (DOC-003 depends on DOC-002's markdown scope).
 > Entry point: `bash scripts/check-md.sh [path]` — see §0 (TL;DR) and §10 (now in companion `DOC-002-eslint-integration.md`).
 > Companion file: `DOC-002-eslint-integration.md` (§10 ESLint Integration, extracted in v2.4.3 for W11 soft-cap cleanup).
 
@@ -477,7 +476,7 @@ This section shows a small README snippet that violates multiple rules, then the
 **Before (violates 7 rules — would be blocked by `lint-md.js --level=C`):**
 
 ````markdown
-# Project Alpha ✨
+# Project Alpha [SPARKLES]
 
 > Fast, reliable, and *beautiful* API client.
 

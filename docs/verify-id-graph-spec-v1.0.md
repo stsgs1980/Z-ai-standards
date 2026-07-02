@@ -36,9 +36,9 @@ Z-ai-guard     (L2: RULE-*, PROC-*, TOOL-*)
 Z-ai-skills    (L3: ZAI-*)
 ```
 
-It builds a directed graph of `<ID> → <ID>` edges from the `Related:`
+It builds a directed graph of `<ID> -> <ID>` edges from the `Related:`
 fields of every artifact's header, plus an undirected graph of
-`<ID> ↔ <ID>` edges from the `Aligned_with:` fields, then validates that:
+`<ID> <-> <ID>` edges from the `Aligned_with:` fields, then validates that:
 
 1. The `Related:` graph has no duplicate IDs across repos (G01)
 2. All `Related:` references resolve (G02)
@@ -239,21 +239,21 @@ Two separate edge lists are built:
 **Directed edges (`Related:`):**
 
 For each declaration `D` with `related: [R1, R2, ...]`, create edges:
-- `D.id → R1`
-- `D.id → R2`
+- `D.id -> R1`
+- `D.id -> R2`
 - ...
 
 Each edge carries:
 - `source`: declaring ID
 - `target`: referenced ID
 - `source_file`, `source_line`: where the declaration lives
-- `kind`: `STD→STD`, `RULE→STD`, `PROC→ZAI`, etc. (computed from prefixes)
+- `kind`: `STD->STD`, `RULE->STD`, `PROC->ZAI`, etc. (computed from prefixes)
 
 **Undirected edges (`Aligned_with:`):**
 
 For each declaration `D` with `aligned_with: [A1, A2, ...]`, create edges:
-- `D.id ↔ A1`
-- `D.id ↔ A2`
+- `D.id <-> A1`
+- `D.id <-> A2`
 - ...
 
 Each edge carries:
@@ -263,7 +263,7 @@ Each edge carries:
 
 ### 4.5. Phase 4: Validate References (G02, G05, G12)
 
-For every directed edge `S → T`:
+For every directed edge `S -> T`:
 - If `T` exists in the catalog: OK.
 - If `T` is a deprecated/superseded ID with `superseded_by` in `MIGRATIONS.md`:
   - If the migration window is still open (per repo version): warning W01.
@@ -273,21 +273,21 @@ For every directed edge `S → T`:
 
 ### 4.6. Phase 5: Validate Layer Edges (G04–G10)
 
-For every directed edge `S → T`, look up the allowed-edge matrix
+For every directed edge `S -> T`, look up the allowed-edge matrix
 (STD-META-001 §6.1). If the edge kind is forbidden, emit the corresponding
 G-check failure:
 
 | Edge kind | Check |
 |---|---|
-| STD → (RULE/PROC/TOOL/ZAI) | G07 |
-| PROC → ZAI | G08 |
-| TOOL → PROC | G09 |
-| TOOL → ZAI | G10 |
+| STD -> (RULE/PROC/TOOL/ZAI) | G07 |
+| PROC -> ZAI | G08 |
+| TOOL -> PROC | G09 |
+| TOOL -> ZAI | G10 |
 
 ### 4.7. Phase 6: Detect Cycles in `Related:` Graph (G03, G11)
 
 Run Tarjan's SCC algorithm on the directed `Related:` graph. Any SCC of
-size > 1 is a cycle (G03). Any self-loop `S → S` is G11.
+size > 1 is a cycle (G03). Any self-loop `S -> S` is G11.
 
 The undirected `Aligned_with:` graph is **not** subject to cycle checks
 (STD-META-001 §6.3 rule 3). Bidirectional alignments may form cycles
@@ -295,11 +295,11 @@ without violating any invariant.
 
 ### 4.8. Phase 7: Validate `Aligned_with:` Symmetry (G15, W08)
 
-For every undirected `Aligned_with:` edge `A ↔ B`:
+For every undirected `Aligned_with:` edge `A <-> B`:
 
 **G15 check:** Is there a corresponding `Related:` edge in either direction?
-- Acceptable: `A → B` exists in directed edges
-- Acceptable: `B → A` exists in directed edges
+- Acceptable: `A -> B` exists in directed edges
+- Acceptable: `B -> A` exists in directed edges
 - Acceptable: both exist (rare but valid)
 - Fail G15 if neither direction exists in `Related:` edges.
 
@@ -319,9 +319,9 @@ mechanism on top of an existing dependency, not a substitute for one.
 This phase applies only to `ZAI-` skills (those with non-null
 `compatibility` field in their declaration).
 
-Build a subgraph containing only `ZAI → ZAI` directed edges.
+Build a subgraph containing only `ZAI -> ZAI` directed edges.
 
-For each edge `ZAI-A → ZAI-B`:
+For each edge `ZAI-A -> ZAI-B`:
 - Look up `compatA = A.compatibility` and `compatB = B.compatibility`.
 - Check the compatibility matrix (STD-SKILL-001 §7.2):
 
@@ -336,10 +336,10 @@ For each edge `ZAI-A → ZAI-B`:
 Example failure:
 ```text
 G14: ZAI-DEV-001 (compatibility=sandbox) depends on ZAI-STS-005 (compatibility=both)
-  → OK (sandbox may depend on both)
+  -> OK (sandbox may depend on both)
 
 G14: ZAI-STS-005 (compatibility=both) depends on ZAI-DEV-001 (compatibility=sandbox)
-  → FAIL (both may only depend on both)
+  -> FAIL (both may only depend on both)
 ```
 
 The compatibility DAG is independent of the layer DAG. A ZAI skill may
@@ -392,11 +392,11 @@ For ZAI skills, they apply only when the skill has an `id` field.
 | G04 | All `Related:` edges conform to §6.1 matrix (umbrella) | 5 | All artifacts (edges) |
 | G05 | No deprecated ID referenced outside migration window | 4 | All artifacts (edges) |
 | G06 | (reserved — currently a warning alias for W02) | 9 | — |
-| G07 | No `STD → (RULE/PROC/TOOL/ZAI)` `Related:` edges | 5 | STD sources |
-| G08 | No `PROC → ZAI` `Related:` edges | 5 | PROC sources |
-| G09 | No `TOOL → PROC` `Related:` edges | 5 | TOOL sources |
-| G10 | No `TOOL → ZAI` `Related:` edges | 5 | TOOL sources |
-| G11 | No self-references (`S → S`) | 6 | All artifacts |
+| G07 | No `STD -> (RULE/PROC/TOOL/ZAI)` `Related:` edges | 5 | STD sources |
+| G08 | No `PROC -> ZAI` `Related:` edges | 5 | PROC sources |
+| G09 | No `TOOL -> PROC` `Related:` edges | 5 | TOOL sources |
+| G10 | No `TOOL -> ZAI` `Related:` edges | 5 | TOOL sources |
+| G11 | No self-references (`S -> S`) | 6 | All artifacts |
 | G12 | No reference to non-existent ID in any prefix (catches typos like `STD-ENVIROMENT-001`) | 4 | All artifacts |
 | G13 | (reserved — currently a warning alias for W03) | 9 | — |
 | G14 | Compatibility DAG valid for ZAI- skills (per STD-SKILL-001 §7.2). Only applies when both endpoints have `id` field. | 8 | ZAI skills WITH IDs |
@@ -464,7 +464,7 @@ Phase 4:  Validate references .............. PASS (all resolve)
 Phase 5:  Validate layer edges ............. PASS (matrix OK)
 Phase 6:  Cycle detection (Related) ........ PASS (DAG confirmed)
 Phase 7:  Aligned_with symmetry ............ PASS (G15) + 2 warnings (W08)
-Phase 8:  Compatibility DAG ................ PASS (G14, ZAI→ZAI only)
+Phase 8:  Compatibility DAG ................ PASS (G14, ZAI->ZAI only)
 Phase 9:  Frontmatter consistency .......... PASS (no W07)
 Phase 10: Orphan & dead-code warnings ...... WARN (3 warnings)
 
@@ -474,10 +474,10 @@ Checks:
   G03 No cycles ........................ PASS
   G04 Layer matrix .................... PASS
   G05 Migration windows ............... PASS
-  G07 No STD→lower edges .............. PASS
-  G08 No PROC→ZAI ..................... PASS
-  G09 No TOOL→PROC .................... PASS
-  G10 No TOOL→ZAI ..................... PASS
+  G07 No STD->lower edges .............. PASS
+  G08 No PROC->ZAI ..................... PASS
+  G09 No TOOL->PROC .................... PASS
+  G10 No TOOL->ZAI ..................... PASS
   G11 No self-references .............. PASS
   G12 No typo-IDs ..................... PASS
   G14 Compatibility DAG ............... PASS
@@ -594,7 +594,7 @@ see report".
 - **YAML parsing**: hand-rolled mini-parser for the limited subset used
   in skill frontmatter (key: value, no nesting, no anchors). Avoids
   pulling in `js-yaml` for a 50-line parser.
-- **Node version**: ≥ 18 (uses native `fetch` if network mode is ever
+- **Node version**: >= 18 (uses native `fetch` if network mode is ever
   added; v1.0.0 has no network code).
 - **Lines of code estimate**: ~750 (extractor ~250, graph builders ~150,
   validators ~250, output formatters ~100).
@@ -625,15 +625,15 @@ Test fixtures live in `Z-ai-standards/tests/verify-id-graph/`:
 | Fixture | What it tests | Expected |
 |---|---|---|
 | `fixtures/valid/` | Miniature 4-repo setup, all checks pass | exit 0, 0 warnings |
-| `fixtures/cycle/` | `Related:` cycle RULE→RULE→RULE | G03 fails, exit 1 |
-| `fixtures/forbidden-edge/` | STD→ZAI `Related:` edge | G07 fails, exit 1 |
+| `fixtures/cycle/` | `Related:` cycle RULE->RULE->RULE | G03 fails, exit 1 |
+| `fixtures/forbidden-edge/` | STD->ZAI `Related:` edge | G07 fails, exit 1 |
 | `fixtures/dangling/` | Reference to non-existent ID | G02 fails, exit 1 |
 | `fixtures/deprecated/` | Reference to deprecated ID in window | W01, exit 0 |
 | `fixtures/deprecated-closed/` | Reference to deprecated ID past window | G05 fails, exit 1 |
 | `fixtures/aligned-without-related/` | `Aligned_with:` without corresponding `Related:` | G15 fails, exit 1 |
 | `fixtures/aligned-non-reciprocal/` | One-sided `Aligned_with:` | W08, exit 0 |
 | `fixtures/compat-violation/` | `both` skill depends on `sandbox` skill | G14 fails, exit 1 |
-| `fixtures/frontmatter-mismatch/` | YAML frontmatter `id` ≠ blockquote `ID:` | W07, exit 0 |
+| `fixtures/frontmatter-mismatch/` | YAML frontmatter `id` != blockquote `ID:` | W07, exit 0 |
 | `fixtures/yaml-only/` | Skill with YAML frontmatter but missing blockquote | W07 (no blockquote to compare), exit 0 |
 
 Each fixture has an expected `exit-code` and `expected-warnings.json` file.

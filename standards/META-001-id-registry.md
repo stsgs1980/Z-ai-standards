@@ -65,7 +65,7 @@ verbatim (no renumbering) to keep all existing references stable.
 > The RULE-<DOMAIN>-NNN format replaces the legacy RULE-001..RULE-017
 > numbering from AHG v2.5.0. Legacy numbers are migrated per §8. The
 > legacy numbering is preserved as an alias for one release cycle
-> (Z-ai-guard v3.0.0 → v3.1.0), then removed in v3.1.0.
+> (Z-ai-guard v3.0.0 -> v3.1.0), then removed in v3.1.0.
 
 ### 4.14. Procedures (PROC-)
 
@@ -175,7 +175,7 @@ verbatim (no renumbering) to keep all existing references stable.
 
 | ID | Skill | Version | Status | Note |
 |---|---|---|---|---|
-| ZAI-META-001 | skill-id-system | 1.0 | ACTIVE → SUPERSEDED | Content migrated to STD-SKILL-001 in v2.0; skill itself becomes a thin pointer |
+| ZAI-META-001 | skill-id-system | 1.0 | ACTIVE -> SUPERSEDED | Content migrated to STD-SKILL-001 in v2.0; skill itself becomes a thin pointer |
 | ZAI-META-002 | skill-creator | 1.1 | ACTIVE | Reads STD-SKILL-001 for ID system; no longer defines its own domains |
 
 #### 4.16.9. User-Created (STS)

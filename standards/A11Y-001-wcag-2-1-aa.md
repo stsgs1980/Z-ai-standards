@@ -51,8 +51,8 @@ Applies to:
     │  3:1 minimum contrast HERE
     ▼
   ┌─────────────┐
-  │ checkbox    │  ← boundary / fill vs background
-  │   ─────     │  ← internal symbol (checkmark) vs fill
+  │ checkbox    │  <- boundary / fill vs background
+  │   ─────     │  <- internal symbol (checkmark) vs fill
   │             │     (NOT subject to 3:1 — only needs to be perceivable)
   └─────────────┘
 ```
@@ -432,13 +432,13 @@ This section documents discovered inconsistencies, missing content, and proposed
 
 **Problem:** During the v1.3 review, an overlap audit was conducted across A11Y-001, DESIGN-001, FE-001, TEST-001, and DOC-003. The audit identified three overlap points; one was resolved in v1.3 (FE-001 §11.5 reference to the deprecated empty §7 table — updated in sync) and two remain OPEN:
 
-1. **A11Y-001 §5.1 (prefers-reduced-motion) ↔ DESIGN-001 §11 Animation tokens (P12):** DESIGN-001 defines animation tokens but does not cross-reference the `prefers-reduced-motion` requirement in A11Y-001 §5.1. A reader implementing animation tokens may miss the a11y requirement. Proposed fix: add a cross-reference in DESIGN-001 §11 pointing to A11Y-001 §5.1.
-2. **A11Y-001 §8.2 (jest-axe + Lighthouse) ↔ TEST-001 (test categories):** A11Y-001 v1.3 adds automated a11y testing gates (jest-axe at unit level, Lighthouse at page level). STD-TEST-001 does not currently list a11y tests as a category. Proposed fix: add an "Accessibility tests" row to STD-TEST-001 §3 pointing to A11Y-001 §8.2.
+1. **A11Y-001 §5.1 (prefers-reduced-motion) <-> DESIGN-001 §11 Animation tokens (P12):** DESIGN-001 defines animation tokens but does not cross-reference the `prefers-reduced-motion` requirement in A11Y-001 §5.1. A reader implementing animation tokens may miss the a11y requirement. Proposed fix: add a cross-reference in DESIGN-001 §11 pointing to A11Y-001 §5.1.
+2. **A11Y-001 §8.2 (jest-axe + Lighthouse) <-> TEST-001 (test categories):** A11Y-001 v1.3 adds automated a11y testing gates (jest-axe at unit level, Lighthouse at page level). STD-TEST-001 does not currently list a11y tests as a category. Proposed fix: add an "Accessibility tests" row to STD-TEST-001 §3 pointing to A11Y-001 §8.2.
 
 **Overlap points reviewed and found to be NON-issues (no action needed):**
 
-- A11Y-001 §1.5 (SVG `aria-hidden`) ↔ DOC-003 line 287-298 (SVG load error fallback uses `aria-hidden`): DOC-003 only mentions `aria-hidden` as a fallback for SVG load errors, not as a general accessibility rule. A11Y-001 §1.5 remains the authoritative source. No duplication.
-- A11Y-001 §1.1 (Text Contrast) ↔ DESIGN-001 §4.2 (Light/Dark Variants): DESIGN-001 requires every color token to have light + dark variants but does not enforce contrast. A11Y-001 §1.1 is the contrast authority. The two standards are complementary, not duplicative.
+- A11Y-001 §1.5 (SVG `aria-hidden`) <-> DOC-003 line 287-298 (SVG load error fallback uses `aria-hidden`): DOC-003 only mentions `aria-hidden` as a fallback for SVG load errors, not as a general accessibility rule. A11Y-001 §1.5 remains the authoritative source. No duplication.
+- A11Y-001 §1.1 (Text Contrast) <-> DESIGN-001 §4.2 (Light/Dark Variants): DESIGN-001 requires every color token to have light + dark variants but does not enforce contrast. A11Y-001 §1.1 is the contrast authority. The two standards are complementary, not duplicative.
 
 **Proposed resolution (separate PRs):** Both remaining fixes are documentation-only cross-references, not normative rule changes. They can land in DESIGN-001 v3.1.1 and TEST-001 v(next) without affecting any consumer.
 

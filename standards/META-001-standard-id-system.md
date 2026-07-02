@@ -95,7 +95,7 @@ The ID solves five problems:
 > **Note on prefix choice for skills.** v2.0 preserves the existing `ZAI-`
 > prefix from toolkit v2.0.5 (ZAI-META-001). An earlier draft proposed
 > `SKILL-` as the prefix; that proposal is withdrawn. Renaming 24 existing
-> IDs (`ZAI-ARCH-002` → `SKILL-ARCH-002`, etc.) would break every existing
+> IDs (`ZAI-ARCH-002` -> `SKILL-ARCH-002`, etc.) would break every existing
 > reference in standards, rules, and consumer projects for no architectural
 > benefit. The `ZAI-` prefix is treated as a Layer 3 identifier semantically
 > equivalent to `SKILL-` in the abstract model.
@@ -321,7 +321,7 @@ The 400-line cap on `README.md` existed in §4.18.1 since 2026-06-21 but was
 not enforced by `verify-skills.js` until 2026-06-22 (S10c, v1.1.1) because
 2 pre-existing violations blocked activation: `gepetto/README.md` 485 lines
 (+85) and `react-dev/README.md` 404 lines (+4). Both were remediated on
-2026-06-22 (gepetto 485→302, react-dev 404→392), unblocking S10c as HARD.
+2026-06-22 (gepetto 485->302, react-dev 404->392), unblocking S10c as HARD.
 
 The 400-line ceiling reflects README's purpose as an **onboarding/overview
 document**. Detailed integration examples, lengthy code samples, and
@@ -444,27 +444,27 @@ Both are checked by `verify-id-graph.js`.
 
 The source row may declare `Related:` to the target column:
 
-| Source ↓ \ Target → | STD | RULE | PROC | TOOL | ZAI |
+| Source v \ Target -> | STD | RULE | PROC | TOOL | ZAI |
 |---|---|---|---|---|---|
-| **STD** | ✓ | ✗ | ✗ | ✗ | ✗ |
-| **RULE** | ✓ | ✓ | ✓ | ✓ | ✓ |
-| **PROC** | ✓ | ✓ | ✓ | ✓ | ✗ |
-| **TOOL** | ✓ | ✓ | ✗ | ✓ | ✗ |
-| **ZAI** | ✓ | ✓ | ✗ | ✓ | ✓ |
+| **STD** | [OK] | [FAIL] | [FAIL] | [FAIL] | [FAIL] |
+| **RULE** | [OK] | [OK] | [OK] | [OK] | [OK] |
+| **PROC** | [OK] | [OK] | [OK] | [OK] | [FAIL] |
+| **TOOL** | [OK] | [OK] | [FAIL] | [OK] | [FAIL] |
+| **ZAI** | [OK] | [OK] | [FAIL] | [OK] | [OK] |
 
 Reading the matrix:
-- **STD → STD only.** A standard may reference other standards but nothing
+- **STD -> STD only.** A standard may reference other standards but nothing
   in lower layers. Standards describe what is true; they do not prescribe
   behavior, invoke procedures, or call tools/skills.
-- **RULE → anything.** A rule may enforce a standard, reference another
+- **RULE -> anything.** A rule may enforce a standard, reference another
   rule, invoke a procedure, call a tool, or delegate to a skill.
-- **PROC → STD, RULE, PROC, TOOL.** A procedure may implement a rule,
+- **PROC -> STD, RULE, PROC, TOOL.** A procedure may implement a rule,
   invoke another procedure, call a tool, or check against a standard. A
   procedure MUST NOT depend on a skill.
-- **TOOL → STD, RULE, TOOL.** A tool may validate a standard, be invoked
+- **TOOL -> STD, RULE, TOOL.** A tool may validate a standard, be invoked
   by a rule, or compose with another tool. A tool MUST NOT invoke a
   procedure or a skill.
-- **ZAI → STD, RULE, TOOL, ZAI.** A skill may follow a standard, obey
+- **ZAI -> STD, RULE, TOOL, ZAI.** A skill may follow a standard, obey
   a rule, use a tool, or compose with another skill. A skill MUST NOT
   invoke a procedure (procedures are infrastructural, not user-callable).
 
@@ -472,12 +472,12 @@ Reading the matrix:
 
 | ID | Pattern | Why forbidden |
 |---|---|---|
-| G07 | STD → (RULE/PROC/TOOL/ZAI) | Standards must be self-contained. |
-| G08 | PROC → ZAI | Procedures are infrastructural; skills are user-facing. |
-| G09 | TOOL → PROC | Tools are leaf nodes; procedures orchestrate tools, not vice versa. |
-| G10 | TOOL → ZAI | Tools must not call skills (skills are higher-level compositions). |
-| G11 | Any cycle (e.g. RULE-X → RULE-Y → RULE-X) | DAG invariant. |
-| G12 | Self-reference (RULE-X → RULE-X) | Trivial cycle. |
+| G07 | STD -> (RULE/PROC/TOOL/ZAI) | Standards must be self-contained. |
+| G08 | PROC -> ZAI | Procedures are infrastructural; skills are user-facing. |
+| G09 | TOOL -> PROC | Tools are leaf nodes; procedures orchestrate tools, not vice versa. |
+| G10 | TOOL -> ZAI | Tools must not call skills (skills are higher-level compositions). |
+| G11 | Any cycle (e.g. RULE-X -> RULE-Y -> RULE-X) | DAG invariant. |
+| G12 | Self-reference (RULE-X -> RULE-X) | Trivial cycle. |
 
 ### 6.3. `Aligned_with:` Symmetry Rules
 
@@ -488,10 +488,10 @@ dependency; it is a peer relationship.
 **Rules:**
 
 1. `Aligned_with:` is symmetric but declared on one side only. If A declares
-   `Aligned_with: B`, the extractor records an undirected edge `A ↔ B`.
+   `Aligned_with: B`, the extractor records an undirected edge `A <-> B`.
    B does not need to reciprocally declare `Aligned_with: A` (but SHOULD,
    for human readability — warning W08 if it doesn't).
-2. `Aligned_with:` may cross any layers — STD ↔ ZAI, STD ↔ RULE, etc. There
+2. `Aligned_with:` may cross any layers — STD <-> ZAI, STD <-> RULE, etc. There
    is no direction restriction.
 3. `Aligned_with:` edges are excluded from the DAG cycle check (G11). They
    form a separate undirected graph.
@@ -500,7 +500,7 @@ dependency; it is a peer relationship.
    names, status fields). `verify-id-graph.js` does not check this directly;
    it is enforced by `verify-docs` (TOOL-VERIFY-001) section 1.
 5. An `Aligned_with:` declaration MUST have a corresponding `Related:` edge
-   in at least one direction (A → B or B → A). This prevents "alignment
+   in at least one direction (A -> B or B -> A). This prevents "alignment
    without dependency" — alignment is a synchronization mechanism on top of
    an existing dependency, not a substitute for one.
 
@@ -612,12 +612,12 @@ When the system is restructured, IDs MUST be migrated, not deleted.
 
 | Event | Action |
 |---|---|
-| Rule promoted to standard | Old `RULE-X` → `[DEPRECATED]`; new `STD-Y` created; cross-reference in registry |
-| Standard demoted to rule | Old `STD-X` → `[DEPRECATED]`; new `RULE-Y` created |
-| Rule merged into another rule | Old `RULE-X` → `[DEPRECATED]` with `superseded_by: RULE-Y`; `RULE-Y.related` updated |
+| Rule promoted to standard | Old `RULE-X` -> `[DEPRECATED]`; new `STD-Y` created; cross-reference in registry |
+| Standard demoted to rule | Old `STD-X` -> `[DEPRECATED]`; new `RULE-Y` created |
+| Rule merged into another rule | Old `RULE-X` -> `[DEPRECATED]` with `superseded_by: RULE-Y`; `RULE-Y.related` updated |
 | Skill moved between domains | ID changes from `ZAI-A-NNN` to `ZAI-B-NNN`; old ID `[DEPRECATED]` with `superseded_by` |
 | Domain renamed | All IDs in that domain renumbered; old IDs `[DEPRECATED]` with `superseded_by` map published |
-| Skill → Standard (content migration) | Old `ZAI-META-X` → `[SUPERSEDED]` with `superseded_by: STD-SKILL-Y`; the skill file becomes a thin pointer; new standard created |
+| Skill -> Standard (content migration) | Old `ZAI-META-X` -> `[SUPERSEDED]` with `superseded_by: STD-SKILL-Y`; the skill file becomes a thin pointer; new standard created |
 
 ### 8.2. Migration Window
 
@@ -640,16 +640,16 @@ the owning repo:
 ## [3.0.0] - 2026-07-01
 
 ### Migrated
-- RULE-008 → RULE-ENV-008  (renamed for domain consistency)
-- RULE-009 → RULE-AGENT-009
-- RULE-010 → RULE-DOC-010
+- RULE-008 -> RULE-ENV-008  (renamed for domain consistency)
+- RULE-009 -> RULE-AGENT-009
+- RULE-010 -> RULE-DOC-010
 - ...
 ```
 
 `verify-id-graph.js` reads `MIGRATIONS.md` from each repo to resolve
 references to deprecated IDs during the migration window.
 
-### 8.4. Specific Migration: ZAI-META-001 → STD-SKILL-001
+### 8.4. Specific Migration: ZAI-META-001 -> STD-SKILL-001
 
 This is the largest migration in v2.0. The content of
 `Z-ai-skills/skills/skill-id-system/SKILL.md` (ZAI-META-001) is moved
@@ -672,10 +672,10 @@ verbatim (with format adaptation) to
 ## [1.0.0] - 2026-07-01
 
 ### Superseded
-- ZAI-META-001 content → STD-SKILL-001  (skill → standard; skill file remains as thin pointer for backward-compat trigger matching)
+- ZAI-META-001 content -> STD-SKILL-001  (skill -> standard; skill file remains as thin pointer for backward-compat trigger matching)
 ```
 
-The migration window is Z-ai-skills v1.x → v2.0.0. References to
+The migration window is Z-ai-skills v1.x -> v2.0.0. References to
 `ZAI-META-001` in standards/rules/skills produce warning W01 during v1.x,
 hard error G05 starting v2.0.0.
 
@@ -699,9 +699,9 @@ hard error G05 starting v2.0.0.
 2. Maintainer reviews; assigns final ID from registry.
 3. PR adds the artifact with the assigned ID in its header.
 4. PR updates the registry:
-   - `STD-*` IDs → STD-META-001 §4 (this document) or STD-SKILL-001 §4 for skill-system standards
-   - `RULE-`/`PROC-`/`TOOL-` IDs → `Z-ai-guard/registry.json`
-   - `ZAI-` IDs → STD-SKILL-001 §4 (the authoritative skill registry)
+   - `STD-*` IDs -> STD-META-001 §4 (this document) or STD-SKILL-001 §4 for skill-system standards
+   - `RULE-`/`PROC-`/`TOOL-` IDs -> `Z-ai-guard/registry.json`
+   - `ZAI-` IDs -> STD-SKILL-001 §4 (the authoritative skill registry)
 5. CI runs `verify-id-graph.js`; PR cannot merge if G01–G14 fail.
 
 ### 9.3. Numbering Rules
@@ -737,7 +737,7 @@ hard error G05 starting v2.0.0.
 | All `Related:` edges conform to §6.1 matrix | `verify-id-graph.js` G04–G10 | cross-repo | **HARD** |
 | No deprecated ID referenced outside migration window | `verify-id-graph.js` G05 | cross-repo | **HARD** |
 | Every RULE has at least one Related (no orphans) | `verify-id-graph.js` G06 (warn) | cross-repo | SOFT |
-| Every STD is referenced by ≥1 RULE/ZAI (no dead standards) | `verify-id-graph.js` G13 (warn) | cross-repo | SOFT |
+| Every STD is referenced by >=1 RULE/ZAI (no dead standards) | `verify-id-graph.js` G13 (warn) | cross-repo | SOFT |
 | `Aligned_with:` symmetry: B reciprocates A's declaration | `verify-id-graph.js` W08 | cross-repo | SOFT |
 | `Aligned_with:` has corresponding `Related:` edge | `verify-id-graph.js` G15 | cross-repo | **HARD** |
 | Compatibility DAG valid (ZAI- skills only, when both have IDs) | `verify-id-graph.js` G14 | cross-repo | **SOFT** |
@@ -753,20 +753,20 @@ hard error G05 starting v2.0.0.
 
 ## 11. Backward Compatibility
 
-### 11.1. v1.2 → v2.0
+### 11.1. v1.2 -> v2.0
 
 - All 20 `STD-*` IDs from v1.2 remain unchanged.
 - v1.2 blockquote header format remains valid (§5.1).
 - v1.2 `Related:` field semantics unchanged (now supplemented by `Aligned_with:`).
 - `verify-standards.js` V05 continues to validate `STD-*` registry.
 
-### 11.2. AHG v2.5.0 → Z-ai-guard v3.0.0
+### 11.2. AHG v2.5.0 -> Z-ai-guard v3.0.0
 
-- `RULE-001`..`RULE-017` (legacy flat numbering) → `RULE-<DOMAIN>-NNN`.
+- `RULE-001`..`RULE-017` (legacy flat numbering) -> `RULE-<DOMAIN>-NNN`.
 - Migration map published in `Z-ai-guard/MIGRATIONS.md`.
 - Legacy IDs remain resolvable for one major version (v3.x); removed in v4.0.
 
-### 11.3. Toolkit v2.0.5 → Z-ai-skills v1.0.0
+### 11.3. Toolkit v2.0.5 -> Z-ai-skills v1.0.0
 
 - All 24 `ZAI-*` IDs from toolkit v2.0.5 preserved unchanged.
 - ZAI-META-001 content migrated to STD-SKILL-001; ZAI-META-001 becomes a

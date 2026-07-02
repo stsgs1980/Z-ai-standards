@@ -164,7 +164,7 @@ Everything violating this formula is a bug.
 | 2.0 | 2026-05-18 | Major restructuring: removed rules not directly ensuring reproducibility (dark theme, color palette, error handling, anti-fragility, dedup, push policy, deletion UI). These rules relocated to their domain-specific standards (STD-FE-001, STD-ERR-001, STD-GIT-001). Added Cross-References section. Renumbered sections. |
 | 1.1 | 2026-05-18 | K-01 fix: replaced categorical absolute path ban with nuanced rule. Added Z.ai sandbox exception. |
 | 1.0 | 2025-01 | Initial standard |
-| 2.1 | 2026-06 | File renamed from `ENV-001-reproducibility.md` to `ENV-001-reproducibility.md` (hyphen → underscore) to match the naming convention used by all other standards. Added §6A Known Issues documenting REP-001 through REP-003. |
+| 2.1 | 2026-06 | File renamed from `ENV-001-reproducibility.md` to `ENV-001-reproducibility.md` (hyphen -> underscore) to match the naming convention used by all other standards. Added §6A Known Issues documenting REP-001 through REP-003. |
 
 ---
 
@@ -177,8 +177,8 @@ This section documents discovered inconsistencies, missing content, and proposed
 **Problem:** Prior to v2.1, the file was named `ENV-001-reproducibility.md` (with a hyphen). Every other standard file in the directory uses underscore separators (`GIT-001-github.md`, `DOC-002-markdown-standard.md`, `ERR-001-error-handling.md`, etc.). The single hyphenated filename was an outlier that broke grep/glob patterns assuming the underscore convention.
 
 **Resolution:** File renamed to `ENV-001-reproducibility.md`. References in other standards updated:
-- `ARCH-002-implementation-order.md` Group B table: `ENV-001-reproducibility.md` → `ENV-001-reproducibility.md` (see ARCH-004).
-- `ENV-002-zai-integration.md` §6 Related field: `REPRODUCIBILITY-STANDARD (STD-ENV-001)` → `REPRODUCIBILITY_STANDARD (STD-ENV-001)` (see ZAI-001 in that file's Known Issues).
+- `ARCH-002-implementation-order.md` Group B table: `ENV-001-reproducibility.md` -> `ENV-001-reproducibility.md` (see ARCH-004).
+- `ENV-002-zai-integration.md` §6 Related field: `REPRODUCIBILITY-STANDARD (STD-ENV-001)` -> `REPRODUCIBILITY_STANDARD (STD-ENV-001)` (see ZAI-001 in that file's Known Issues).
 
 ### REP-002 `[OPEN]` — §1.2 "Exception for Z.ai Sandbox" table duplicates STD-ENV-002 §3.1
 

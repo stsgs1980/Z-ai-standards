@@ -56,7 +56,7 @@ has a type prefix"). Rules describe what agents must do about it (e.g.
 "before pushing, run the commit-lint procedure"). If a standard could
 reference a rule, the rule's lifecycle would constrain the standard's
 lifecycle — but standards are meant to be slower-moving and more stable
-than rules. The direction must be `RULE → STD`, never the reverse.
+than rules. The direction must be `RULE -> STD`, never the reverse.
 
 ### Q: But STD-FE-001 currently references ZAI-ARCH-002 in its prose. Is that wrong?
 
@@ -69,7 +69,7 @@ this distinction; previously it was implicit and uncheckable.
 ### Q: Why can't a tool invoke a procedure?
 
 A: Tools are leaf nodes — they do one thing and exit. Procedures are
-orchestrators that may call multiple tools. Allowing `TOOL → PROC` would
+orchestrators that may call multiple tools. Allowing `TOOL -> PROC` would
 invert the dependency: a tool would need to know about higher-level
 workflow, breaking composability.
 
@@ -82,15 +82,15 @@ which is unsafe.
 
 ### Q: What if I need a rule that depends on a skill?
 
-A: That's allowed (`RULE → ZAI` is green in the matrix). The rule says
+A: That's allowed (`RULE -> ZAI` is green in the matrix). The rule says
 "when condition X holds, the agent should invoke ZAI-Y". The rule does
 not invoke the skill mechanically — it instructs the agent to do so. The
-mechanical invocation (if any) would be a PROC, but PROC → ZAI is
+mechanical invocation (if any) would be a PROC, but PROC -> ZAI is
 forbidden, so any skill invocation is by agent decision, not by hook.
 
 ### Q: Can a standard reference another standard in a different repo?
 
-A: Yes — `STD → STD` is allowed regardless of which repo each standard
+A: Yes — `STD -> STD` is allowed regardless of which repo each standard
 lives in. All four repos share the same STD-* registry.
 
 ### Q: What happens to ZAI-META-001 after v2.0?

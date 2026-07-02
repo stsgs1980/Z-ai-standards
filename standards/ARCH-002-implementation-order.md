@@ -86,23 +86,23 @@ META-001 (1)
   ├── META-002 (2) [language policy]
   └── ARCH-001 (3)
         └── ARCH-002 (4) [this file]
-              ├── DOC-002 (5)  ← needs META-002
+              ├── DOC-002 (5)  <- needs META-002
               │     └── DOC-003 (6)
               ├── SKILL-001 (7)
               ├── ENV-001 (8)
               │     └── ENV-002 (9)
-              ├── GIT-001 (10)  ← needs ENV-001, META-002
-              │     └── GIT-002 (11)  ← needs ENV-002
-              ├── DESIGN-001 (12)  ← needs DOC-002, DOC-003
-              │     └── FE-001 (13)  ← needs ENV-001, DESIGN-001
+              ├── GIT-001 (10)  <- needs ENV-001, META-002
+              │     └── GIT-002 (11)  <- needs ENV-002
+              ├── DESIGN-001 (12)  <- needs DOC-002, DOC-003
+              │     └── FE-001 (13)  <- needs ENV-001, DESIGN-001
               │           └── A11Y-001 (14)
-              ├── ERR-001 (15)  ← needs FE-001
+              ├── ERR-001 (15)  <- needs FE-001
               │     └── ERR-002 (16)
-              ├── SEC-001 (17)  ← needs ENV-001, GIT-001
+              ├── SEC-001 (17)  <- needs ENV-001, GIT-001
               │     └── SEC-002 (18)
-              ├── TEST-001 (19)  ← needs FE-001, ERR-001
-              └── AGENT-001 (20)  ← needs ENV-001, META-002, GIT-001
-                    └── AGENT-002 (21)  ← needs AGENT-001, ERR-001
+              ├── TEST-001 (19)  <- needs FE-001, ERR-001
+              └── AGENT-001 (20)  <- needs ENV-001, META-002, GIT-001
+                    └── AGENT-002 (21)  <- needs AGENT-001, ERR-001
 ```
 
 ---
