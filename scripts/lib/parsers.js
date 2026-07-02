@@ -58,7 +58,7 @@ function parseYAMLFrontmatter(content) {
   if (!m) return null;
   const yaml = m[1];
   const result = {};
-  const lines = yaml.split('\n');
+  const lines = yaml.split('\n').map(l => l.replace(/\r$/, ''));
   let currentListKey = null;
   for (const line of lines) {
     // List item under a previous key (e.g., "  - VALUE")
@@ -115,7 +115,7 @@ function parseYAMLFrontmatter(content) {
  * the top, per STD-META-001 §3.1).
  */
 function parseBlockquoteHeader(content) {
-  const lines = content.split('\n');
+  const lines = content.split('\n').map(l => l.replace(/\r$/, ''));
   const header = {};
   let inBlockquote = false;
   for (let i = 0; i < Math.min(lines.length, 80); i++) {

@@ -38,23 +38,33 @@ const SKIP_DIRS = new Set([
   'tool-results', 'download',
 ]);
 
+// Submodule directories that should be skipped when scanning from the
+// platform root (they are scanned separately as their own repos).
+// Only used when rootDir == platformRoot to prevent duplicate IDs.
+const SUBMODULE_DIRS = new Set([
+  'standards', 'guard', 'skills',
+]);
+
 /**
- * listFiles(rootDir, patterns) → string[]
+ * listFiles(rootDir, patterns, extraSkipDirs) → string[]
  *
  * Walks rootDir, returns deduped list of file paths matching any of the
  * glob patterns. Patterns are evaluated independently; results are merged
  * and deduped via Set.
+ *
+ * extraSkipDirs: optional Set of directory names to skip in addition to
+ * SKIP_DIRS. Used to exclude submodule dirs when scanning from platform root.
  */
-function listFiles(rootDir, patterns) {
+function listFiles(rootDir, patterns, extraSkipDirs) {
   const files = [];
   for (const pattern of patterns) {
-    files.push(...globFiles(rootDir, pattern));
+    files.push(...globFiles(rootDir, pattern, extraSkipDirs));
   }
   return [...new Set(files)];  // dedup
 }
 
 /**
- * globFiles(rootDir, pattern) → string[]
+ * globFiles(rootDir, pattern, extraSkipDirs) → string[]
  *
  * Walks rootDir, returns list of file paths whose path (relative to
  * rootDir) matches the glob pattern.
@@ -63,8 +73,11 @@ function listFiles(rootDir, patterns) {
  * also checks for a direct file at rootDir/pattern (for `STANDARDS.md`),
  * and walks the tree for `*.md` patterns.
  */
-function globFiles(rootDir, pattern) {
+function globFiles(rootDir, pattern, extraSkipDirs) {
   const results = [];
+  const skipSet = extraSkipDirs
+    ? new Set([...SKIP_DIRS, ...extraSkipDirs])
+    : SKIP_DIRS;
 
   function walk(dir, depth = 0) {
     if (depth > 15) return;  // safety limit
@@ -76,7 +89,7 @@ function globFiles(rootDir, pattern) {
     }
 
     for (const entry of entries) {
-      if (SKIP_DIRS.has(entry.name)) continue;
+      if (skipSet.has(entry.name)) continue;
 
       const full = path.join(dir, entry.name);
 
@@ -135,4 +148,5 @@ module.exports = {
   globFiles,
   matchesPattern,
   SKIP_DIRS,
+  SUBMODULE_DIRS,
 };

@@ -4,7 +4,7 @@
 > Version: 1.0
 > Level: **[C] Critical**
 > Last Updated: 2026-07
-> Related: STD-META-001 (ID system), STD-GIT-001 (github), STD-DOC-002 (markdown), STD-AGENT-001 (subagent)
+> Related: STD-META-001 (ID system)
 
 ---
 

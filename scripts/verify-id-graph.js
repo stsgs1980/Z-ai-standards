@@ -90,7 +90,7 @@ const { tarjanSCC } = require('./lib/graph-algorithms');
 const { compareSnapshot: compareSnapshotLib } = require('./lib/snapshot');
 const { phase10_healthWarnings } = require('./lib/health-warnings');
 const { emitHumanReadable: emitHumanReadableLib, emitJSON: emitJSONLib } = require('./lib/output');
-const { listFiles, globFiles, matchesPattern } = require('./lib/file-scanner');
+const { listFiles, globFiles, matchesPattern, SUBMODULE_DIRS } = require('./lib/file-scanner');
 const { extractDeclaration, parseMigrations } = require('./lib/declarations');
 
 // ============================================================================
@@ -397,7 +397,10 @@ function phase1_extractIDs(repos) {
 
     const config = REPO_GLOBS[repoName];
     if (!config) continue;
-    const files = listFiles(repoPath, config.patterns);
+    // When scanning the platform root, skip submodule directories to
+    // prevent duplicate IDs (submodules are scanned separately).
+    const extraSkip = repoName === 'platform' ? SUBMODULE_DIRS : undefined;
+    const files = listFiles(repoPath, config.patterns, extraSkip);
     for (const f of files) {
       const decl = extractDeclaration(f, repoName);
       if (decl) results.declarations.push(decl);
