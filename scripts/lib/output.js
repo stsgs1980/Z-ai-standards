@@ -54,7 +54,7 @@ function emitHumanReadable(results, version, effectiveDate, opts) {
 
   out.push('--- Hard Checks (G01-G15) ---');
   for (const [id, check] of Object.entries(results.checks)) {
-    const mark = check.status === 'PASS' ? '✓' : '✗';
+    const mark = check.status === 'PASS' ? '[PASS]' : '[FAIL]';
     out.push(`  ${mark} ${id}: ${check.description}`);
     if (check.status === 'FAIL') {
       for (const d of check.details.slice(0, 5)) {
