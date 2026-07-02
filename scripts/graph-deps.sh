@@ -107,7 +107,7 @@ DOT_FILE="${OUT_DIR}/id-graph.dot"
 
 # Use node to do the JSON->DOT transformation (jq can't easily emit multi-line
 # subgraph clusters with attribute quoting).
-TRANSFORM_JS="${OUT_DIR}/.graph-transform.js"
+TRANSFORM_JS="${OUT_DIR}/.graph-transform.cjs"
 cat > "$TRANSFORM_JS" <<'JS'
 const fs = require('fs');
 const path = require('path');
