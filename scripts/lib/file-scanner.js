@@ -96,7 +96,7 @@ function globFiles(rootDir, pattern, extraSkipDirs) {
       if (entry.isDirectory()) {
         walk(full, depth + 1);
       } else if (entry.isFile()) {
-        const rel = path.relative(rootDir, full);
+        const rel = path.relative(rootDir, full).split(path.sep).join('/');
         if (matchesPattern(rel, pattern)) {
           results.push(full);
         }

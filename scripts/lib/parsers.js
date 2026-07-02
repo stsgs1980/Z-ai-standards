@@ -54,11 +54,11 @@ const ID_TOKEN_REGEX = /\b(STD|RULE|PROC|TOOL|ZAI)-[A-Z]+-\d{3}\b/g;
  */
 function parseYAMLFrontmatter(content) {
   // Match --- at start, then YAML block, then ---
-  const m = content.match(/^---\n([\s\S]*?)\n---\n/);
+  const m = content.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n?/);
   if (!m) return null;
   const yaml = m[1];
   const result = {};
-  const lines = yaml.split('\n').map(l => l.replace(/\r$/, ''));
+  const lines = yaml.split(/\r?\n/);
   let currentListKey = null;
   for (const line of lines) {
     // List item under a previous key (e.g., "  - VALUE")
