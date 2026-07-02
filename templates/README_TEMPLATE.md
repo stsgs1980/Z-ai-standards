@@ -1,45 +1,110 @@
-# Standard: README Template v2.3
+# Standard: README Template v3.0
 
 > ID: STD-DOC-004
-> Version: 2.3
+> Version: 3.0
 > Level: **[W] Warning**
-> Related: Markdown Standard (STD-DOC-002)
+> Related: Markdown Standard (STD-DOC-002), No-Unicode Policy (STD-DOC-003)
 
-This template defines the mandatory structure for all project README files.
+This template defines the structure for all project README files.
 
-## 1. Mandatory Sections
+---
 
-Every README.md must contain the following sections in order:
+## 1. Language Rule
 
-| # | Section | Required | Description |
-|---|---------|----------|-------------|
-| 1 | Title + Description | Yes | Project name and brief description |
-| 2 | Badges | Optional | Technology badges (SVG only) |
-| 3 | Features | Yes | Key capabilities |
-| 4 | Tech Stack | Yes | Technologies used |
-| 5 | Getting Started | Yes | Installation and run instructions |
-| 6 | Configuration | Optional | Environment variables, settings |
-| 7 | Project Structure | Optional | Directory layout |
-| 8 | API Reference | Optional | Endpoints, methods |
-| 9 | Scripts | Optional | NPM/Bun commands |
-| 10 | Development Rules | Optional | Code style, technology constraints |
-| 11 | Agent Rules | Conditional | Required if `AGENT_RULES.md` exists in project root |
-| 12 | Stack Signature | Optional | Mandatory footer **for application repositories only**. NOT applicable to governance documents (standards, rules, skills, templates, orchestrator meta-repos). See STD-DOC-002 §8 for the scope test. |
+Default language is **English**. Russian is allowed only when the project task is in Russian or the target audience is Russian-speaking. One language per README - no mixing.
 
-## 2. Template
+## 2. Size Rules
+
+| Rule | Threshold | Action |
+|------|-----------|--------|
+| TOC required | README > 150 lines | Add Table of Contents after Badges |
+| TOC recommended | README 50-150 lines | Add Table of Contents |
+| TOC not needed | README < 50 lines | Skip |
+| Soft limit | README > 300 lines | Move details to `/docs/`, keep README as entry point |
+| Section overflow | Section > 40 lines | Candidate for extraction to `/docs/` |
+
+## 3. Section Map
+
+| # | Section | Status | When to Include |
+|---|---------|--------|-----------------|
+| 1 | Title + Description | **Required** | Always |
+| 2 | Badges | **Required** | Always (at least: status or license) |
+| 3 | Table of Contents | Conditional | Required if >150 lines, recommended if >50 |
+| 4 | Features | **Required** | Always |
+| 5 | Tech Stack | **Required** | Always |
+| 6 | Getting Started | **Required** | Always (Prerequisites + Installation + Run) |
+| 7 | Architecture | Optional | Non-trivial projects. Paragraph + link to `docs/` |
+| 8 | Project Structure | Optional | Repos with non-obvious layout. List format only |
+| 9 | API Reference | Conditional | Only if the project has API endpoints |
+| 10 | Screenshots | Recommended | UI applications and visual tools |
+| 11 | Scripts | Optional | Non-obvious commands beyond dev/build/lint |
+| 12 | Configuration | Conditional | Only if env vars or settings exist |
+| 13 | Status / Roadmap | Optional | WIP projects with phases or milestones |
+| 14 | Contributing | Optional | Brief inline + link to `CONTRIBUTING.md` |
+| 15 | Agent Rules | Conditional | Only if `AGENT_RULES.md` exists in project root |
+| 16 | License | **Required** | Always |
+| 17 | Stack Signature | Conditional | Required for app repos, forbidden for governance |
+
+### Section Order
+
+Sections appear in the order listed above. Omit sections that do not apply. The order is strict for included sections.
+
+### Governance Exclusion
+
+Stack Signature is **forbidden** in governance documents (standards, rules, skills, templates, orchestrator/meta-repos). Scope test: "Does this repo ship a runnable application whose stack a reader would care about?" If no, omit the footer. See STD-DOC-002 section 8.
+
+---
+
+## 4. Format Rules
+
+These rules supplement STD-DOC-002 and STD-DOC-003. All [C] Critical rules from those standards apply.
+
+| Rule | Correct | Incorrect |
+|------|---------|-----------|
+| `#` usage | One H1 for project name only | `# Clone`, `# Install` as H1 |
+| List marker | `-` (dash) only | `*`, `+`, `->` |
+| Project Structure | List format | Tree with Unicode pseudographics |
+| Package manager | One (bun or npm) | `npm / yarn / pnpm / bun` alternatives |
+| Code fences | Language always specified | Empty code fence without language |
+| Separators | No `---` between sections | `---` after every H2 |
+| Description length | 1-2 sentences after H1 | Full paragraph or missing |
+
+### What Belongs in README vs /docs/
+
+| In README (entry point) | In /docs/ (details) |
+|--------------------------|---------------------|
+| What the project does | Architecture diagrams |
+| How to install and run | API request/response examples |
+| Key features (5-10 bullets) | Component API documentation |
+| High-level tech stack | DXF format specifications |
+| Brief architecture (1-3 sentences) | Canvas tool reference |
+| Project structure (list, 5-10 items) | Development rules and constraints |
+| Status overview | CADSoftTools link collection |
+| Screenshots | Workflow guides |
+
+---
+
+## 5. Template
 
 ````markdown
 # Project Name
 
-Brief description of the project (1-2 sentences).
+Brief description of the project (1-2 sentences). What it does and why it exists.
 
-![Badge](https://img.shields.io/badge/Tech-Version-color?style=flat-square)
+[![Status: Draft](https://img.shields.io/badge/Status-Draft-yellow.svg?style=flat-square)]()
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)]()
+
+## Table of Contents
+
+- [Features](#features)
+- [Tech Stack](#tech-stack)
+- [Getting Started](#getting-started)
 
 ## Features
 
-- Feature 1 - description
-- Feature 2 - description
-- Feature 3 - description
+- **Feature 1** - description
+- **Feature 2** - description
+- **Feature 3** - description
 
 ## Tech Stack
 
@@ -58,31 +123,45 @@ Brief description of the project (1-2 sentences).
 ### Installation
 
 ```bash
-# Install dependencies
+git clone https://github.com/owner/repo.git
+cd repo
 bun install
-
-# Configure environment
-cp .env.example .env
-
-# Setup database
-bun run db:push
-
-# Run development server
-npx next dev -p 3000
 ```
+
+### Run
+
+```bash
+bun run dev
+```
+
+## Architecture
+
+Brief architecture description (1-3 sentences). See [docs/architecture.md](docs/architecture.md) for full details.
 
 ## Project Structure
 
-- `src/app/` - Application routes
+- `src/app/` - Application routes and pages
 - `src/components/` - UI components
-- `src/lib/` - Utilities
+- `src/lib/` - Utilities and shared logic
 - `prisma/` - Database schema
+
+## API Reference
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/resource` | GET | List all resources |
+| `/api/resource` | POST | Create resource |
+| `/api/resource/[id]` | GET, PUT, DELETE | Read / Update / Delete |
+
+## Screenshots
+
+> Add screenshots of the key screens.
 
 ## Scripts
 
 | Script | Description |
 |--------|-------------|
-| `npx next dev -p 3000` | Development server |
+| `bun run dev` | Development server |
 | `bun run build` | Production build |
 | `bun run lint` | Lint check |
 
@@ -96,134 +175,93 @@ See `.env.example`:
 DATABASE_URL="file:./db/dev.db"
 ```
 
-## Development Rules
+## Status
 
-### Required Technologies
-- Technology 1
-- Technology 2
+| Phase | Status | Description |
+|-------|--------|-------------|
+| Phase 1 | Done | Core feature |
+| Phase 2 | In Progress | Enhancement |
 
-### Code Style
-- Rule 1
-- Rule 2
+## Contributing
 
-## Agent Rules (Mandatory)
+See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines. PRs are welcome.
 
-Any AI agent working on this project MUST read and follow `AGENT_RULES.md`
-before performing any operations.
+## Agent Rules
 
-See `AGENT_RULES.md` for full details.
-See `instructions/` for complete rule descriptions.
-See `skills/` for automated tooling.
+Any AI agent working on this project MUST read and follow `AGENT_RULES.md` before performing any operations.
+
+## License
+
+MIT
 
 ---
 Built with: Next.js 16 + TypeScript + Tailwind CSS
 ````
 
-Note: The Stack Signature in the template above is shown as the canonical example, but it is **optional**. Per STD-DOC-002 §8 (v2.3.2+), the Stack Signature applies only to the root README of **application repositories** (a repo that ships runnable code — e.g. a Next.js app, a library, a CLI tool). It is **forbidden** in governance documents (standards, rules, skills, templates, orchestrator/meta-repos). The scope test: "Does this repo ship a runnable application whose stack a reader would care about?" If no, omit the footer.
+### Template Notes
 
-Format: `Built with: <project technologies>` — components separated by `+`, count is project-specific (see STD-DOC-002 v2.3.2 §8).
-
-## 3. Checklist
-
-Before submitting, verify:
-
-- [ ] No emoji in title or sections
-- [ ] No ASCII arrows as list markers (use `-` for unordered lists)
-- [ ] No em dash in headings or code (use hyphen `-`)
-- [ ] No pseudo-graphics for tree structures
-- [ ] All mandatory sections included
-- [ ] Agent Rules section present if AGENT_RULES.md exists
-- [ ] Code blocks have language specified
-- [ ] Badges added (optional but recommended for public repos)
-- [ ] Stack Signature present at end (application READMEs only — skip for governance docs per STD-DOC-002 §8)
-
-## 4. Example Compliance
-
-### Correct
-
-```text
-## Features
-- Fast build - uses Turbopack
-- Type safe — full TypeScript
-```
-
-Note: hyphen `-` is used as a separator in technical descriptions. Em dash `—` is allowed in plain text within list items per MARKDOWN_STANDARD, but prohibited in headings and code blocks.
-
-### Incorrect
-
-```text
-## Features
-- Fast build -> uses Turbopack
-## Features — Core
-```
-
-Note: `->` as a separator in list items violates the list marker rule. Em dash `—` in a heading is prohibited.
+- Sections 7-15 are optional/conditional - remove what does not apply
+- Badges: at minimum one badge (status or license). Use shields.io with `style=flat-square`
+- Stack Signature: required for app repos, forbidden for governance (see section 3)
+- Format: `Built with: <technologies>` - components separated by `+` (see STD-DOC-002 section 8)
 
 ---
 
-## 5. Cross-References
+## 6. Checklist
+
+Before submitting, verify:
+
+- [ ] One language throughout (EN default, RU only if task requires)
+- [ ] One H1 for project name only
+- [ ] Badges present (at minimum: status or license)
+- [ ] All 5 required sections included (Title, Features, Tech Stack, Getting Started, License)
+- [ ] TOC present if README > 150 lines
+- [ ] No section > 40 lines (extract to `/docs/` if so)
+- [ ] README < 300 lines (soft limit)
+- [ ] Project Structure in list format (no tree)
+- [ ] One package manager in install instructions
+- [ ] Code blocks have language specified
+- [ ] No emoji, no Unicode icons (STD-DOC-003)
+- [ ] No em dash or typographic characters in headings (STD-DOC-002)
+- [ ] Unordered lists use `-` marker only
+- [ ] No `---` separators between sections
+- [ ] Agent Rules section present if `AGENT_RULES.md` exists
+- [ ] Stack Signature present for app repos, absent for governance
+
+---
+
+## 7. Cross-References
 
 | Standard | Relationship |
 |----------|-------------|
 | STD-DOC-002 | Markdown Standard: formatting rules for README content |
-| STD-DOC-003 | No-Unicode Policy: character rules for README content (no emoji, no Unicode icons) |
-| STD-ARCH-001 | Implementation Order: README assembly is Step 6 of the implementation sequence |
+| STD-DOC-003 | No-Unicode Policy: character rules (no emoji, no Unicode icons) |
+| STD-ARCH-001 | Implementation Order: README assembly is Step 6 |
 
 ---
 
-## 5A. Known Issues and Proposed Solutions
-
-This section documents discovered inconsistencies, missing content, and proposed corrections. Each issue has an ID, status, and proposed action. Issues resolved in the current version are marked `[RESOLVED]`; outstanding issues are marked `[OPEN]`.
-
-### RMT-001 `[RESOLVED in v2.2]` — Stale reference to MARKDOWN_STANDARD v2.1
-
-**Problem:** Prior to v2.2, the note under §2 (Template) cited "MARKDOWN_STANDARD v2.1, section 7" for the Stack Signature format. The actual version of STD-DOC-002 is v2.3, and the Stack Signature is defined in §8 (not §7) of that version. The citation was both stale (wrong version) and misnumbered (wrong section).
-
-**Resolution:** Updated the note to cite "MARKDOWN_STANDARD v2.3, section 8". This matches the actual current version and the correct section number for Stack Signature in STD-DOC-002.
-
-### RMT-002 `[OPEN]` — `AGENT_RULES.md` is referenced but never defined
-
-**Problem:** §1 (Mandatory Sections) row 11 says "Agent Rules | Conditional | Required if `AGENT_RULES.md` exists in project root". §2 (Template) includes an "Agent Rules (Mandatory)" section that says "Any AI agent working on this project MUST read and follow `AGENT_RULES.md`". §3 (Checklist) includes "Agent Rules section present if AGENT_RULES.md exists". However, no standard in the project defines:
-- What `AGENT_RULES.md` is
-- What its mandatory structure is
-- Who creates it
-- What its relationship is to the standards set (Group B) and the worklog system (Group A per STD-ARCH-001)
-
-The file is referenced as if it were a well-known artifact, but it has no governing standard.
-
-**Proposed solution:** One of:
-1. Create a new standard `STD-DOC-006` (Agent Rules Standard) that defines `AGENT_RULES.md` — its structure, mandatory sections, relationship to AGENT_RULES template, and creation process. This is the cleanest option but adds a new standard.
-2. Define `AGENT_RULES.md` as a section within an existing standard. The most natural home is `STD-AGENT-001` (Subagent Standard) or `STD-ENV-002` (Z.ai Integration) — both already discuss agent rules in passing.
-3. Remove the `AGENT_RULES.md` reference from this template and replace with an inline "Agent Rules" section in the README itself (no external file). This is the lightest option.
-
-Recommended: option 2, with `STD-ENV-002` as the host (since AGENT_RULES.md was originally extracted from there per its Version History v1.0 entry).
-
-### RMT-003 `[OPEN]` — §1 table numbering vs §2 template structure mismatch
-
-**Problem:** §1 (Mandatory Sections) lists 12 sections in numbered order. §2 (Template) does not preserve this numbering — it omits numbers and presents sections in a slightly different order. Specifically:
-- §1 lists Stack Signature as #12 (last).
-- §2 template places Stack Signature at the end of the file (correct), but does not number it.
-- §1 lists Agent Rules as #11.
-- §2 template places Agent Rules before the Stack Signature (correct relative order), but does not number it.
-- §2 template includes "Project Structure" and "Scripts" sections that §1 also lists, but the template's order does not strictly follow §1's numeric order (e.g., Configuration appears after Scripts in the template, but is #6 in §1 before Scripts at #9).
-
-This makes it hard to verify that the template satisfies the §1 requirements by direct comparison.
-
-**Proposed solution:** Add the section number from §1 as a comment at the start of each section in the §2 template, e.g., `<!-- Section 6: Configuration -->`. This preserves readability while making the §1 ↔ §2 mapping verifiable. Alternatively, restructure §2 to follow §1's order strictly.
-
-### RMT-004 `[RESOLVED in v2.3]` — Stack Signature format rule contradicts STD-DOC-002
-
-**Problem:** §2 note said "Format: `Built with: <Framework> + <Language> + <Styling>`". STD-DOC-002 §8 said "Format: `Built with: <project technologies>`" and adds "Content: letters, digits, `+` and `:` signs". The README_TEMPLATE format string `<Framework> + <Language> + <Styling>` implies exactly three components separated by `+`. STD-DOC-002 allows any number of components (e.g., "Next.js 16 + TypeScript + Tailwind CSS + Prisma"). The README_TEMPLATE's three-component form is more restrictive than STD-DOC-002.
-
-**Resolution (v2.3):** Resolved by scoping, not by reformatting. STD-DOC-002 §8 was clarified in v2.3.2: Stack Signature applies ONLY to application repository README/CHANGELOG, NOT to governance documents (standards, rules, skills, templates, orchestrator meta-repos). The format contradiction is now moot — the rule itself is scoped out for governance docs (including this template file). The template's §2 note now reads: "Format: `Built with: <project technologies>` — components separated by `+`, count is project-specific (see STD-DOC-002 v2.3.2 §8)." The 3-component restriction is removed. The trailing `Built with:` footer that this template file itself had (treating it as if it were an application README) was removed in the same project-wide cleanup (worklog task stack-signature-cleanup-2026-06-18).
-
----
-
-## 6. Version History
+## 8. Version History
 
 | Version | Date | Changes |
 |--------|------|---------|
 | 2.0 | 2026-05 | Restructured: mandatory sections table, template, checklist |
-| 2.1 | 2026-05 | Added Stack Signature format note; added Agent Rules section per AGENT_RULES.md convention |
-| 2.2 | 2026-06 | Updated §2 note to cite MARKDOWN_STANDARD v2.3 §8 (was v2.1 §7). Added §5A Known Issues documenting RMT-001 through RMT-004. Added explicit Cross-References table in §5. |
-| 2.3 | 2026-06 | Stack Signature scope cleanup (worklog task stack-signature-cleanup-2026-06-18): §1 row #12 changed Required Yes -> Optional with scope note (applies to application READMEs only, not governance docs). §2 note rewritten to remove 3-component format restriction (was contradicting STD-DOC-002 §8). §3 checklist item qualified with scope. RMT-004 RESOLVED by scoping. Removed cargo-cult `Built with:` footer from this template file itself (it is a governance doc per new §8 scope). |
+| 2.1 | 2026-05 | Added Stack Signature format note; added Agent Rules section |
+| 2.2 | 2026-06 | Updated STD-DOC-002 citations. Added Known Issues (RMT-001 to RMT-004). Added Cross-References. |
+| 2.3 | 2026-06 | Stack Signature scope cleanup. Removed 3-component format restriction. |
+| 3.0 | 2026-06 | Major revision based on audit of 46 repositories. Changes: Badges promoted to Required. Added Language Rule (EN default). Added Size Rules (TOC thresholds, 300-line soft limit, 40-line section overflow). Added 5 new optional sections (Architecture, Screenshots, Status, Contributing, TOC). Added Format Rules table with correct/incorrect examples. Added "README vs /docs/" decision matrix. Added Project Structure format rule (list only, no tree). Added single package manager rule. Template rewritten with all 17 sections and inline comments. RMT-003 RESOLVED (section numbering now matches between table and template). RMT-002 deferred (AGENT_RULES.md governance left to future standard). Checklist expanded from 9 to 16 items. |
+
+---
+
+## 9. Known Issues
+
+### RMT-002 `[OPEN]` - `AGENT_RULES.md` is referenced but never defined
+
+Carried from v2.3. No governing standard defines the structure, creation process, or relationship of `AGENT_RULES.md`. Section 15 in this template references it conditionally. Decision deferred: will be addressed by a dedicated standard (STD-DOC-006) or by merging into an existing standard.
+
+### RMT-003 `[RESOLVED in v3.0]` - Section numbering mismatch between table and template
+
+The v2.3 template did not preserve the numbering from the sections table, making verification difficult. Resolved in v3.0: the template now follows the exact order from the Section Map table (section 3), and each template section implicitly corresponds to its row number.
+
+### RMT-005 `[OPEN]` - No automated validation for size rules
+
+TOC threshold (150 lines) and soft limit (300 lines) are defined but not checked by `check-md.sh` or `lint-md.js`. These are currently manual checklist items. Proposed: add line-count checks to `check-md.sh` in a future version.

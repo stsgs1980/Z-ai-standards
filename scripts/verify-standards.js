@@ -473,52 +473,48 @@ function extractSection(content, sectionNumber) {
 // ============================================================================
 // V10 - STD-DOC-004 (README_TEMPLATE.md) — badges guidance
 //
-// Updated 2026-06-18. The previous version of V10 enforced a stricter
-// invariant (Badges mandatory, ≥3 shields.io URLs, public-repos checklist
-// item). The actual README_TEMPLATE.md as of v2.2 marks Badges as Optional
-// with a single shields.io badge example in the §2 template. The check is
-// retuned to match the standard's actual choice:
-//   (a) §1 mandatory-sections table includes a Badges row (Optional or Yes).
-//   (b) §2 template block contains ≥1 shields.io badge URL so authors can
-//       see the canonical pattern.
-//   (c) §3 checklist mentions badges (so authors remember to consider them).
-//
-// If the project later promotes Badges from Optional to Yes and requires
-// ≥3 URLs, this check should be re-tightened at that time.
+// Updated 2026-07-02. v3.0 renumbered sections:
+//   §1 = Language Rule, §2 = Size Rules, §3 = Section Map (Badges row),
+//   §4 = Format Rules, §5 = Template (shields.io badges),
+//   §6 = Checklist (mentions badges).
+// The check looks in the correct v3.0 sections:
+//   (a) §3 Section Map table has a Badges row (Required or Optional).
+//   (b) §5 Template has ≥1 shields.io badge URL.
+//   (c) §6 Checklist mentions badges (so authors remember to consider them).
 // ============================================================================
 (function V10() {
   const readme = readSafe(PATHS.README_TEMPLATE);
   if (!readme) {
     check('V10',
-      'STD-DOC-004 README_TEMPLATE.md has Badges guidance (§1 row + §2 example + §3 checklist)',
+      'STD-DOC-004 README_TEMPLATE.md has Badges guidance (§3 row + §5 example + §6 checklist)',
       false, 'README_TEMPLATE.md file not found');
     return;
   }
 
-  // (a) §1 mandatory-sections table has a Badges row (Optional or Yes — both
+  // (a) §3 Section Map table has a Badges row (Required or Optional — both
   // satisfy "the standard acknowledges badges as a section").
-  const section1 = extractSection(readme, '1') || '';
-  const hasBadgesRow = /\|\s*\d+\s*\|\s*Badges\s*\|/i.test(section1);
+  const section3 = extractSection(readme, '3') || '';
+  const hasBadgesRow = /\|\s*\d+\s*\|\s*Badges\s*\|/i.test(section3);
 
-  // (b) §2 template has ≥1 shields.io badge URL
-  const startIdx2 = readme.search(/^## 2\.\s/m);
-  const endIdx2   = readme.search(/^## 3\.\s/m);
-  let section2 = '';
-  if (startIdx2 !== -1 && endIdx2 !== -1 && endIdx2 > startIdx2) {
-    section2 = readme.slice(startIdx2, endIdx2);
+  // (b) §5 Template has ≥1 shields.io badge URL
+  const startIdx5 = readme.search(/^## 5\.\s/m);
+  const endIdx5   = readme.search(/^## 6\.\s/m);
+  let section5 = '';
+  if (startIdx5 !== -1 && endIdx5 !== -1 && endIdx5 > startIdx5) {
+    section5 = readme.slice(startIdx5, endIdx5);
   }
-  const templateBlock = (section2.match(/````markdown\n([\s\S]*?)\n````/) || [])[1] || '';
-  const badgeUrls = (templateBlock.match(/!\[[^\]]*\]\(https:\/\/img\.shields\.io\/[^)]+\)/g) || []);
+  const templateBlock = (section5.match(/````markdown\n([\s\S]*?)\n````/) || [])[1] || '';
+  const badgeUrls = (templateBlock.match(/!\[([^\]]*)\]\(https:\/\/img\.shields\.io\/[^)]+\)/g) || []);
   const hasAtLeast1Badge = badgeUrls.length >= 1;
 
-  // (c) §3 checklist mentions badges
-  const section3 = extractSection(readme, '3') || '';
-  const checklistMentionsBadges = /badge/i.test(section3);
+  // (c) §6 Checklist mentions badges
+  const section6 = extractSection(readme, '6') || '';
+  const checklistMentionsBadges = /badge/i.test(section6);
 
   check('V10',
-    'STD-DOC-004 README_TEMPLATE.md has Badges guidance (§1 row + ≥1 §2 example + §3 checklist mention)',
+    'STD-DOC-004 README_TEMPLATE.md has Badges guidance (§3 row + ≥1 §5 example + §6 checklist mention)',
     hasBadgesRow && hasAtLeast1Badge && checklistMentionsBadges,
-    `§1 Badges row=${hasBadgesRow}; §2 shields.io badges=${badgeUrls.length} (≥1=${hasAtLeast1Badge}); §3 checklist mentions badges=${checklistMentionsBadges}`);
+    `§3 Badges row=${hasBadgesRow}; §5 shields.io badges=${badgeUrls.length} (≥1=${hasAtLeast1Badge}); §6 checklist mentions badges=${checklistMentionsBadges}`);
 })();
 
 // ============================================================================
