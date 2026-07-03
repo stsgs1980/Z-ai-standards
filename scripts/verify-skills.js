@@ -61,13 +61,13 @@
  * ============================================================================
  */
 
-'use strict';
+"use strict";
 
-const fs = require('fs');
-const path = require('path');
+const fs = require("fs");
+const path = require("path");
 
-const VERSION = '1.1.1';
-const EFFECTIVE_DATE = '2026-06-22';
+const VERSION = "1.1.1";
+const EFFECTIVE_DATE = "2026-06-22";
 
 // ============================================================================
 // PATH RESOLUTION
@@ -87,16 +87,15 @@ function discoverPlatformRoot() {
   // Priority 2: walk up from __dirname
   let dir = __dirname;
   for (let i = 0; i < 10; i++) {
-    const gitmodules = path.join(dir, '.gitmodules');
+    const gitmodules = path.join(dir, ".gitmodules");
     if (fs.existsSync(gitmodules)) {
-      const content = fs.readFileSync(gitmodules, 'utf8');
-      if (content.includes('Z-ai-standards') && content.includes('Z-ai-skills')) {
+      const content = fs.readFileSync(gitmodules, "utf8");
+      if (content.includes("Z-ai-standards") && content.includes("Z-ai-skills")) {
         return dir;
       }
     }
     // Also accept a directory that has both standards/ and skills/ subdirs
-    if (fs.existsSync(path.join(dir, 'standards')) &&
-        fs.existsSync(path.join(dir, 'skills'))) {
+    if (fs.existsSync(path.join(dir, "standards")) && fs.existsSync(path.join(dir, "skills"))) {
       return dir;
     }
     dir = path.dirname(dir);
@@ -118,7 +117,7 @@ function discoverPlatformRoot() {
 function parseFrontmatter(content) {
   const m = content.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n/);
   if (!m) {
-    return { parsed: false, data: {}, raw: '', error: 'no frontmatter block (---...---) found' };
+    return { parsed: false, data: {}, raw: "", error: "no frontmatter block (---...---) found" };
   }
   const raw = m[1];
   const data = {};
@@ -129,33 +128,44 @@ function parseFrontmatter(content) {
   while (i < lines.length) {
     const line = lines[i];
     lineNum++;
-    if (!line.trim() || line.trim().startsWith('#')) { i++; continue; }
+    if (!line.trim() || line.trim().startsWith("#")) {
+      i++;
+      continue;
+    }
 
     const kvMatch = line.match(/^([a-zA-Z_][a-zA-Z0-9_-]*)\s*:\s*(.*)$/);
-    if (!kvMatch) { i++; continue; }
+    if (!kvMatch) {
+      i++;
+      continue;
+    }
     const key = kvMatch[1];
     let value = kvMatch[2].trim();
 
     // Folded scalar: value is '>' or '>-' or '|'
-    if (value === '>' || value === '>-' || value === '|') {
+    if (value === ">" || value === ">-" || value === "|") {
       const indent = line.match(/^(\s*)/)[1].length;
       const foldedLines = [];
       i++;
       while (i < lines.length) {
         const nextLine = lines[i];
-        if (nextLine.trim() === '') { i++; continue; }
+        if (nextLine.trim() === "") {
+          i++;
+          continue;
+        }
         const nextIndent = nextLine.match(/^(\s*)/)[1].length;
         if (nextIndent <= indent) break;
         foldedLines.push(nextLine.trim());
         i++;
       }
-      data[key] = foldedLines.join(' ');
+      data[key] = foldedLines.join(" ");
       continue;
     }
 
     // Quoted string
-    if ((value.startsWith('"') && value.endsWith('"')) ||
-        (value.startsWith("'") && value.endsWith("'"))) {
+    if (
+      (value.startsWith('"') && value.endsWith('"')) ||
+      (value.startsWith("'") && value.endsWith("'"))
+    ) {
       data[key] = value.slice(1, -1);
       i++;
       continue;
@@ -169,8 +179,8 @@ function parseFrontmatter(content) {
     }
 
     // Boolean
-    if (value === 'true' || value === 'false') {
-      data[key] = value === 'true';
+    if (value === "true" || value === "false") {
+      data[key] = value === "true";
       i++;
       continue;
     }
@@ -210,7 +220,7 @@ function parseBlockquote(content) {
   for (const line of bqText.split(/\r?\n/)) {
     const m = line.match(/^\s*>\s*([A-Za-z_]+)\s*:\s*(.*)$/);
     if (!m) continue;
-    const key = m[1].toLowerCase().replace(/_/g, '_');
+    const key = m[1].toLowerCase().replace(/_/g, "_");
     fields[key] = m[2].trim();
   }
   return fields;
@@ -232,9 +242,9 @@ const results = {
 };
 
 function check(id, description, passed, detail, isSoft) {
-  const status = passed ? 'PASS' : (isSoft ? 'WARN' : 'FAIL');
+  const status = passed ? "PASS" : isSoft ? "WARN" : "FAIL";
   results.checks.push({ id, status, description, detail, isSoft: !!isSoft });
-  if (status === 'PASS') results.stats.hard_pass++;
+  if (status === "PASS") results.stats.hard_pass++;
   else if (isSoft) results.stats.soft_warnings++;
   else results.stats.hard_fail++;
 }
@@ -245,25 +255,39 @@ function warn(code, message) {
 
 // Allowed skill domains per STD-SKILL-001 §4.3
 const VALID_DOMAINS = new Set([
-  'MEM', 'FS', 'SESSION', 'DEV', 'ARCH', 'QA', 'REQ',
-  'META', 'STS', 'SDK', 'DOC', 'HEALTH', 'CHART',
+  "MEM",
+  "FS",
+  "SESSION",
+  "DEV",
+  "ARCH",
+  "QA",
+  "REQ",
+  "META",
+  "STS",
+  "SDK",
+  "DOC",
+  "HEALTH",
+  "CHART",
 ]);
 
-const VALID_COMPAT = new Set(['both', 'sandbox', 'ade']);
+const VALID_COMPAT = new Set(["both", "sandbox", "ade"]);
 
 // ============================================================================
 // MAIN SCAN
 // ============================================================================
 
 function listSkillDirs(skillsRoot) {
-  const skillsDir = path.join(skillsRoot, 'skills');
-  if (!fs.existsSync(skillsDir)) return [];
-  return fs.readdirSync(skillsDir, { withFileTypes: true })
-    .filter(d => d.isDirectory())
-    .filter(d => !d.name.startsWith('.') && d.name !== 'docs')
-    .map(d => ({
+  // After monorepo conversion, skills live directly in skills/
+  // (no longer skills/skills/). Scan skillsRoot for SKILL.md files.
+  if (!fs.existsSync(skillsRoot)) return [];
+  return fs
+    .readdirSync(skillsRoot, { withFileTypes: true })
+    .filter((d) => d.isDirectory())
+    .filter((d) => !d.name.startsWith(".") && d.name !== "docs")
+    .filter((d) => fs.existsSync(path.join(skillsRoot, d.name, "SKILL.md")))
+    .map((d) => ({
       name: d.name,
-      path: path.join(skillsDir, d.name),
+      path: path.join(skillsRoot, d.name),
     }));
 }
 
@@ -272,10 +296,10 @@ function runChecks(platformRoot, opts) {
   // When strict is true, S02/S03/S05 are promoted from SOFT to HARD.
   // S06/S07/S08 are always SOFT (per the standard itself).
   const s025Soft = !strict;
-  const skillsRoot = path.join(platformRoot, 'skills');
+  const skillsRoot = path.join(platformRoot, "skills");
   if (!fs.existsSync(skillsRoot)) {
     console.error(`[verify-skills] skills/ directory not found at ${skillsRoot}`);
-    console.error('[verify-skills] Use ZAI_PLATFORM_ROOT env var to override.');
+    console.error("[verify-skills] Use ZAI_PLATFORM_ROOT env var to override.");
     process.exit(2);
   }
 
@@ -283,7 +307,7 @@ function runChecks(platformRoot, opts) {
   results.stats.skills_scanned = skillDirs.length;
 
   if (skillDirs.length === 0) {
-    console.error('[verify-skills] No skill directories found in skills/skills/.');
+    console.error("[verify-skills] No skill directories found in skills/.");
     process.exit(2);
   }
 
@@ -291,13 +315,14 @@ function runChecks(platformRoot, opts) {
   // S01 (V11a): SKILL.md exists in every skills/skills/{name}/ folder
   // ----------------------------------------------------------------
   (function S01() {
-    const missing = skillDirs.filter(s => !fs.existsSync(path.join(s.path, 'SKILL.md')));
-    check('S01',
+    const missing = skillDirs.filter((s) => !fs.existsSync(path.join(s.path, "SKILL.md")));
+    check(
+      "S01",
       `SKILL.md exists in every skills/skills/{name}/ folder — scanned ${skillDirs.length} folders`,
       missing.length === 0,
       missing.length === 0
         ? `all ${skillDirs.length} folders have SKILL.md`
-        : `${missing.length} folder(s) missing SKILL.md: ${missing.map(m => m.name).join(', ')}`
+        : `${missing.length} folder(s) missing SKILL.md: ${missing.map((m) => m.name).join(", ")}`,
     );
   })();
 
@@ -315,9 +340,9 @@ function runChecks(platformRoot, opts) {
   (function S02() {
     const offenders = [];
     for (const s of skillDirs) {
-      const skillMdPath = path.join(s.path, 'SKILL.md');
+      const skillMdPath = path.join(s.path, "SKILL.md");
       if (!fs.existsSync(skillMdPath)) continue; // already flagged by S01
-      const content = fs.readFileSync(skillMdPath, 'utf8');
+      const content = fs.readFileSync(skillMdPath, "utf8");
       const fm = parseFrontmatter(content);
       if (!fm.parsed) continue; // flagged by S04
       const expected = s.name;
@@ -325,13 +350,14 @@ function runChecks(platformRoot, opts) {
         offenders.push(`${s.name}: frontmatter name="${fm.data.name}" expected "${expected}"`);
       }
     }
-    check('S02',
-      'frontmatter `name` matches folder name exactly (incl. `_sts` suffix for STS skills; per §3.3 + §9.1)',
+    check(
+      "S02",
+      "frontmatter `name` matches folder name exactly (incl. `_sts` suffix for STS skills; per §3.3 + §9.1)",
       offenders.length === 0,
       offenders.length === 0
         ? `all ${skillDirs.length} skills match`
-        : `${offenders.length} mismatch(es): ${offenders.join('; ')}`,
-      s025Soft
+        : `${offenders.length} mismatch(es): ${offenders.join("; ")}`,
+      s025Soft,
     );
   })();
 
@@ -343,24 +369,25 @@ function runChecks(platformRoot, opts) {
   (function S03() {
     const offenders = [];
     for (const s of skillDirs) {
-      const skillMdPath = path.join(s.path, 'SKILL.md');
+      const skillMdPath = path.join(s.path, "SKILL.md");
       if (!fs.existsSync(skillMdPath)) continue;
-      const content = fs.readFileSync(skillMdPath, 'utf8');
+      const content = fs.readFileSync(skillMdPath, "utf8");
       const fm = parseFrontmatter(content);
       if (!fm.parsed) continue;
       const hasAuthor = !!fm.data.author;
-      const hasStsSuffix = s.name.endsWith('_sts');
+      const hasStsSuffix = s.name.endsWith("_sts");
       if (hasAuthor && !hasStsSuffix) {
         offenders.push(`${s.name}: has author="${fm.data.author}" but folder lacks _sts suffix`);
       }
     }
-    check('S03',
-      'STS skills (with author field) have _sts suffix in folder name',
+    check(
+      "S03",
+      "STS skills (with author field) have _sts suffix in folder name",
       offenders.length === 0,
       offenders.length === 0
-        ? 'no STS skills missing _sts suffix'
-        : `${offenders.length} offender(s): ${offenders.join('; ')}`,
-      s025Soft
+        ? "no STS skills missing _sts suffix"
+        : `${offenders.length} offender(s): ${offenders.join("; ")}`,
+      s025Soft,
     );
   })();
 
@@ -370,20 +397,21 @@ function runChecks(platformRoot, opts) {
   (function S04() {
     const offenders = [];
     for (const s of skillDirs) {
-      const skillMdPath = path.join(s.path, 'SKILL.md');
+      const skillMdPath = path.join(s.path, "SKILL.md");
       if (!fs.existsSync(skillMdPath)) continue;
-      const content = fs.readFileSync(skillMdPath, 'utf8');
+      const content = fs.readFileSync(skillMdPath, "utf8");
       const fm = parseFrontmatter(content);
       if (!fm.parsed) {
         offenders.push(`${s.name}: ${fm.error}`);
       }
     }
-    check('S04',
-      'YAML frontmatter parses — scanned all skill folders with SKILL.md',
+    check(
+      "S04",
+      "YAML frontmatter parses — scanned all skill folders with SKILL.md",
       offenders.length === 0,
       offenders.length === 0
-        ? 'all frontmatter blocks parse successfully'
-        : `${offenders.length} parse error(s): ${offenders.join('; ')}`
+        ? "all frontmatter blocks parse successfully"
+        : `${offenders.length} parse error(s): ${offenders.join("; ")}`,
     );
   })();
 
@@ -391,26 +419,27 @@ function runChecks(platformRoot, opts) {
   // S05 (V13b): Required fields present (name, description, version)
   // ----------------------------------------------------------------
   (function S05() {
-    const required = ['name', 'description', 'version'];
+    const required = ["name", "description", "version"];
     const offenders = [];
     for (const s of skillDirs) {
-      const skillMdPath = path.join(s.path, 'SKILL.md');
+      const skillMdPath = path.join(s.path, "SKILL.md");
       if (!fs.existsSync(skillMdPath)) continue;
-      const content = fs.readFileSync(skillMdPath, 'utf8');
+      const content = fs.readFileSync(skillMdPath, "utf8");
       const fm = parseFrontmatter(content);
       if (!fm.parsed) continue; // flagged by S04
-      const missing = required.filter(f => !fm.data[f]);
+      const missing = required.filter((f) => !fm.data[f]);
       if (missing.length) {
-        offenders.push(`${s.name}: missing ${missing.join(', ')}`);
+        offenders.push(`${s.name}: missing ${missing.join(", ")}`);
       }
     }
-    check('S05',
-      'Required frontmatter fields present: name, description, version',
+    check(
+      "S05",
+      "Required frontmatter fields present: name, description, version",
       offenders.length === 0,
       offenders.length === 0
         ? `all ${skillDirs.length} skills have required fields`
-        : `${offenders.length} skill(s) with missing fields: ${offenders.join('; ')}`,
-      s025Soft
+        : `${offenders.length} skill(s) with missing fields: ${offenders.join("; ")}`,
+      s025Soft,
     );
   })();
 
@@ -423,9 +452,9 @@ function runChecks(platformRoot, opts) {
     const offenders = [];
     let checked = 0;
     for (const s of skillDirs) {
-      const skillMdPath = path.join(s.path, 'SKILL.md');
+      const skillMdPath = path.join(s.path, "SKILL.md");
       if (!fs.existsSync(skillMdPath)) continue;
-      const content = fs.readFileSync(skillMdPath, 'utf8');
+      const content = fs.readFileSync(skillMdPath, "utf8");
       const fm = parseFrontmatter(content);
       if (!fm.parsed || !fm.data.id) continue;
       checked++;
@@ -438,13 +467,16 @@ function runChecks(platformRoot, opts) {
         offenders.push(`${s.name}: id="${fm.data.id}" has unknown domain "${m[1]}"`);
       }
     }
-    check('S06',
+    check(
+      "S06",
       `id field format valid (ZAI-<DOMAIN>-<NNN>, valid domain) — checked ${checked} skills with id field`,
       offenders.length === 0,
       offenders.length === 0
-        ? (checked === 0 ? 'no skills have id field (optional per STD-SKILL-001 §4.2)' : `all ${checked} ids valid`)
-        : `${offenders.length} invalid: ${offenders.join('; ')}`,
-      true  // SOFT
+        ? checked === 0
+          ? "no skills have id field (optional per STD-SKILL-001 §4.2)"
+          : `all ${checked} ids valid`
+        : `${offenders.length} invalid: ${offenders.join("; ")}`,
+      true, // SOFT
     );
   })();
 
@@ -456,23 +488,28 @@ function runChecks(platformRoot, opts) {
     const offenders = [];
     let checked = 0;
     for (const s of skillDirs) {
-      const skillMdPath = path.join(s.path, 'SKILL.md');
+      const skillMdPath = path.join(s.path, "SKILL.md");
       if (!fs.existsSync(skillMdPath)) continue;
-      const content = fs.readFileSync(skillMdPath, 'utf8');
+      const content = fs.readFileSync(skillMdPath, "utf8");
       const fm = parseFrontmatter(content);
       if (!fm.parsed || !fm.data.compatibility) continue;
       checked++;
       if (!VALID_COMPAT.has(fm.data.compatibility)) {
-        offenders.push(`${s.name}: compatibility="${fm.data.compatibility}" not in {both, sandbox, ade}`);
+        offenders.push(
+          `${s.name}: compatibility="${fm.data.compatibility}" not in {both, sandbox, ade}`,
+        );
       }
     }
-    check('S07',
+    check(
+      "S07",
       `compatibility field valid (both|sandbox|ade) — checked ${checked} skills with compatibility field`,
       offenders.length === 0,
       offenders.length === 0
-        ? (checked === 0 ? 'no skills declare compatibility (optional unless id present)' : `all ${checked} valid`)
-        : `${offenders.length} invalid: ${offenders.join('; ')}`,
-      true  // SOFT
+        ? checked === 0
+          ? "no skills declare compatibility (optional unless id present)"
+          : `all ${checked} valid`
+        : `${offenders.length} invalid: ${offenders.join("; ")}`,
+      true, // SOFT
     );
   })();
 
@@ -484,9 +521,9 @@ function runChecks(platformRoot, opts) {
     const offenders = [];
     let checked = 0;
     for (const s of skillDirs) {
-      const skillMdPath = path.join(s.path, 'SKILL.md');
+      const skillMdPath = path.join(s.path, "SKILL.md");
       if (!fs.existsSync(skillMdPath)) continue;
-      const content = fs.readFileSync(skillMdPath, 'utf8');
+      const content = fs.readFileSync(skillMdPath, "utf8");
       const fm = parseFrontmatter(content);
       if (!fm.parsed || !fm.data.id) continue;
       const bq = parseBlockquote(content);
@@ -496,13 +533,16 @@ function runChecks(platformRoot, opts) {
         offenders.push(`${s.name}: frontmatter id="${fm.data.id}" vs blockquote ID:="${bq.id}"`);
       }
     }
-    check('S08',
+    check(
+      "S08",
       `frontmatter id matches blockquote ID: — checked ${checked} skills with both`,
       offenders.length === 0,
       offenders.length === 0
-        ? (checked === 0 ? 'no skills have both frontmatter id and blockquote ID:' : `all ${checked} consistent`)
-        : `${offenders.length} mismatch(es): ${offenders.join('; ')}`,
-      true  // SOFT
+        ? checked === 0
+          ? "no skills have both frontmatter id and blockquote ID:"
+          : `all ${checked} consistent`
+        : `${offenders.length} mismatch(es): ${offenders.join("; ")}`,
+      true, // SOFT
     );
   })();
 
@@ -518,9 +558,9 @@ function runChecks(platformRoot, opts) {
     const offenders = [];
     let checked = 0;
     for (const s of skillDirs) {
-      const skillMdPath = path.join(s.path, 'SKILL.md');
+      const skillMdPath = path.join(s.path, "SKILL.md");
       if (!fs.existsSync(skillMdPath)) continue;
-      const content = fs.readFileSync(skillMdPath, 'utf8');
+      const content = fs.readFileSync(skillMdPath, "utf8");
       const fm = parseFrontmatter(content);
       if (!fm.parsed || fm.data.version === undefined) continue;
       const bq = parseBlockquote(content);
@@ -528,17 +568,22 @@ function runChecks(platformRoot, opts) {
       checked++;
       // Normalize: frontmatter version may be number, blockquote is string
       const fmVer = String(fm.data.version);
-      const bqVer = String(bq.version).replace(/^v/, ''); // strip leading v
+      const bqVer = String(bq.version).replace(/^v/, ""); // strip leading v
       if (fmVer !== bqVer) {
-        offenders.push(`${s.name}: frontmatter version="${fmVer}" vs blockquote Version:="${bq.version}"`);
+        offenders.push(
+          `${s.name}: frontmatter version="${fmVer}" vs blockquote Version:="${bq.version}"`,
+        );
       }
     }
-    check('S09',
+    check(
+      "S09",
       `frontmatter version matches blockquote Version: — checked ${checked} skills with both`,
       offenders.length === 0,
       offenders.length === 0
-        ? (checked === 0 ? 'no skills have both frontmatter version and blockquote Version:' : `all ${checked} consistent`)
-        : `${offenders.length} mismatch(es): ${offenders.join('; ')}`
+        ? checked === 0
+          ? "no skills have both frontmatter version and blockquote Version:"
+          : `all ${checked} consistent`
+        : `${offenders.length} mismatch(es): ${offenders.join("; ")}`,
     );
   })();
 
@@ -608,66 +653,82 @@ function runChecks(platformRoot, opts) {
 
     for (const s of skillDirs) {
       // S10a: SKILL.md
-      const skillMdPath = path.join(s.path, 'SKILL.md');
+      const skillMdPath = path.join(s.path, "SKILL.md");
       if (fs.existsSync(skillMdPath)) {
         skillMdChecked++;
-        const content = fs.readFileSync(skillMdPath, 'utf8');
+        const content = fs.readFileSync(skillMdPath, "utf8");
         // Same line-count convention as verify-standards.js V11 and
         // verify-id-graph.js (wc -l equivalent).
-        const lineCount = content === '' ? 0 : content.split('\n').length - (content.endsWith('\n') ? 1 : 0);
+        const lineCount =
+          content === "" ? 0 : content.split("\n").length - (content.endsWith("\n") ? 1 : 0);
         if (lineCount > SKILLMD_CAP) {
-          skillMdOffenders.push(`${s.name}/SKILL.md: ${lineCount} lines (exceeds ${SKILLMD_CAP}-line cap, split required — see STD-SKILL-001 §8.2)`);
+          skillMdOffenders.push(
+            `${s.name}/SKILL.md: ${lineCount} lines (exceeds ${SKILLMD_CAP}-line cap, split required — see STD-SKILL-001 §8.2)`,
+          );
         }
       }
 
       // S10b: CONTRACT.md (optional)
-      const contractMdPath = path.join(s.path, 'CONTRACT.md');
+      const contractMdPath = path.join(s.path, "CONTRACT.md");
       if (fs.existsSync(contractMdPath)) {
         contractMdChecked++;
-        const content = fs.readFileSync(contractMdPath, 'utf8');
-        const lineCount = content === '' ? 0 : content.split('\n').length - (content.endsWith('\n') ? 1 : 0);
+        const content = fs.readFileSync(contractMdPath, "utf8");
+        const lineCount =
+          content === "" ? 0 : content.split("\n").length - (content.endsWith("\n") ? 1 : 0);
         if (lineCount > CONTRACTMD_CAP) {
-          contractMdOffenders.push(`${s.name}/CONTRACT.md: ${lineCount} lines (exceeds ${CONTRACTMD_CAP}-line cap, externalise auxiliary sections to references/ — see META-001 §4.18.6)`);
+          contractMdOffenders.push(
+            `${s.name}/CONTRACT.md: ${lineCount} lines (exceeds ${CONTRACTMD_CAP}-line cap, externalise auxiliary sections to references/ — see META-001 §4.18.6)`,
+          );
         }
       }
 
       // S10c: README.md (optional)
-      const readmeMdPath = path.join(s.path, 'README.md');
+      const readmeMdPath = path.join(s.path, "README.md");
       if (fs.existsSync(readmeMdPath)) {
         readmeMdChecked++;
-        const content = fs.readFileSync(readmeMdPath, 'utf8');
-        const lineCount = content === '' ? 0 : content.split('\n').length - (content.endsWith('\n') ? 1 : 0);
+        const content = fs.readFileSync(readmeMdPath, "utf8");
+        const lineCount =
+          content === "" ? 0 : content.split("\n").length - (content.endsWith("\n") ? 1 : 0);
         if (lineCount > READMEMD_CAP) {
-          readmeMdOffenders.push(`${s.name}/README.md: ${lineCount} lines (exceeds ${READMEMD_CAP}-line cap, move detailed examples to references/ — README is for onboarding/overview only)`);
+          readmeMdOffenders.push(
+            `${s.name}/README.md: ${lineCount} lines (exceeds ${READMEMD_CAP}-line cap, move detailed examples to references/ — README is for onboarding/overview only)`,
+          );
         }
       }
     }
 
     // S10a: SKILL.md
-    check('S10a',
+    check(
+      "S10a",
       `SKILL.md ≤ ${SKILLMD_CAP} lines (META-001 §4.18.1, SKILL.md row) — checked ${skillMdChecked} SKILL.md files`,
       skillMdOffenders.length === 0,
       skillMdOffenders.length === 0
         ? `all ${skillMdChecked} SKILL.md files ≤ ${SKILLMD_CAP} lines`
-        : `${skillMdOffenders.length} file(s) over cap: ${skillMdOffenders.join('; ')}`
+        : `${skillMdOffenders.length} file(s) over cap: ${skillMdOffenders.join("; ")}`,
     );
 
     // S10b: CONTRACT.md
-    check('S10b',
+    check(
+      "S10b",
       `CONTRACT.md ≤ ${CONTRACTMD_CAP} lines (META-001 §4.18.1, CONTRACT.md row) — checked ${contractMdChecked} CONTRACT.md files`,
       contractMdOffenders.length === 0,
       contractMdOffenders.length === 0
-        ? (contractMdChecked === 0 ? 'no skills have CONTRACT.md (optional)' : `all ${contractMdChecked} CONTRACT.md files ≤ ${CONTRACTMD_CAP} lines`)
-        : `${contractMdOffenders.length} file(s) over cap: ${contractMdOffenders.join('; ')}`
+        ? contractMdChecked === 0
+          ? "no skills have CONTRACT.md (optional)"
+          : `all ${contractMdChecked} CONTRACT.md files ≤ ${CONTRACTMD_CAP} lines`
+        : `${contractMdOffenders.length} file(s) over cap: ${contractMdOffenders.join("; ")}`,
     );
 
     // S10c: README.md
-    check('S10c',
+    check(
+      "S10c",
       `README.md ≤ ${READMEMD_CAP} lines (META-001 §4.18.1, README.md row) — checked ${readmeMdChecked} README.md files`,
       readmeMdOffenders.length === 0,
       readmeMdOffenders.length === 0
-        ? (readmeMdChecked === 0 ? 'no skills have README.md (optional)' : `all ${readmeMdChecked} README.md files ≤ ${READMEMD_CAP} lines`)
-        : `${readmeMdOffenders.length} file(s) over cap: ${readmeMdOffenders.join('; ')}`
+        ? readmeMdChecked === 0
+          ? "no skills have README.md (optional)"
+          : `all ${readmeMdChecked} README.md files ≤ ${READMEMD_CAP} lines`
+        : `${readmeMdOffenders.length} file(s) over cap: ${readmeMdOffenders.join("; ")}`,
     );
   })();
 }
@@ -679,10 +740,10 @@ function runChecks(platformRoot, opts) {
 function parseArgs(argv) {
   const opts = { json: false, help: false, root: null, strict: false };
   for (const arg of argv.slice(2)) {
-    if (arg === '--help' || arg === '-h') opts.help = true;
-    else if (arg === '--json') opts.json = true;
-    else if (arg === '--strict') opts.strict = true;
-    else if (arg.startsWith('--root=')) opts.root = arg.slice(7);
+    if (arg === "--help" || arg === "-h") opts.help = true;
+    else if (arg === "--json") opts.json = true;
+    else if (arg === "--strict") opts.strict = true;
+    else if (arg.startsWith("--root=")) opts.root = arg.slice(7);
     else {
       console.error(`Unknown argument: ${arg}`);
       process.exit(2);
@@ -761,61 +822,67 @@ Exit codes:
 }
 
 function printHuman() {
-  const width = Math.max(...results.checks.map(c => c.id.length));
+  const width = Math.max(...results.checks.map((c) => c.id.length));
   console.log(`verify-skills.js v${VERSION} — Skills-side Format Verifier`);
   console.log(`Effective date: ${EFFECTIVE_DATE}`);
   console.log(`Skills scanned: ${results.stats.skills_scanned}`);
-  console.log('='.repeat(72));
-  console.log('');
-  console.log('--- Hard Checks (S01-S05, S09, S10) ---');
-  for (const c of results.checks.filter(c => !c.isSoft)) {
-    const icon = c.status === 'PASS' ? '[PASS]' : '[FAIL]';
+  console.log("=".repeat(72));
+  console.log("");
+  console.log("--- Hard Checks (S01-S05, S09, S10) ---");
+  for (const c of results.checks.filter((c) => !c.isSoft)) {
+    const icon = c.status === "PASS" ? "[PASS]" : "[FAIL]";
     console.log(`${icon} ${c.id.padEnd(width)}  ${c.description}`);
     if (c.detail) console.log(`         ${c.detail}`);
   }
-  console.log('');
-  console.log('--- Soft Checks (S06-S08) ---');
-  for (const c of results.checks.filter(c => c.isSoft)) {
-    const icon = c.status === 'PASS' ? '[PASS]' : '[WARN]';
+  console.log("");
+  console.log("--- Soft Checks (S06-S08) ---");
+  for (const c of results.checks.filter((c) => c.isSoft)) {
+    const icon = c.status === "PASS" ? "[PASS]" : "[WARN]";
     console.log(`${icon} ${c.id.padEnd(width)}  ${c.description}`);
     if (c.detail) console.log(`         ${c.detail}`);
   }
-  console.log('');
-  console.log('-'.repeat(72));
-  const hardPass = results.checks.filter(c => !c.isSoft && c.status === 'PASS').length;
-  const hardFail = results.checks.filter(c => !c.isSoft && c.status === 'FAIL').length;
-  const softWarn = results.checks.filter(c => c.isSoft && c.status === 'WARN').length;
+  console.log("");
+  console.log("-".repeat(72));
+  const hardPass = results.checks.filter((c) => !c.isSoft && c.status === "PASS").length;
+  const hardFail = results.checks.filter((c) => !c.isSoft && c.status === "FAIL").length;
+  const softWarn = results.checks.filter((c) => c.isSoft && c.status === "WARN").length;
   console.log(`HARD: ${hardPass}/${hardPass + hardFail} PASS, ${hardFail} FAIL`);
   console.log(`SOFT: ${softWarn} warning(s)`);
-  console.log('');
+  console.log("");
   if (hardFail > 0) {
-    console.log('ACTION REQUIRED:');
-    console.log('  At least one HARD invariant was violated. Either:');
-    console.log('    (a) Fix the SKILL.md to conform to STD-SKILL-001 v1.1, OR');
-    console.log('    (b) Update the S## check in scripts/verify-skills.js if the');
-    console.log('        standard itself changed.');
-    console.log('  Then re-run: node scripts/verify-skills.js');
+    console.log("ACTION REQUIRED:");
+    console.log("  At least one HARD invariant was violated. Either:");
+    console.log("    (a) Fix the SKILL.md to conform to STD-SKILL-001 v1.1, OR");
+    console.log("    (b) Update the S## check in scripts/verify-skills.js if the");
+    console.log("        standard itself changed.");
+    console.log("  Then re-run: node scripts/verify-skills.js");
   } else {
-    console.log('All HARD invariants hold. Skills conform to STD-SKILL-001 v1.1.');
+    console.log("All HARD invariants hold. Skills conform to STD-SKILL-001 v1.1.");
   }
 }
 
 function printJSON() {
-  const hardPass = results.checks.filter(c => !c.isSoft && c.status === 'PASS').length;
-  const hardFail = results.checks.filter(c => !c.isSoft && c.status === 'FAIL').length;
-  console.log(JSON.stringify({
-    script: 'verify-skills.js',
-    version: VERSION,
-    effective_date: EFFECTIVE_DATE,
-    generated: new Date().toISOString(),
-    summary: {
-      skills_scanned: results.stats.skills_scanned,
-      hard_pass: hardPass,
-      hard_fail: hardFail,
-      soft_warnings: results.checks.filter(c => c.isSoft && c.status === 'WARN').length,
-    },
-    checks: results.checks,
-  }, null, 2));
+  const hardPass = results.checks.filter((c) => !c.isSoft && c.status === "PASS").length;
+  const hardFail = results.checks.filter((c) => !c.isSoft && c.status === "FAIL").length;
+  console.log(
+    JSON.stringify(
+      {
+        script: "verify-skills.js",
+        version: VERSION,
+        effective_date: EFFECTIVE_DATE,
+        generated: new Date().toISOString(),
+        summary: {
+          skills_scanned: results.stats.skills_scanned,
+          hard_pass: hardPass,
+          hard_fail: hardFail,
+          soft_warnings: results.checks.filter((c) => c.isSoft && c.status === "WARN").length,
+        },
+        checks: results.checks,
+      },
+      null,
+      2,
+    ),
+  );
 }
 
 // ============================================================================
@@ -831,8 +898,8 @@ function main() {
 
   const platformRoot = opts.root || discoverPlatformRoot();
   if (!platformRoot) {
-    console.error('[verify-skills] Could not discover platform root.');
-    console.error('[verify-skills] Set ZAI_PLATFORM_ROOT env var or use --root=<path>.');
+    console.error("[verify-skills] Could not discover platform root.");
+    console.error("[verify-skills] Set ZAI_PLATFORM_ROOT env var or use --root=<path>.");
     process.exit(2);
   }
 
@@ -844,7 +911,7 @@ function main() {
     printHuman();
   }
 
-  const hardFail = results.checks.filter(c => !c.isSoft && c.status === 'FAIL').length;
+  const hardFail = results.checks.filter((c) => !c.isSoft && c.status === "FAIL").length;
   process.exit(hardFail > 0 ? 1 : 0);
 }
 
