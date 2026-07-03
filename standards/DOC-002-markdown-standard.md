@@ -1,11 +1,11 @@
-# Standard: Markdown Formatting v2.4 (EN)
+# Standard: Markdown Formatting v2.4.4 (EN)
 
 > ID: STD-DOC-002
-> Version: 2.4.3
+> Version: 2.4.4
 > Level: **[C] Critical** (unified with STD-DOC-003 — same rule = same severity)
 > Related: STD-META-001 (ID system), STD-META-002 (language policy), STD-ARCH-002 (implementation order — DOC-002 is installed at position #4, after ARCH-002 defines the install sequence)
-> Last Updated: 2026-06-21
-> Effective Date: 2026-06-21
+> Last Updated: 2026-07-03
+> Effective Date: 2026-07-03
 > Note: Character rules (emoji, box-drawing, etc.) are delegated to STD-DOC-003. Per ARCH-002 install order, DOC-003 is read after DOC-002. The dependency edge is therefore DOC-003 -> DOC-002 (DOC-003 depends on DOC-002's markdown scope).
 > Entry point: `bash scripts/check-md.sh [path]` — see §0 (TL;DR) and §10 (now in companion `DOC-002-eslint-integration.md`).
 > Companion file: `DOC-002-eslint-integration.md` (§10 ESLint Integration, extracted in v2.4.3 for W11 soft-cap cleanup).
@@ -44,20 +44,20 @@ Both must exit 0. Any error blocks the commit. The wrapper script exists so cont
 1. One H1 per document, at the top
 2. Every fenced code block specifies a language (use `text` or `bash` if unknown)
 3. Root README of an application repo ends with `---\nBuilt with: <stack>`
-4. Use `(ref)` marker only when a character is the *object of demonstration* (e.g. in a "prohibited characters" table)
+4. Use `(ref)` marker only when a character is the _object of demonstration_ (e.g. in a "prohibited characters" table)
 5. Run ESLint + `lint-md.js` before commit (husky + lint-staged automate this)
 
 **Where to look:**
 
-| Need | Section |
-|------|--------|
-| What's prohibited | §3 |
-| What's allowed | §4 |
-| Formatting rules | §5 |
-| Stack signature scope | §8 |
-| ESLint config | §10 |
-| Pre-merge checklist | §13 |
-| Full before/after example | §12.4 |
+| Need                      | Section |
+| ------------------------- | ------- |
+| What's prohibited         | §3      |
+| What's allowed            | §4      |
+| Formatting rules          | §5      |
+| Stack signature scope     | §8      |
+| ESLint config             | §10     |
+| Pre-merge checklist       | §13     |
+| Full before/after example | §12.4   |
 
 ---
 
@@ -77,11 +77,12 @@ This standard establishes rules for Markdown documentation formatting to ensure 
 
 ## 2. Scope
 
-| Level | Context | Action on violation |
-|-------|---------|---------------------|
+| Level            | Context                                               | Action on violation                 |
+| ---------------- | ----------------------------------------------------- | ----------------------------------- |
 | **[C] Critical** | README.md, CHANGELOG.md, docs/, project documentation | Blocks commit (husky + lint-staged) |
 
 **See also:**
+
 - **Unicode Policy v2.3** — for UI components [C], production code [C], AI-communication [W], prototypes [I]
 
 ---
@@ -92,12 +93,12 @@ Character prohibitions are defined in **Unicode Policy v2.3** (STD-DOC-003) sect
 
 **Summary (authoritative rules in STD-DOC-003):**
 
-| Category | Level | Note |
-|----------|-------|------|
-| Emoji | [C] | No exceptions |
-| Unicode icons | [C] | Use text tags |
-| Table pseudographics | [W] | Use Markdown syntax |
-| Typographics in headings/code | [W] | Allowed in plain text only (see scope below) |
+| Category                      | Level | Note                                         |
+| ----------------------------- | ----- | -------------------------------------------- |
+| Emoji                         | [C]   | No exceptions                                |
+| Unicode icons                 | [C]   | Use text tags                                |
+| Table pseudographics          | [W]   | Use Markdown syntax                          |
+| Typographics in headings/code | [W]   | Allowed in plain text only (see scope below) |
 
 **Prohibition scope (for Typographics in .md files):**
 
@@ -118,7 +119,7 @@ Character prohibitions are defined in **Unicode Policy v2.3** (STD-DOC-003) sect
 
 - In normal prose where the character is used as formatting (e.g. "Install the dependencies — then run the build" — this is just an em dash, no marker needed... but it IS still prohibited in headings/tables/code, see §3)
 - In a heading or table cell that is not about the character itself
-- As a way to sneak a prohibited character into a heading by appending `(ref)` — the marker does not grant immunity, the cell's *purpose* must be to identify the character
+- As a way to sneak a prohibited character into a heading by appending `(ref)` — the marker does not grant immunity, the cell's _purpose_ must be to identify the character
 
 ---
 
@@ -137,31 +138,31 @@ The whitelist for technical diagrams in documentation is defined in **STD-DOC-00
 
 ### 4.3. Markdown Syntax
 
-| Element | Syntax |
-|---------|--------|
-| Headings | `#`, `##`, `###` |
-| Bold | `**text**` |
-| Italic | `*text*` |
-| Inline code | `` `code` `` |
-| Code block | ` ```language ` |
-| Blockquote | `>` |
-| Unordered List | `-` (strictly) |
-| Ordered List | `1.` |
-| Link | `[text](url)` |
-| Image | `![alt](url)` |
+| Element        | Syntax           |
+| -------------- | ---------------- |
+| Headings       | `#`, `##`, `###` |
+| Bold           | `**text**`       |
+| Italic         | `*text*`         |
+| Inline code    | `` `code` ``     |
+| Code block     | ` ```language `  |
+| Blockquote     | `>`              |
+| Unordered List | `-` (strictly)   |
+| Ordered List   | `1.`             |
+| Link           | `[text](url)`    |
+| Image          | `![alt](url)`    |
 
 ### 4.4. Text Tags for Statuses
 
 Use text labels instead of Unicode symbols:
 
-| Correct | Incorrect |
-|---------|-----------|
-| `[OK]` | [v] (ref) |
-| `[FAIL]` | [x] (ref) |
-| `[DONE]` | [OK] (ref) |
-| `[TODO]` |  (ref) |
+| Correct     | Incorrect    |
+| ----------- | ------------ |
+| `[OK]`      | [v] (ref)    |
+| `[FAIL]`    | [x] (ref)    |
+| `[DONE]`    | [OK] (ref)   |
+| `[TODO]`    | (ref)        |
 | `[WARNING]` | [WARN] (ref) |
-| `[INFO]` | (ref) |
+| `[INFO]`    | (ref)        |
 
 ---
 
@@ -204,10 +205,10 @@ Incorrect:    -> Item 1
 
 ### 5.3. Text Emphasis
 
-| Format | Syntax |
-|--------|--------|
-| Bold | `**text**` |
-| Italic | `*text*` |
+| Format        | Syntax     |
+| ------------- | ---------- |
+| Bold          | `**text**` |
+| Italic        | `*text*`   |
 | Strikethrough | `~~text~~` |
 
 ### 5.4. Code Formatting
@@ -223,8 +224,8 @@ Use the `processFile()` function for processing.
 ````markdown
 ```typescript
 const config = {
-  encoding: 'utf-8',
-  strict: true
+  encoding: "utf-8",
+  strict: true,
 };
 ```
 ````
@@ -232,17 +233,17 @@ const config = {
 **Unknown Languages Rule:**
 If the exact programming language or format is not supported by the renderer or is unknown, always specify `text` or `bash` instead of leaving the block blank.
 
-```text
+````text
 Correct:      ```text
 Incorrect:    ```text
-```
+````
 
 **Rules:**
 
-| Element | Format | Purpose |
-|---------|--------|---------|
-| Inline code | `` `code` `` | Functions, variables, commands within text |
-| Code block | `` ```language `` | Multi-line code, examples, configs |
+| Element     | Format          | Purpose                                    |
+| ----------- | --------------- | ------------------------------------------ |
+| Inline code | `` `code` ``    | Functions, variables, commands within text |
+| Code block  | ` ```language ` | Multi-line code, examples, configs         |
 
 **Do NOT use custom colors:**
 
@@ -282,10 +283,10 @@ Badges are graphical indicators of project metadata (version, build status, lice
 
 ### 7.1. Allowed Sources
 
-| Source | Usage |
-|--------|-------|
+| Source     | Usage                                         |
+| ---------- | --------------------------------------------- |
 | shields.io | Recommended — generates PNG/SVG without emoji |
-| custom SVG | Allowed if compliant with Unicode Policy |
+| custom SVG | Allowed if compliant with Unicode Policy      |
 
 ### 7.2. Prohibited
 
@@ -318,23 +319,25 @@ When CI is configured, replace with dynamic ones.
 **Application** README files must contain a stack signature at the end of the file.
 
 **Scope (applies to):**
+
 - `README.md` at the root of an **application repository** (a repo that ships runnable code — e.g. a Next.js app, a library, a CLI tool)
 - `CHANGELOG.md` at the root of an application repository (optional but recommended)
 
 **Scope (does NOT apply to):**
+
 - **Standards** (`standards/standards/*.md`) — they describe rules, not "built with" anything
 - **Rules** (`guard/rules/*.md`) — same
-- **Skills** (`skills/skills/*/SKILL.md`) — same
 - **Templates** (`templates/*.md`) — meta-docs, not applications
 - **Orchestrator / meta-repos** (e.g. `Z-ai-platform`, `Z-ai-standards`, `Z-ai-guard`, `Z-ai-skills`) — they pin submodules and govern, they do not ship an application stack
 - **Nested docs** (`docs/**/*.md`) — optional, not required
 
-If a file is unclear, the test is: "Does this repo ship a runnable application whose stack a reader would care about?" If yes, the root README must have a Stack Signature. If no (governance, standards, meta-repos), the Stack Signature is forbidden — it would be cargo cult.
+If a file is unclear, the test is: "Does this repo ship a runnable application whose stack a reader would care about?" If yes, the root README must have a Stack Signature. If no (governance, standards, meta-repos), the Stack Signature is forbidden — it would be cargo cult. Skills are **permitted** to include a Stack Signature to indicate their runtime stack.
 
 **Format:**
 
 ```markdown
 ---
+
 Built with: <project technologies>
 ```
 
@@ -342,6 +345,7 @@ The specific stack is determined by the project, not the standard. Example for N
 
 ```markdown
 ---
+
 Built with: Next.js 16 + TypeScript + Tailwind CSS
 ```
 
@@ -360,12 +364,12 @@ For the default value in this stack, see `templates/README_TEMPLATE.md`.
 
 ### 9.1. Level [C] Critical - Enforcement Policy
 
-| Stage | Action | Blocks merge? |
-|-------|--------|---------------|
-| Editor | Inline error in VS Code | n/a (real-time) |
-| Pre-commit | husky + lint-staged aborts commit | **Yes** |
-| CI Pipeline | Job fails on `eslint --max-warnings=0` | **Yes** |
-| Pre-merge | GitHub status check fails | **Yes** |
+| Stage       | Action                                 | Blocks merge?   |
+| ----------- | -------------------------------------- | --------------- |
+| Editor      | Inline error in VS Code                | n/a (real-time) |
+| Pre-commit  | husky + lint-staged aborts commit      | **Yes**         |
+| CI Pipeline | Job fails on `eslint --max-warnings=0` | **Yes**         |
+| Pre-merge   | GitHub status check fails              | **Yes**         |
 
 **Rule:** Level [C] blocks merge automatically. To land a PR with a [C] violation, the author must:
 
@@ -381,11 +385,11 @@ For the default value in this stack, see `templates/README_TEMPLATE.md`.
 
 **Rule:** Any created or added `.md` file in the project **must** pass validation and editing according to this standard.
 
-| Action | When | Responsible |
-|--------|------|-------------|
-| Creating new .md | Before commit | Author |
-| Adding external .md | Before merge | Reviewer |
-| Copying .md from another project | Before commit | Author |
+| Action                           | When          | Responsible |
+| -------------------------------- | ------------- | ----------- |
+| Creating new .md                 | Before commit | Author      |
+| Adding external .md              | Before merge  | Reviewer    |
+| Copying .md from another project | Before commit | Author      |
 
 **Process:**
 
@@ -420,10 +424,10 @@ See **STD-DOC-003 section 11.1** for the complete list of unconditionally allowe
 
 ### 11.2. Exceptions by Agreement
 
-| Situation | Requirement |
-|-----------|-------------|
+| Situation             | Requirement                                 |
+| --------------------- | ------------------------------------------- |
 | External requirements | Email campaigns - coordinate with marketing |
-| Localization | Languages with non-ASCII characters |
+| Localization          | Languages with non-ASCII characters         |
 
 ---
 
@@ -478,12 +482,12 @@ This section shows a small README snippet that violates multiple rules, then the
 ````markdown
 # Project Alpha [SPARKLES]
 
-> Fast, reliable, and *beautiful* API client.
+> Fast, reliable, and _beautiful_ API client.
 
 ## Status
 
-* [v] Build passing
-* [x] Docs outdated
+- [v] Build passing
+- [x] Docs outdated
 
 ## Install — Quick Start
 
@@ -494,12 +498,12 @@ npm install alpha
 ## Components
 
 +-------------------+
-|    HTTP Client    |
+| HTTP Client |
 +-------------------+
-          |
-          v
+|
+v
 +-------------------+
-|    Retries        |
+| Retries |
 +-------------------+
 
 ## Notes
@@ -507,12 +511,14 @@ npm install alpha
 Copyright (c) 2026 Alpha Corp. All rights reserved.
 
 ---
+
 Built with: Next.js 16 + TypeScript + Tailwind CSS
 ````
 
 Violations:
 
 <!-- eslint-disable-next-line unicode-policy/emoji-in-md -->
+
 1. Emoji `✨` (ref) in H1 — §3
 2. `*` instead of `-` for unordered list (line 5) — §5.2
 3. `[v]` and `[x]` Unicode icons instead of `[OK]` / `[FAIL]` — §4.4
@@ -557,6 +563,7 @@ npm install alpha
 Copyright (c) 2026 Alpha Corp. All rights reserved.
 
 ---
+
 Built with: Next.js 16 + TypeScript + Tailwind CSS
 ````
 
@@ -600,23 +607,24 @@ Both exit 0. The PR is now mergeable.
 
 ## 14. Version History
 
-| Version | Date | Changes |
-|--------|------|---------|
-| 1.0 | 2024-Q4 | Initial version |
-| 2.0 | 2025-01 | Level [W], link to Unicode Policy v2.0, ASCII diagram whitelist, [W] blocking policy, linting stages, code formatting rules |
-| 2.1 | 2025-01 | Allowed typographics in plain text; fixed `-` as sole list marker; clarified SVG via `![]()`; limited Stack Signature to root files; added `text/bash` fallback rule; removed redundant `v` from CI regex |
-| 2.1.1 | 2025-01 | Updated references from Unicode Policy v2.0 to v2.1; CI config updated with eslint-plugin-markdown; Unicode symbols in section 4.4 replaced with text descriptions (document must not violate its own standard); code blocks without language replaced with `text` |
-| 2.1.2 | 2025-01 | Introduced `(ref)` exception for reference tables: characters in identifier cells allowed with marker; restored specific Unicode characters in prohibited/allowed element tables; `Incorrect` examples again show the actual prohibited character |
-| 2.1.3 | 2025-01 | Extended `(ref)` exception to code blocks: identifier characters allowed with marker in code blocks too; `Incorrect` examples in code blocks now contain the actual symbol with `(ref)`; restored Unicode symbols in EN table 4.4 |
-| 2.1.4 | 2025-01 | Stack signature parameterized: format `Built with: <technologies>`, specific stack is project responsibility; default value moved to README_TEMPLATE |
-| 2.1.5 | 2025-05 | Added section 7 "Badges" with shields.io rules, placeholders for projects without CI; section numbering shifted |
-| 2.2.0 | 2026-05 | Deduplication: removed 7 elements duplicated with STD-DOC-003 (prohibited elements table, allowed characters, ASCII diagram whitelist, icon library, brand logos, sanitization regex, unconditionally allowed). Replaced with cross-references. Kept .md-specific rules: typographics scope, (ref) exception, SVG insertion, badges, stack signature, formatting rules, text tags |
-| 2.3.0 | 2026-06 | Added comprehensive section 10 "ESLint Integration for Markdown Linting": flat config and legacy config examples, custom rules (code-block-language, no-emoji-in-md), nested standards mapping table, application stages with lint-staged and CI workflows, inline disable policy, manual run commands, troubleshooting; updated pre-merge checklist with ESLint items; updated references from STD-DOC-003 v2.1 to v2.2 |
-| 2.3.1 | 2026-06 | Updated in-body references from STD-DOC-003 v2.2 to v2.3 (header Related field, §3, §4.1, §4.2, §6.1, §6.2, §6.3, §7.2, §7.4, §11.1, §13 checklist). Added §14A Known Issues documenting MD-001 through MD-003. |
-| 2.3.2 | 2026-06 | §8 Stack Signature scope clarified: applies only to application repository README/CHANGELOG, NOT to standards/rules/skills/templates/meta-repos. Removed cargo-cult `Built with:` footer from this file (it is a governance doc, not an application). Project-wide cleanup documented in worklog task stack-signature-cleanup-2026-06-18. |
-| 2.4.0 | 2026-06 | Resolved MD-001 and MD-003 (both open since v2.3.1). **MD-001:** footer updated from `(level [W])` to `(level [C])`; §9.1 rewritten from `[W] non-blocking` to `[C] blocking` policy with `eslint-disable` + Tech Lead approval workflow and a per-project legacy soft-opt-out clause; §10.5.2 description updated from `[W] Warning` to `[C] Critical`; §10.8 rule 3 collapsed (no more `[W]`-in-docs carve-out); §10.9 comment updated; §13 checklist updated. ARCH-002 §1 Group B table and STD-META-001 §4.4 registry entry updated to `[C]`. **MD-003:** §10.3 flat config and §10.4 legacy config — `no-emoji-in-md` and `no-unicode-graphics-in-md` changed from `"warn"` to `"error"` (aligned with §10.6 mapping table). **New content:** §0 TL;DR with 5 must-not / 5 must / where-to-look table; §3 `(ref)` scope clarified with concrete appropriate / not-appropriate examples; §12.4 full before/after README example with 7 violations and verification commands. **Header:** Version 2.3.2 -> 2.4.0. |
-| 2.4.1 | 2026-06 | Added `scripts/check-md.sh` — bash wrapper that runs three layers in sequence: (1) bash-only static checks for the most common §5 violations (bare code fences, `*`/`+` list markers, closing `#` on headings, multiple H1, table pseudographics outside code blocks); (2) ESLint via `eslint-plugin-markdown` if installed; (3) `lint-md.js` if present at repo root. Layers 2 and 3 degrade gracefully to `[skip]` when their tools are missing, so the script works in fresh clones without `npm install`. §0 TL;DR updated to recommend `bash scripts/check-md.sh [path]` as the primary entry point. §10.7 Application Stages table extended with a new "Manual check" row. §13 Pre-merge checklist extended with a `check-md.sh` bullet. §14A new MD-004 issue documents the 5 pre-existing bare-fence violations the script discovered in `README.md` and `docs/verify-id-graph-spec-v1.0.md`. |
-| 2.4.3 | 2026-06-21 | W11 soft-cap cleanup. Extracted §10 ESLint Integration (354 lines, reference implementation detail) to companion file `DOC-002-eslint-integration.md`. Companion is NOT parser-bound — inherits parent ID via "Companion to: STD-DOC-002" header line, same pattern as DESIGN-001-profile-terminal-dashboard. §10 replaced with stub (quick summary + pointer to companion). File size: 1012 -> 658 lines. W11 soft warning cleared. Section numbers (§10.1 through §10.7) preserved verbatim; external refs resolve to companion. §0 TL;DR entry point note updated to mention §10 lives in companion. No new IDs. No graph edge changes. |
+| Version | Date       | Changes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| ------- | ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1.0     | 2024-Q4    | Initial version                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| 2.0     | 2025-01    | Level [W], link to Unicode Policy v2.0, ASCII diagram whitelist, [W] blocking policy, linting stages, code formatting rules                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| 2.1     | 2025-01    | Allowed typographics in plain text; fixed `-` as sole list marker; clarified SVG via `![]()`; limited Stack Signature to root files; added `text/bash` fallback rule; removed redundant `v` from CI regex                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| 2.1.1   | 2025-01    | Updated references from Unicode Policy v2.0 to v2.1; CI config updated with eslint-plugin-markdown; Unicode symbols in section 4.4 replaced with text descriptions (document must not violate its own standard); code blocks without language replaced with `text`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| 2.1.2   | 2025-01    | Introduced `(ref)` exception for reference tables: characters in identifier cells allowed with marker; restored specific Unicode characters in prohibited/allowed element tables; `Incorrect` examples again show the actual prohibited character                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| 2.1.3   | 2025-01    | Extended `(ref)` exception to code blocks: identifier characters allowed with marker in code blocks too; `Incorrect` examples in code blocks now contain the actual symbol with `(ref)`; restored Unicode symbols in EN table 4.4                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| 2.1.4   | 2025-01    | Stack signature parameterized: format `Built with: <technologies>`, specific stack is project responsibility; default value moved to README_TEMPLATE                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| 2.1.5   | 2025-05    | Added section 7 "Badges" with shields.io rules, placeholders for projects without CI; section numbering shifted                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| 2.2.0   | 2026-05    | Deduplication: removed 7 elements duplicated with STD-DOC-003 (prohibited elements table, allowed characters, ASCII diagram whitelist, icon library, brand logos, sanitization regex, unconditionally allowed). Replaced with cross-references. Kept .md-specific rules: typographics scope, (ref) exception, SVG insertion, badges, stack signature, formatting rules, text tags                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| 2.3.0   | 2026-06    | Added comprehensive section 10 "ESLint Integration for Markdown Linting": flat config and legacy config examples, custom rules (code-block-language, no-emoji-in-md), nested standards mapping table, application stages with lint-staged and CI workflows, inline disable policy, manual run commands, troubleshooting; updated pre-merge checklist with ESLint items; updated references from STD-DOC-003 v2.1 to v2.2                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| 2.3.1   | 2026-06    | Updated in-body references from STD-DOC-003 v2.2 to v2.3 (header Related field, §3, §4.1, §4.2, §6.1, §6.2, §6.3, §7.2, §7.4, §11.1, §13 checklist). Added §14A Known Issues documenting MD-001 through MD-003.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| 2.3.2   | 2026-06    | §8 Stack Signature scope clarified: applies only to application repository README/CHANGELOG, NOT to standards/rules/skills/templates/meta-repos. Removed cargo-cult `Built with:` footer from this file (it is a governance doc, not an application). Project-wide cleanup documented in worklog task stack-signature-cleanup-2026-06-18.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| 2.4.0   | 2026-06    | Resolved MD-001 and MD-003 (both open since v2.3.1). **MD-001:** footer updated from `(level [W])` to `(level [C])`; §9.1 rewritten from `[W] non-blocking` to `[C] blocking` policy with `eslint-disable` + Tech Lead approval workflow and a per-project legacy soft-opt-out clause; §10.5.2 description updated from `[W] Warning` to `[C] Critical`; §10.8 rule 3 collapsed (no more `[W]`-in-docs carve-out); §10.9 comment updated; §13 checklist updated. ARCH-002 §1 Group B table and STD-META-001 §4.4 registry entry updated to `[C]`. **MD-003:** §10.3 flat config and §10.4 legacy config — `no-emoji-in-md` and `no-unicode-graphics-in-md` changed from `"warn"` to `"error"` (aligned with §10.6 mapping table). **New content:** §0 TL;DR with 5 must-not / 5 must / where-to-look table; §3 `(ref)` scope clarified with concrete appropriate / not-appropriate examples; §12.4 full before/after README example with 7 violations and verification commands. **Header:** Version 2.3.2 -> 2.4.0. |
+| 2.4.1   | 2026-06    | Added `scripts/check-md.sh` — bash wrapper that runs three layers in sequence: (1) bash-only static checks for the most common §5 violations (bare code fences, `*`/`+` list markers, closing `#` on headings, multiple H1, table pseudographics outside code blocks); (2) ESLint via `eslint-plugin-markdown` if installed; (3) `lint-md.js` if present at repo root. Layers 2 and 3 degrade gracefully to `[skip]` when their tools are missing, so the script works in fresh clones without `npm install`. §0 TL;DR updated to recommend `bash scripts/check-md.sh [path]` as the primary entry point. §10.7 Application Stages table extended with a new "Manual check" row. §13 Pre-merge checklist extended with a `check-md.sh` bullet. §14A new MD-004 issue documents the 5 pre-existing bare-fence violations the script discovered in `README.md` and `docs/verify-id-graph-spec-v1.0.md`.                                                                                                                |
+| 2.4.3   | 2026-06-21 | W11 soft-cap cleanup. Extracted §10 ESLint Integration (354 lines, reference implementation detail) to companion file `DOC-002-eslint-integration.md`. Companion is NOT parser-bound — inherits parent ID via "Companion to: STD-DOC-002" header line, same pattern as DESIGN-001-profile-terminal-dashboard. §10 replaced with stub (quick summary + pointer to companion). File size: 1012 -> 658 lines. W11 soft warning cleared. Section numbers (§10.1 through §10.7) preserved verbatim; external refs resolve to companion. §0 TL;DR entry point note updated to mention §10 lives in companion. No new IDs. No graph edge changes.                                                                                                                                                                                                                                                                                                                                                                           |
+| 2.4.4   | 2026-07-03 | §8 Stack Signature scope reversal: skills (`skills/*/SKILL.md`) removed from the "does NOT apply to" list. Skills are now permitted to include a Stack Signature to indicate their runtime stack. Rationale: user decision to keep Stack Signature footer in skills (see worklog stack-signature-cleanup-2026-06-18). §8 "test" paragraph updated to note skill permission.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 
 ---
 
@@ -629,6 +637,7 @@ This section documents discovered inconsistencies, missing content, and proposed
 **Problem:** The header of this file (§0) said `Level: **[C] Critical** (unified with STD-DOC-003 — same rule = same severity)`. The footer said `Document complies with MARKDOWN_STANDARD v2.3 (level [W])`. The registry in `META-001-standard-id-system.md` (STD-META-001 §4.4) listed this standard as `[W] Warning`. `ARCH-002-implementation-order.md` §1 Group B table also listed it as `[W]`. There was a three-way contradiction: header said `[C]`, footer/registry/IMPLEMENTATION_ORDER said `[W]`.
 
 **Resolution (v2.4.0):** Adopted `[C] Critical` as the authoritative level. Rationale: (1) the "same rule = same severity" principle from STD-DOC-003 §3 is the v2.3.0 design intent; (2) the ESLint configuration in §10 already treated Markdown emoji/Unicode graphics as `error` (not `warn`) per §10.6; (3) `lint-md.js` defaults to `--level=C`. All four locations now say `[C]`:
+
 1. This file's header (§0) — unchanged, was already `[C]`.
 2. This file's footer — updated to `(level [C])`.
 3. STD-META-001 §4.4 registry entry — updated to `[C]`.
@@ -664,14 +673,14 @@ These violations pre-date the wrapper script — they were not introduced by v2.
 
 ---
 
-**Document complies with MARKDOWN_STANDARD v2.4.1 (level [C])**
+**Document complies with MARKDOWN_STANDARD v2.4.4 (level [C])**
 
 ---
 
 ## 15. Cross-References
 
-| Standard | Relationship |
-|----------|-------------|
-| STD-DOC-003 | Unicode Policy: single source of truth for character rules. Sections 4-5 (prohibited elements), 6.1 (allowed characters), 6.2 (ASCII diagrams), 7 (icons/logos), 8.2-8.3 (sanitization regex), 10.1 (ESLint custom rule unicode-policy.js), 11.1 (unconditionally allowed) are cross-referenced from this standard |
-| STD-META-001 | Standard ID System: registry entry for STD-DOC-002 must be kept in sync with the version in this document's header. See MD-001 for the level-ambiguity issue that requires registry attention. |
-| STD-META-002 | Language Policy: documentation in English |
+| Standard     | Relationship                                                                                                                                                                                                                                                                                                       |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| STD-DOC-003  | Unicode Policy: single source of truth for character rules. Sections 4-5 (prohibited elements), 6.1 (allowed characters), 6.2 (ASCII diagrams), 7 (icons/logos), 8.2-8.3 (sanitization regex), 10.1 (ESLint custom rule unicode-policy.js), 11.1 (unconditionally allowed) are cross-referenced from this standard |
+| STD-META-001 | Standard ID System: registry entry for STD-DOC-002 must be kept in sync with the version in this document's header. See MD-001 for the level-ambiguity issue that requires registry attention.                                                                                                                     |
+| STD-META-002 | Language Policy: documentation in English                                                                                                                                                                                                                                                                          |
