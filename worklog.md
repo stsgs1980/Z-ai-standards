@@ -108,3 +108,23 @@ node scripts/verify-id-graph.js --compare=_snapshots/id-graph-baseline.json  # O
 - `f5a5bd4` fix: graph-deps.sh .cjs extension for ESM compatibility
 
 ---
+
+### 2026-07-03 01:11
+**Entry:** Add lint-markdown workflow (close last consistency gap)
+
+**Context:** Audit found standards was the only repo without CI markdown lint, despite having identical eslint.config.js (unicode-policy for `**/*.md`) as guard/skills. Decision: close gap for completeness ("rules apply to the rule-maker").
+
+**Work completed:**
+
+1. **Synced local `main` to `origin/main`** (was 7 commits behind, detached HEAD)
+2. **Restored package.json/package-lock.json** (side-effect of local npm install had added spurious dependency)
+3. **Created `.github/workflows/lint-markdown.yml`** (same template as guard/skills, `checkout@v5`)
+4. **Committed `3f2bfce`**: `ci: add lint-markdown workflow (STD-DOC-002, STD-DOC-003)`
+5. **CI run #28631805161 = GREEN** (13s)
+
+**Verification:**
+```bash
+npx eslint . --max-warnings=0    # 0 errors, 0 warnings (preventive, no active violations)
+```
+
+---
