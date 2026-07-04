@@ -120,8 +120,15 @@ function compareSnapshot(currentJSON, baselinePath, currentVersion) {
   }
 
   // Compare warnings (as sorted set of {code/id, message/detail})
-  const normWarn = (w) =>
-    (w.code || w.id) + "::" + (w.message || w.detail || w.msg || JSON.stringify(w));
+  // Normalize paths: strip absolute prefix, keep only relative path from repo root
+  const normalizePath = (str) =>
+    str
+      .replace(/\\/g, "/") // Windows backslashes to forward slashes
+      .replace(/.*?(standards|guard|skills)\//, "$1/"); // Strip absolute prefix up to repo dir
+  const normWarn = (w) => {
+    const msg = w.message || w.detail || w.msg || JSON.stringify(w);
+    return (w.code || w.id) + "::" + normalizePath(msg);
+  };
   const curWarn = (currentJSON.warnings || []).map(normWarn).sort();
   const baseWarn = (baseline.warnings || []).map(normWarn).sort();
   if (JSON.stringify(curWarn) !== JSON.stringify(baseWarn)) {
