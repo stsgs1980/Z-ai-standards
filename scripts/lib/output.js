@@ -22,7 +22,7 @@
  * ============================================================================
  */
 
-'use strict';
+"use strict";
 
 /**
  * emitHumanReadable(results, version, effectiveDate, opts) → string
@@ -42,21 +42,25 @@ function emitHumanReadable(results, version, effectiveDate, opts) {
   out.push(`IDs extracted: ${results.stats.ids_extracted}`);
   out.push(`Related: edges: ${results.stats.related_edges}`);
   out.push(`Aligned_with: edges: ${results.stats.aligned_with_edges}`);
-  out.push('');
+  out.push("");
 
   // Per-prefix counts
   const counts = {};
   for (const decl of results.declarations) {
     counts[decl.prefix] = (counts[decl.prefix] || 0) + 1;
   }
-  out.push(`By prefix: ${Object.entries(counts).map(([k, v]) => `${k}=${v}`).join(', ')}`);
-  out.push('');
+  out.push(
+    `By prefix: ${Object.entries(counts)
+      .map(([k, v]) => `${k}=${v}`)
+      .join(", ")}`,
+  );
+  out.push("");
 
-  out.push('--- Hard Checks (G01-G15) ---');
+  out.push("--- Hard Checks (G01-G15) ---");
   for (const [id, check] of Object.entries(results.checks)) {
-    const mark = check.status === 'PASS' ? '[PASS]' : '[FAIL]';
+    const mark = check.status === "PASS" ? "[PASS]" : "[FAIL]";
     out.push(`  ${mark} ${id}: ${check.description}`);
-    if (check.status === 'FAIL') {
+    if (check.status === "FAIL") {
       for (const d of check.details.slice(0, 5)) {
         out.push(`      ${d}`);
       }
@@ -65,11 +69,11 @@ function emitHumanReadable(results, version, effectiveDate, opts) {
       }
     }
   }
-  out.push('');
+  out.push("");
 
-  out.push('--- Soft Warnings (W01-W15) ---');
+  out.push("--- Soft Warnings (W01-W15) ---");
   if (results.warnings.length === 0) {
-    out.push('  (none)');
+    out.push("  (none)");
   } else {
     const byId = {};
     for (const w of results.warnings) {
@@ -86,14 +90,16 @@ function emitHumanReadable(results, version, effectiveDate, opts) {
       }
     }
   }
-  out.push('');
+  out.push("");
 
   // Summary
-  const hardPass = Object.values(results.checks).filter(c => c.status === 'PASS').length;
-  const hardFail = Object.values(results.checks).filter(c => c.status === 'FAIL').length;
-  out.push(`Result: ${hardFail === 0 ? 'PASS' : 'FAIL'} (${hardPass}/${hardPass + hardFail} hard checks, ${results.warnings.length} warnings)`);
+  const hardPass = Object.values(results.checks).filter((c) => c.status === "PASS").length;
+  const hardFail = Object.values(results.checks).filter((c) => c.status === "FAIL").length;
+  out.push(
+    `Result: ${hardFail === 0 ? "PASS" : "FAIL"} (${hardPass}/${hardPass + hardFail} hard checks, ${results.warnings.length} warnings)`,
+  );
 
-  return out.join('\n');
+  return out.join("\n");
 }
 
 /**
@@ -111,8 +117,8 @@ function emitHumanReadable(results, version, effectiveDate, opts) {
  * without parsing the version field separately.
  */
 function emitJSON(results, version, effectiveDate, opts) {
-  const hardPass = Object.values(results.checks).filter(c => c.status === 'PASS').length;
-  const hardFail = Object.values(results.checks).filter(c => c.status === 'FAIL').length;
+  const hardPass = Object.values(results.checks).filter((c) => c.status === "PASS").length;
+  const hardFail = Object.values(results.checks).filter((c) => c.status === "FAIL").length;
 
   const payload = {
     version,
@@ -140,8 +146,21 @@ function emitJSON(results, version, effectiveDate, opts) {
     payload.snapshot_meta = {
       script_version: version,
       created_at: new Date().toISOString(),
-      purpose: 'Baseline for verify-id-graph.js --compare. Do not hand-edit; regenerate with --update-snapshot.',
+      purpose:
+        "Baseline for verify-id-graph.js --compare. Do not hand-edit; regenerate with --update-snapshot.",
     };
+    // Normalize paths in warnings to ensure cross-platform compatibility
+    const normalizePaths = (str) =>
+      str.replace(/\(in\s+([^)]+)\)/g, (match, filePath) => {
+        const normalized = filePath
+          .replace(/\\/g, "/") // Windows backslashes to forward slashes
+          .replace(/.*?(Z-ai-platform|Z-ai-standards|Z-ai-guard|Z-ai-skills)\//, "");
+        return `(in ${normalized})`;
+      });
+    payload.warnings = payload.warnings.map((w) => ({
+      ...w,
+      detail: normalizePaths(w.detail || ""),
+    }));
   }
   return JSON.stringify(payload, null, 2);
 }
