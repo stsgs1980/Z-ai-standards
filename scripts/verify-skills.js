@@ -18,7 +18,7 @@
  *
  *     S01 (V11a)  SKILL.md exists in every skills/skills/{name}/ folder
  *     S02 (V11b)  frontmatter `name` matches folder name
- *     S03 (V11c)  name matches folder name (_sts suffix is optional)
+ *     S03 (V11c)  name matches folder name (covered by S02)
  *     S04 (V13a)  YAML frontmatter parses
  *     S05 (V13b)  Required fields present: name, description, version
  *     S06 (V05a)  id field format: ZAI-<DOMAIN>-<NNN>  [SOFT, if id present]
@@ -327,9 +327,7 @@ function runChecks(platformRoot, opts) {
 
   // ----------------------------------------------------------------
   // S02 (V11b): frontmatter `name` matches folder name EXACTLY
-  //   - Per STD-SKILL-001 §3.3 + §9.1: name must match folder name
-  //     exactly. The _sts suffix is optional — if present in folder,
-  //     it must be in name too; if absent, name must not have it.
+  //   - Per STD-SKILL-001 §3.3 + §9.1: name must match folder name exactly.
   // ----------------------------------------------------------------
   (function S02() {
     const offenders = [];
@@ -356,22 +354,12 @@ function runChecks(platformRoot, opts) {
   })();
 
   // ----------------------------------------------------------------
-  // S03 (V11c): name matches folder name (including _sts suffix if present)
-  //   - _sts suffix is OPTIONAL per STD-SKILL-001 §9
-  //   - If folder ends with _sts, name must also end with _sts
-  //   - If folder doesn't end with _sts, name must not end with _sts
-  //   - S02 already checks name == folder; this is a reminder check
+  // S03 (V11c): name matches folder name — covered by S02 (V11b)
+  //   This check is a no-op.
   // ----------------------------------------------------------------
   (function S03() {
-    // S03 is now a no-op — S02 (V11b) already enforces name == folder name
-    // _sts suffix is optional, so no separate enforcement needed
-    check(
-      "S03",
-      "name matches folder name (including _sts if present)",
-      true,
-      "covered by S02 (V11b) — _sts suffix is optional",
-      false,
-    );
+    // Covered by S02 (V11b) — no separate enforcement needed
+    check("S03", "name matches folder name (covered by S02)", true, "covered by S02 (V11b)", false);
   })();
 
   // ----------------------------------------------------------------
@@ -762,7 +750,7 @@ Checks (S01-S10, mapping to STD-SKILL-001 §10.1 V11a-V14b + META-001 §4.18.1 V
 
   SOFT-default, HARD with --strict — see rationale below:
   S02 (V11b)  frontmatter name matches folder name
-  S03 (V11c)  name matches folder name (_sts suffix is optional)
+  S03 (V11c)  name matches folder name (covered by S02)
     S05 (V13b)  Required fields: name, description, version
 
   SOFT (reported, do not fail even with --strict):
