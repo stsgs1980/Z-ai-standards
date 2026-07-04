@@ -517,9 +517,7 @@ Built with: Next.js 16 + TypeScript + Tailwind CSS
 
 Violations:
 
-<!-- eslint-disable-next-line unicode-policy/emoji-in-md -->
-
-1. Emoji `✨` (ref) in H1 — §3
+1. Emoji `[STAR]` (ref) in H1 — §3
 2. `*` instead of `-` for unordered list (line 5) — §5.2
 3. `[v]` and `[x]` Unicode icons instead of `[OK]` / `[FAIL]` — §4.4
 4. Em dash `—` (ref) in H2 heading "Install — Quick Start" — §3
