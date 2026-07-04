@@ -18,8 +18,7 @@
  *
  *     S01 (V11a)  SKILL.md exists in every skills/skills/{name}/ folder
  *     S02 (V11b)  frontmatter `name` matches folder name
- *                 (without _sts suffix for STS skills)
- *     S03 (V11c)  STS skills have _sts suffix in folder name
+ *     S03 (V11c)  name matches folder name (_sts suffix is optional)
  *     S04 (V13a)  YAML frontmatter parses
  *     S05 (V13b)  Required fields present: name, description, version
  *     S06 (V05a)  id field format: ZAI-<DOMAIN>-<NNN>  [SOFT, if id present]
@@ -329,13 +328,8 @@ function runChecks(platformRoot, opts) {
   // ----------------------------------------------------------------
   // S02 (V11b): frontmatter `name` matches folder name EXACTLY
   //   - Per STD-SKILL-001 §3.3 + §9.1: name must match folder name
-  //     exactly, INCLUDING the `_sts` suffix for STS skills.
-  //   - Earlier verifier v1.0.0 stripped the _sts suffix before
-  //     comparing (per ambiguous §4.1 wording "without _sts suffix"),
-  //     which contradicted §9.1 ("name: <skill-name>_sts matches
-  //     folder") and §11 checklist. STD-SKILL-001 §3.3 was clarified
-  //     in the same patch that fixes this verifier — see Change
-  //     History of that standard.
+  //     exactly. The _sts suffix is optional — if present in folder,
+  //     it must be in name too; if absent, name must not have it.
   // ----------------------------------------------------------------
   (function S02() {
     const offenders = [];
@@ -352,7 +346,7 @@ function runChecks(platformRoot, opts) {
     }
     check(
       "S02",
-      "frontmatter `name` matches folder name exactly (incl. `_sts` suffix for STS skills; per §3.3 + §9.1)",
+      "frontmatter `name` matches folder name exactly (per §3.3 + §9.1)",
       offenders.length === 0,
       offenders.length === 0
         ? `all ${skillDirs.length} skills match`
@@ -362,32 +356,21 @@ function runChecks(platformRoot, opts) {
   })();
 
   // ----------------------------------------------------------------
-  // S03 (V11c): STS skills have _sts suffix in folder name
-  //   Detection: skill has `author:` field in frontmatter (per §3.2
-  //   extended format) OR folder name ends with _sts
+  // S03 (V11c): name matches folder name (including _sts suffix if present)
+  //   - _sts suffix is OPTIONAL per STD-SKILL-001 §9
+  //   - If folder ends with _sts, name must also end with _sts
+  //   - If folder doesn't end with _sts, name must not end with _sts
+  //   - S02 already checks name == folder; this is a reminder check
   // ----------------------------------------------------------------
   (function S03() {
-    const offenders = [];
-    for (const s of skillDirs) {
-      const skillMdPath = path.join(s.path, "SKILL.md");
-      if (!fs.existsSync(skillMdPath)) continue;
-      const content = fs.readFileSync(skillMdPath, "utf8");
-      const fm = parseFrontmatter(content);
-      if (!fm.parsed) continue;
-      const hasAuthor = !!fm.data.author;
-      const hasStsSuffix = s.name.endsWith("_sts");
-      if (hasAuthor && !hasStsSuffix) {
-        offenders.push(`${s.name}: has author="${fm.data.author}" but folder lacks _sts suffix`);
-      }
-    }
+    // S03 is now a no-op — S02 (V11b) already enforces name == folder name
+    // _sts suffix is optional, so no separate enforcement needed
     check(
       "S03",
-      "STS skills (with author field) have _sts suffix in folder name",
-      offenders.length === 0,
-      offenders.length === 0
-        ? "no STS skills missing _sts suffix"
-        : `${offenders.length} offender(s): ${offenders.join("; ")}`,
-      s025Soft,
+      "name matches folder name (including _sts if present)",
+      true,
+      "covered by S02 (V11b) — _sts suffix is optional",
+      false,
     );
   })();
 
@@ -778,8 +761,8 @@ Checks (S01-S10, mapping to STD-SKILL-001 §10.1 V11a-V14b + META-001 §4.18.1 V
     S10c (V12)  README.md ≤ 400 lines (META-001 §4.18.1, README.md row)
 
   SOFT-default, HARD with --strict — see rationale below:
-    S02 (V11b)  frontmatter name matches folder name (without _sts suffix)
-    S03 (V11c)  STS skills (with author field) have _sts suffix
+  S02 (V11b)  frontmatter name matches folder name
+  S03 (V11c)  name matches folder name (_sts suffix is optional)
     S05 (V13b)  Required fields: name, description, version
 
   SOFT (reported, do not fail even with --strict):
@@ -802,7 +785,7 @@ S10 rationale (added 2026-06-21, O-017 Phase D2; S10c added 2026-06-22):
 Soft-default rationale for S02/S03/S05:
   STD-SKILL-001 §10.1 marks these as HARD, but as of v1.0.0 the skills
   corpus has 15 pre-existing violations (8 name/folder mismatches, 3
-  missing _sts suffixes, 4 missing version fields). Until these are
+  missing version fields). Until these are
   remediated, the verifier runs them as SOFT by default so CI does
   not block on pre-existing technical debt. Once remediated, flip
   --strict on in CI to make them HARD.

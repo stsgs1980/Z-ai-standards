@@ -110,22 +110,22 @@ license: MIT
 > ID: ZAI-<DOMAIN>-<NUMBER>
 > Version: <Version>
 > Last Updated: <YYYY-MM>
-> Related: <comma-separated IDs>          (optional)
-> Aligned_with: <comma-separated IDs>     (optional)
+> Related: <comma-separated IDs> (optional)
+> Aligned_with: <comma-separated IDs> (optional)
 ```
 
 ### 3.3. Field Requirements
 
-| Field | Required | Notes |
-|---|---|---|
-| `name` | **yes** | Must match folder name exactly (including `_sts` suffix for STS skills); see §9.1 |
-| `description` | **yes** | Primary trigger; full sentences with context |
-| `version` | **yes** | SemVer |
-| `id` | **conditional** | Required if skill is referenced by ID externally; format: `ZAI-<DOMAIN>-<NNN>` (see §4) |
-| `compatibility` | **conditional** | Required if `id` present; one of `both` / `sandbox` / `ade` (see §6) |
-| `trigger` | recommended | Comma-separated keywords, 5–15 items max |
-| `author` | optional | Signature of skill creator; if set to `STS`, the skill follows §9 STS conventions (folder must have `_sts` suffix per V11c) |
-| `license` | optional | Default: MIT |
+| Field           | Required        | Notes                                                                                   |
+| --------------- | --------------- | --------------------------------------------------------------------------------------- |
+| `name`          | **yes**         | Must match folder name exactly (see §9.1)                                               |
+| `description`   | **yes**         | Primary trigger; full sentences with context                                            |
+| `version`       | **yes**         | SemVer                                                                                  |
+| `id`            | **conditional** | Required if skill is referenced by ID externally; format: `ZAI-<DOMAIN>-<NNN>` (see §4) |
+| `compatibility` | **conditional** | Required if `id` present; one of `both` / `sandbox` / `ade` (see §6)                    |
+| `trigger`       | recommended     | Comma-separated keywords, 5–15 items max                                                |
+| `author`        | optional        | Signature of skill creator; if set to `STS`, the skill follows §9 conventions           |
+| `license`       | optional        | Default: MIT                                                                            |
 
 ### 3.4. Frontmatter vs Blockquote Consistency
 
@@ -133,6 +133,7 @@ The blockquote header (below H1) is a redundant copy of selected
 frontmatter fields for human readability. The frontmatter is canonical.
 
 `verify-standards.js` V14 verifies that (when both are present):
+
 - `id` in frontmatter matches `ID:` in blockquote
 - `version` in frontmatter matches `Version:` in blockquote
 
@@ -153,47 +154,47 @@ If a skill has no `Related:` or `Aligned_with:`, omit the line entirely.
 ZAI-<DOMAIN>-<NUMBER>
 ```
 
-| Component | Description |
-|---|---|
-| `ZAI` | Prefix (Z.ai Agent Toolkit — preserved for backward compatibility with 24 existing IDs) |
-| `<DOMAIN>` | Skill domain (2–6 letters, see §4.3) |
-| `<NUMBER>` | Sequential number in domain (3 digits, 001–999) |
+| Component  | Description                                                                             |
+| ---------- | --------------------------------------------------------------------------------------- |
+| `ZAI`      | Prefix (Z.ai Agent Toolkit — preserved for backward compatibility with 24 existing IDs) |
+| `<DOMAIN>` | Skill domain (2–6 letters, see §4.3)                                                    |
+| `<NUMBER>` | Sequential number in domain (3 digits, 001–999)                                         |
 
 ### 4.2. When an ID Is Required
 
 A skill **MUST** have an `id` field when ANY of the following is true:
 
-| Condition | Example |
-|---|---|
-| Referenced by ID from a standard | `STD-FE-001 §7: "Use ZAI-ARCH-002 for threshold enforcement"` |
-| Referenced by ID from a rule | `RULE-MONOLITH-012 enforced_by: ZAI-ARCH-002` |
-| Referenced by ID from another skill's `Related:` | `> Related: ZAI-ARCH-002, ZAI-QA-001` |
-| Listed in `MIGRATIONS.md` (deprecated/superseded) | `ZAI-MEM-001 -> ZAI-MEM-101 (renamed)` |
-| Published to a shared registry | Multi-author repos, public skill packs |
+| Condition                                         | Example                                                       |
+| ------------------------------------------------- | ------------------------------------------------------------- |
+| Referenced by ID from a standard                  | `STD-FE-001 §7: "Use ZAI-ARCH-002 for threshold enforcement"` |
+| Referenced by ID from a rule                      | `RULE-MONOLITH-012 enforced_by: ZAI-ARCH-002`                 |
+| Referenced by ID from another skill's `Related:`  | `> Related: ZAI-ARCH-002, ZAI-QA-001`                         |
+| Listed in `MIGRATIONS.md` (deprecated/superseded) | `ZAI-MEM-001 -> ZAI-MEM-101 (renamed)`                        |
+| Published to a shared registry                    | Multi-author repos, public skill packs                        |
 
 A skill **MAY** have an `id` field when none of the above apply, but
-it is not required. Most personal `_sts` skills do not need an ID.
+it is not required. Most personal skills do not need an ID.
 
 ### 4.3. Reserved Skill Domains (Reference)
 
 Domains are **only** relevant if the skill has an ID. New domains
 require a PR to this section.
 
-| Domain | Expansion | Scope |
-|---|---|---|
-| `MEM` | Memory | Store, query, delete, export memory records |
-| `FS` | File System | Folder indexing, file scanning |
-| `SESSION` | Session Management | Session logging, context consolidation, handoff |
-| `DEV` | Development | Project clone, commit workflow, DB schema design |
-| `ARCH` | Architecture | Mermaid diagrams, C4, anti-monolith |
-| `QA` | Quality Assurance | Test planning |
-| `REQ` | Requirements | Clarity, PRD generation |
-| `META` | Meta-skills | skill-creator, ID system (legacy) |
-| `STS` | User-Created (signature) | Skills created by user STS |
-| `SDK` | SDK Integration | z-ai-web-dev-sdk wrapper skills |
-| `DOC` | Documentation | PDF, DOCX, PPT generation |
-| `HEALTH` | Health Monitoring | API health, retry, fallback |
-| `CHART` | Charts | Visualization skills |
+| Domain    | Expansion                | Scope                                            |
+| --------- | ------------------------ | ------------------------------------------------ |
+| `MEM`     | Memory                   | Store, query, delete, export memory records      |
+| `FS`      | File System              | Folder indexing, file scanning                   |
+| `SESSION` | Session Management       | Session logging, context consolidation, handoff  |
+| `DEV`     | Development              | Project clone, commit workflow, DB schema design |
+| `ARCH`    | Architecture             | Mermaid diagrams, C4, anti-monolith              |
+| `QA`      | Quality Assurance        | Test planning                                    |
+| `REQ`     | Requirements             | Clarity, PRD generation                          |
+| `META`    | Meta-skills              | skill-creator, ID system (legacy)                |
+| `STS`     | User-Created (signature) | Skills created by user STS                       |
+| `SDK`     | SDK Integration          | z-ai-web-dev-sdk wrapper skills                  |
+| `DOC`     | Documentation            | PDF, DOCX, PPT generation                        |
+| `HEALTH`  | Health Monitoring        | API health, retry, fallback                      |
+| `CHART`   | Charts                   | Visualization skills                             |
 
 > **Note.** `GIT` and `SEC` are NOT skill domains — these are sandbox
 > built-in categories and never receive `ZAI-` IDs.
@@ -217,16 +218,16 @@ These skills do **not** receive `ZAI-` prefix IDs because:
 
 ### 5.1. Categories
 
-| Category | Examples |
-|---|---|
-| Documents | `docx`, `pdf`, `xlsx`, `pptx` |
-| Visualization | `charts` |
-| Images | `image-generation`, `image-edit`, `image-search`, `image-understand` |
-| AI Media | `ASR`, `TTS`, `VLM`, `LLM` |
-| Development | `fullstack-dev`, `react-dev` |
-| Browser | `agent-browser` |
-| Web | `web-search`, `web-reader` |
-| Meta | `skill-creator` |
+| Category      | Examples                                                             |
+| ------------- | -------------------------------------------------------------------- |
+| Documents     | `docx`, `pdf`, `xlsx`, `pptx`                                        |
+| Visualization | `charts`                                                             |
+| Images        | `image-generation`, `image-edit`, `image-search`, `image-understand` |
+| AI Media      | `ASR`, `TTS`, `VLM`, `LLM`                                           |
+| Development   | `fullstack-dev`, `react-dev`                                         |
+| Browser       | `agent-browser`                                                      |
+| Web           | `web-search`, `web-reader`                                           |
+| Meta          | `skill-creator`                                                      |
 
 The canonical list is whatever exists in `/home/z/my-project/skills/`
 at runtime. This section is informational only.
@@ -244,11 +245,11 @@ These are out of scope for this standard.
 The `compatibility` field declares which runtimes can execute the skill.
 It is **required when `id` is present** and optional otherwise.
 
-| Value | Meaning |
-|---|---|
-| `both` | Works in both Z.ai Sandbox and ZCode Desktop ADE |
+| Value     | Meaning                                                                           |
+| --------- | --------------------------------------------------------------------------------- |
+| `both`    | Works in both Z.ai Sandbox and ZCode Desktop ADE                                  |
 | `sandbox` | Only works in Z.ai Sandbox (requires z-ai-web-dev-sdk or sandbox-specific tokens) |
-| `ade` | Only works in ZCode ADE |
+| `ade`     | Only works in ZCode ADE                                                           |
 
 ### 6.1. How to Determine Compatibility
 
@@ -261,11 +262,11 @@ It is **required when `id` is present** and optional otherwise.
 
 See STD-META-001 §6.4 for the full DAG rules. Summary:
 
-| Source | May depend on |
-|---|---|
-| `both` | `both` only |
+| Source    | May depend on     |
+| --------- | ----------------- |
+| `both`    | `both` only       |
 | `sandbox` | `both`, `sandbox` |
-| `ade` | `both`, `ade` |
+| `ade`     | `both`, `ade`     |
 
 A `both` skill that depends on a `sandbox` skill is a hard error (G14)
 because the dependency would break in ZCode ADE.
@@ -296,11 +297,13 @@ trigger: monolith, refactor, file too long, decompose, split component
 ### 7.3. Trigger Quality Rules
 
 **GOOD triggers:**
+
 - Specific: `cache miss` not just `cache`
 - Action-oriented: `optimize code` not just `optimize`
 - Domain terms: `Big O`, `SIMD`, `lock-free`
 
 **BAD triggers:**
+
 - Too generic: `code`, `help`, `fix`
 - Ambiguous: `fast` (fast what?)
 - Overlapping: `git` (too broad, use `git checkpoint`, `git safe`)
@@ -311,11 +314,11 @@ Hot commands are short phrases user can type to quickly invoke a skill.
 They are documented in the skill's "When to Use" section (not in
 frontmatter).
 
-| Skill | Hot Commands |
-|---|---|
-| prompt-engineering_sts | "score prompt", "improve prompt", "prompt review" |
-| performance-code-generator_sts | "optimize", "performance", "slow code" |
-| sync-toolkit_sts | "sync toolkit", "obnovit" (Russian) |
+| Skill                      | Hot Commands                                      |
+| -------------------------- | ------------------------------------------------- |
+| prompt-engineering         | "score prompt", "improve prompt", "prompt review" |
+| performance-code-generator | "optimize", "performance", "slow code"            |
+| sync-toolkit               | "sync toolkit", "obnovit" (Russian)               |
 
 ---
 
@@ -323,11 +326,11 @@ frontmatter).
 
 Skills load in three levels:
 
-| Level | What loads | When |
-|---|---|---|
-| 1. Metadata | `name` + `description` from frontmatter | Always (loaded by sandbox at startup) |
-| 2. SKILL.md body | Full markdown instructions | When skill triggers |
-| 3. Bundled resources | `references/`, `scripts/`, `assets/` | When SKILL.md body references them |
+| Level                | What loads                              | When                                  |
+| -------------------- | --------------------------------------- | ------------------------------------- |
+| 1. Metadata          | `name` + `description` from frontmatter | Always (loaded by sandbox at startup) |
+| 2. SKILL.md body     | Full markdown instructions              | When skill triggers                   |
+| 3. Bundled resources | `references/`, `scripts/`, `assets/`    | When SKILL.md body references them    |
 
 ### 8.1. File Structure
 
@@ -352,38 +355,31 @@ skill-name/
 
 ---
 
-## 9. STS User-Created Skills
+## 9. User-Created Skills
 
-Skills created by user STS use `_sts` suffix in folder name.
+Skills created by users follow the same format as built-in skills.
 The `ZAI-STS-XXX` ID is **optional** — required only if the skill is
 referenced externally.
 
 ### 9.1. Naming Convention
 
-| Type | Format | Example |
-|---|---|---|
-| Folder name | `<skill-name>_sts` | `prompt-engineering_sts` |
-| ID (if any) | `ZAI-STS-XXX` | `ZAI-STS-001` |
-| `name` in frontmatter | `<skill-name>_sts` (matches folder) | `prompt-engineering_sts` |
+| Type                  | Format                         | Example              |
+| --------------------- | ------------------------------ | -------------------- |
+| Folder name           | `<skill-name>`                 | `prompt-engineering` |
+| ID (if any)           | `ZAI-STS-XXX`                  | `ZAI-STS-001`        |
+| `name` in frontmatter | Must match folder name exactly | `prompt-engineering` |
 
-### 9.2. Why STS Suffix
-
-- STS is the user's signature/initials
-- Instantly identifies the skill as user-created
-- Prevents conflicts with Z.ai built-in skills and other users
-- Easy to find own skills in the list
-
-### 9.3. Creating STS Skills
+### 9.2. Creating User Skills
 
 Use `skill-creator` (sandbox built-in or ZAI-META-002 toolkit variant)
 to create new skills. The skill-creator will:
+
 1. Guide through skill creation
 2. Optionally assign ID (`ZAI-STS-XXX` for user skills that need one)
-3. Add `_sts` suffix to folder name
-4. If ID assigned, update Appendix A registry via PR
+3. If ID assigned, update Appendix A registry via PR
 
-> Other users should use their own signature (e.g. `ZAI-JDO-XXX` for
-> user JDO). The `STS` domain is reserved for user STS specifically.
+> The `STS` domain is reserved for user STS specifically. Other users
+> should use their own signature (e.g. `ZAI-JDO-XXX` for user JDO).
 
 ---
 
@@ -391,30 +387,30 @@ to create new skills. The skill-creator will:
 
 ### 10.1. Per-Skill Checks (in Z-ai-skills CI)
 
-| Check | Tool | Check ID | Strictness |
-|---|---|---|---|
-| `SKILL.md` exists | `verify-standards.js` | V11a | **HARD** (all skills) |
-| `name` matches folder name | `verify-standards.js` | V11b | **HARD** (all skills) |
-| STS skills have `_sts` suffix in folder name | `verify-skills.js` | V11c | **HARD** (folder-name-driven: applies to folders ending `_sts`, and to skills whose `author` field equals `STS`) |
-| YAML frontmatter parses | `verify-standards.js` | V13a | **HARD** (all skills) |
-| Required fields (`name`, `description`, `version`) | `verify-standards.js` | V13b | **HARD** (all skills) |
-| `id` format valid (if present) | `verify-standards.js` | V05a | **SOFT** (only if `id` field exists) |
-| `id` exists in registry (if present) | `verify-standards.js` | V05b | **SOFT** (only if `id` field exists) |
-| `compatibility` valid enum (if present) | `verify-standards.js` | V13c | **SOFT** (only if `compatibility` field exists) |
-| Frontmatter `id` matches blockquote `ID:` | `verify-standards.js` | V14a | **SOFT** (only if both present) |
-| Frontmatter `version` matches blockquote `Version:` | `verify-standards.js` | V14b | **HARD** (always) |
-| `SKILL.md` <= 800 lines (META-001 §4.18.1, SKILL.md row) | `verify-skills.js` | V12a | **HARD** (all skills) — added 2026-06-21 (O-017 Phase D2) |
-| `CONTRACT.md` <= 500 lines (META-001 §4.18.1, CONTRACT.md row) | `verify-skills.js` | V12b | **HARD** (all skills with CONTRACT.md) — added 2026-06-21 (O-017 Phase D2) |
-| `README.md` <= 400 lines (META-001 §4.18.1, README.md row) | `verify-skills.js` | V12c | **HARD** (all skills with README.md) — added 2026-06-22 (S10c activation, gepetto+react-dev remediated) |
+| Check                                                          | Tool                  | Check ID | Strictness                                                                                              |
+| -------------------------------------------------------------- | --------------------- | -------- | ------------------------------------------------------------------------------------------------------- |
+| `SKILL.md` exists                                              | `verify-standards.js` | V11a     | **HARD** (all skills)                                                                                   |
+| `name` matches folder name                                     | `verify-standards.js` | V11b     | **HARD** (all skills)                                                                                   |
+| `name` matches folder name (V11b)                              | `verify-skills.js`    | V11b     | **HARD** (all skills)                                                                                   |
+| YAML frontmatter parses                                        | `verify-standards.js` | V13a     | **HARD** (all skills)                                                                                   |
+| Required fields (`name`, `description`, `version`)             | `verify-standards.js` | V13b     | **HARD** (all skills)                                                                                   |
+| `id` format valid (if present)                                 | `verify-standards.js` | V05a     | **SOFT** (only if `id` field exists)                                                                    |
+| `id` exists in registry (if present)                           | `verify-standards.js` | V05b     | **SOFT** (only if `id` field exists)                                                                    |
+| `compatibility` valid enum (if present)                        | `verify-standards.js` | V13c     | **SOFT** (only if `compatibility` field exists)                                                         |
+| Frontmatter `id` matches blockquote `ID:`                      | `verify-standards.js` | V14a     | **SOFT** (only if both present)                                                                         |
+| Frontmatter `version` matches blockquote `Version:`            | `verify-standards.js` | V14b     | **HARD** (always)                                                                                       |
+| `SKILL.md` <= 800 lines (META-001 §4.18.1, SKILL.md row)       | `verify-skills.js`    | V12a     | **HARD** (all skills) — added 2026-06-21 (O-017 Phase D2)                                               |
+| `CONTRACT.md` <= 500 lines (META-001 §4.18.1, CONTRACT.md row) | `verify-skills.js`    | V12b     | **HARD** (all skills with CONTRACT.md) — added 2026-06-21 (O-017 Phase D2)                              |
+| `README.md` <= 400 lines (META-001 §4.18.1, README.md row)     | `verify-skills.js`    | V12c     | **HARD** (all skills with README.md) — added 2026-06-22 (S10c activation, gepetto+react-dev remediated) |
 
 ### 10.2. Cross-Repo Checks (in Z-ai-platform CI)
 
-| Check | Tool | Check ID | Strictness |
-|---|---|---|---|
-| All `ZAI-` IDs unique across repos | `verify-id-graph.js` | G01 | **SOFT** (only skills with IDs) |
-| All `Related:` references resolve | `verify-id-graph.js` | G02 | **HARD** (when edges exist) |
-| Compatibility DAG valid | `verify-id-graph.js` | G14 | **SOFT** (only skills with `compatibility`) |
-| No `SKILL -> PROC` edges | `verify-id-graph.js` | G10 | **HARD** (when edges exist) |
+| Check                              | Tool                 | Check ID | Strictness                                  |
+| ---------------------------------- | -------------------- | -------- | ------------------------------------------- |
+| All `ZAI-` IDs unique across repos | `verify-id-graph.js` | G01      | **SOFT** (only skills with IDs)             |
+| All `Related:` references resolve  | `verify-id-graph.js` | G02      | **HARD** (when edges exist)                 |
+| Compatibility DAG valid            | `verify-id-graph.js` | G14      | **SOFT** (only skills with `compatibility`) |
+| No `SKILL -> PROC` edges           | `verify-id-graph.js` | G10      | **HARD** (when edges exist)                 |
 
 ### 10.3. What This Means in Practice
 
@@ -517,7 +513,7 @@ the next Z-ai-skills release is cut.
 ### 11.1. When to Assign
 
 Assign an ID only when the skill meets §4.2 criteria. Most personal
-`_sts` skills do not need an ID.
+personal skills do not need an ID.
 
 ### 11.2. Process
 
@@ -541,22 +537,22 @@ Assign an ID only when the skill meets §4.2 criteria. Most personal
 
 ### 12.1. What Moves
 
-| Content | From | To |
-|---|---|---|
-| ID format spec | ZAI-META-001 §2 | This standard §4.1 |
-| Domain list | ZAI-META-001 §3 (9 domains) | This standard §4.3 (13 domains, reconciled) |
-| Header format | ZAI-META-001 §6 | This standard §3 |
-| STS convention | ZAI-META-001 §7 | This standard §9 |
-| ID registry | ZAI-META-001 §5 | This standard Appendix A |
-| Sandbox skills list | ZAI-META-001 §4 | This standard §5 |
+| Content             | From                        | To                                          |
+| ------------------- | --------------------------- | ------------------------------------------- |
+| ID format spec      | ZAI-META-001 §2             | This standard §4.1                          |
+| Domain list         | ZAI-META-001 §3 (9 domains) | This standard §4.3 (13 domains, reconciled) |
+| Header format       | ZAI-META-001 §6             | This standard §3                            |
+| STS convention      | ZAI-META-001 §7             | This standard §9                            |
+| ID registry         | ZAI-META-001 §5             | This standard Appendix A                    |
+| Sandbox skills list | ZAI-META-001 §4             | This standard §5                            |
 
 ### 12.2. What Stays
 
-| Content | Stays in | Why |
-|---|---|---|
-| `skill-id-system` folder | `Z-ai-skills/skills/skill-id-system/` | Trigger phrases need to resolve during migration window |
-| `ZAI-META-001` ID | Registry (Appendix A) | Marked `SUPERSEDED` |
-| `skill-creator` (ZAI-META-002) | `Z-ai-skills/skills/skill-creator/` | Updated to read this standard |
+| Content                        | Stays in                              | Why                                                     |
+| ------------------------------ | ------------------------------------- | ------------------------------------------------------- |
+| `skill-id-system` folder       | `Z-ai-skills/skills/skill-id-system/` | Trigger phrases need to resolve during migration window |
+| `ZAI-META-001` ID              | Registry (Appendix A)                 | Marked `SUPERSEDED`                                     |
+| `skill-creator` (ZAI-META-002) | `Z-ai-skills/skills/skill-creator/`   | Updated to read this standard                           |
 
 ### 12.3. ZAI-META-001 After Migration
 
@@ -612,39 +608,41 @@ eval-driven skill improvement. The toolkit version (ZAI-META-002)
 focuses on ID-assignment workflow. They can coexist or be merged;
 see Appendix C for the hybrid pattern.
 
-### Q: Why is `phi-layout` (sandbox) different from `phi-layout_sts` (ZAI-STS-005)?
+### Q: Why is `phi-layout` (sandbox) different from `phi-layout` (ZAI-STS-005)?
 
 A: They are toolkit twins. The sandbox version is maintained by the
-sandbox runtime; the STS version is the user's customized variant.
+sandbox runtime; the user version is the customized variant.
 They may declare an `Aligned_with:` edge if drift becomes a problem.
 
 ---
 
 ## 14. Cross-References
 
-| ID | Relationship |
-|---|---|
-| STD-META-001 v2.0 | Defines the umbrella ID system; this standard specializes it for skills |
-| STD-DOC-002 | Markdown standard — `SKILL.md` body must conform |
-| RULE-MONOLITH-012 | 250-line file ceiling applies to `SKILL.md` |
-| ZAI-META-001 | SUPERSEDED by this standard; thin pointer remains during migration window |
-| ZAI-META-002 (skill-creator) | Reads this standard; toolkit variant of sandbox skill-creator |
-| ZAI-ARCH-002 (anti-monolith) | Aligned_with STD-FE-001, STD-DESIGN-001 |
+| ID                           | Relationship                                                              |
+| ---------------------------- | ------------------------------------------------------------------------- |
+| STD-META-001 v2.0            | Defines the umbrella ID system; this standard specializes it for skills   |
+| STD-DOC-002                  | Markdown standard — `SKILL.md` body must conform                          |
+| RULE-MONOLITH-012            | 250-line file ceiling applies to `SKILL.md`                               |
+| ZAI-META-001                 | SUPERSEDED by this standard; thin pointer remains during migration window |
+| ZAI-META-002 (skill-creator) | Reads this standard; toolkit variant of sandbox skill-creator             |
+| ZAI-ARCH-002 (anti-monolith) | Aligned_with STD-FE-001, STD-DESIGN-001                                   |
 
 ---
 
 ## 15. Checklist Before Publishing New Skill
 
 **Minimum (no ID):**
-- [ ] Skill folder created at `Z-ai-skills/skills/<name>/` (or `<name>_sts/` for STS)
+
+- [ ] Skill folder created at `Z-ai-skills/skills/<name>/`
 - [ ] `SKILL.md` present with YAML frontmatter + H1 + blockquote per §3.1
 - [ ] Required fields present: `name`, `description`, `version`
-- [ ] `name` matches folder name (with `_sts` suffix for STS)
+- [ ] `name` matches folder name
 - [ ] Frontmatter `version` matches blockquote `Version:` (V14b)
 - [ ] `SKILL.md` under 800 lines (META-001 §4.18.1, SKILL.md row; soft warn at 400)
 - [ ] `verify-standards.js` V11/V13/V14b pass
 
 **Extended (with ID):**
+
 - [ ] All minimum checks pass
 - [ ] `id` conforms to §4.1 format and exists in Appendix A registry
 - [ ] `compatibility` is one of `both` / `sandbox` / `ade`
@@ -662,72 +660,72 @@ They may declare an `Aligned_with:` edge if drift becomes a problem.
 
 ### A.1. Memory (MEM)
 
-| ID | Skill Name | Version | Compatibility | Status |
-|---|---|---|---|---|
-| ZAI-MEM-001 | memory-store | 1.0 | both | ACTIVE |
-| ZAI-MEM-002 | memory-query | 1.0 | both | ACTIVE |
-| ZAI-MEM-003 | memory-delete | 1.0 | both | ACTIVE |
-| ZAI-MEM-004 | memory-export | 1.0 | both | ACTIVE |
+| ID          | Skill Name    | Version | Compatibility | Status |
+| ----------- | ------------- | ------- | ------------- | ------ |
+| ZAI-MEM-001 | memory-store  | 1.0     | both          | ACTIVE |
+| ZAI-MEM-002 | memory-query  | 1.0     | both          | ACTIVE |
+| ZAI-MEM-003 | memory-delete | 1.0     | both          | ACTIVE |
+| ZAI-MEM-004 | memory-export | 1.0     | both          | ACTIVE |
 
 ### A.2. File System (FS)
 
-| ID | Skill Name | Version | Compatibility | Status |
-|---|---|---|---|---|
-| ZAI-FS-001 | folder-indexer | 1.0 | both | ACTIVE |
+| ID         | Skill Name     | Version | Compatibility | Status |
+| ---------- | -------------- | ------- | ------------- | ------ |
+| ZAI-FS-001 | folder-indexer | 1.0     | both          | ACTIVE |
 
 ### A.3. Session Management (SESSION)
 
-| ID | Skill Name | Version | Compatibility | Status |
-|---|---|---|---|---|
-| ZAI-SESSION-001 | session-log | 1.1 | both | ACTIVE |
-| ZAI-SESSION-002 | context-consolidation | 1.0 | both | ACTIVE |
-| ZAI-SESSION-003 | session-experience | 4.0 | both | ACTIVE |
+| ID              | Skill Name            | Version | Compatibility | Status |
+| --------------- | --------------------- | ------- | ------------- | ------ |
+| ZAI-SESSION-001 | session-log           | 1.1     | both          | ACTIVE |
+| ZAI-SESSION-002 | context-consolidation | 1.0     | both          | ACTIVE |
+| ZAI-SESSION-003 | session-experience    | 4.0     | both          | ACTIVE |
 
 ### A.4. Development (DEV)
 
-| ID | Skill Name | Version | Compatibility | Status |
-|---|---|---|---|---|
-| ZAI-DEV-001 | project-clone | 1.0 | sandbox | ACTIVE |
-| ZAI-DEV-002 | commit-work | 1.0 | both | ACTIVE |
-| ZAI-DEV-003 | database-schema-designer | 1.0 | both | ACTIVE |
+| ID          | Skill Name               | Version | Compatibility | Status |
+| ----------- | ------------------------ | ------- | ------------- | ------ |
+| ZAI-DEV-001 | project-clone            | 1.0     | sandbox       | ACTIVE |
+| ZAI-DEV-002 | commit-work              | 1.0     | both          | ACTIVE |
+| ZAI-DEV-003 | database-schema-designer | 1.0     | both          | ACTIVE |
 
 ### A.5. Architecture (ARCH)
 
-| ID | Skill Name | Version | Compatibility | Status |
-|---|---|---|---|---|
-| ZAI-ARCH-001 | mermaid-diagrams | 1.0 | both | ACTIVE |
-| ZAI-ARCH-002 | anti-monolith | 1.0 | both | ACTIVE |
+| ID           | Skill Name       | Version | Compatibility | Status |
+| ------------ | ---------------- | ------- | ------------- | ------ |
+| ZAI-ARCH-001 | mermaid-diagrams | 1.0     | both          | ACTIVE |
+| ZAI-ARCH-002 | anti-monolith    | 1.0     | both          | ACTIVE |
 
 ### A.6. Quality Assurance (QA)
 
-| ID | Skill Name | Version | Compatibility | Status |
-|---|---|---|---|---|
-| ZAI-QA-001 | qa-test-planner | 1.0 | both | ACTIVE |
+| ID         | Skill Name      | Version | Compatibility | Status |
+| ---------- | --------------- | ------- | ------------- | ------ |
+| ZAI-QA-001 | qa-test-planner | 1.0     | both          | ACTIVE |
 
 ### A.7. Requirements (REQ)
 
-| ID | Skill Name | Version | Compatibility | Status |
-|---|---|---|---|---|
-| ZAI-REQ-001 | requirements-clarity | 1.0 | both | ACTIVE |
+| ID          | Skill Name           | Version | Compatibility | Status |
+| ----------- | -------------------- | ------- | ------------- | ------ |
+| ZAI-REQ-001 | requirements-clarity | 1.0     | both          | ACTIVE |
 
 ### A.8. Meta-skills (META)
 
-| ID | Skill Name | Version | Compatibility | Status |
-|---|---|---|---|---|
-| ZAI-META-001 | skill-id-system | 1.0 | both | SUPERSEDED (by this standard) |
-| ZAI-META-002 | skill-creator | 1.1 | both | ACTIVE |
+| ID           | Skill Name      | Version | Compatibility | Status                        |
+| ------------ | --------------- | ------- | ------------- | ----------------------------- |
+| ZAI-META-001 | skill-id-system | 1.0     | both          | SUPERSEDED (by this standard) |
+| ZAI-META-002 | skill-creator   | 1.1     | both          | ACTIVE                        |
 
 ### A.9. User-Created (STS)
 
-| ID | Skill Name | Version | Compatibility | Status |
-|---|---|---|---|---|
-| ZAI-STS-001 | prompt-engineering_sts | 1.1 | both | ACTIVE |
-| ZAI-STS-002 | sync-toolkit_sts | 1.0 | sandbox | ACTIVE |
-| ZAI-STS-003 | performance-code-generator_sts | 1.0 | sandbox | ACTIVE |
-| ZAI-STS-004 | frontend-styling-expert_sts | 1.0 | both | ACTIVE |
-| ZAI-STS-005 | phi-layout_sts | 3.0 | both | ACTIVE |
-| ZAI-STS-006 | zai-ui-composer_sts | 1.1.2 | sandbox | ACTIVE |
-| ZAI-STS-007 | workflow-discipline_sts | 2.0 | both | ACTIVE |
+| ID          | Skill Name                 | Version | Compatibility | Status |
+| ----------- | -------------------------- | ------- | ------------- | ------ |
+| ZAI-STS-001 | prompt-engineering         | 1.1     | both          | ACTIVE |
+| ZAI-STS-002 | sync-toolkit               | 1.0     | sandbox       | ACTIVE |
+| ZAI-STS-003 | performance-code-generator | 1.0     | sandbox       | ACTIVE |
+| ZAI-STS-004 | frontend-styling-expert    | 1.0     | both          | ACTIVE |
+| ZAI-STS-005 | phi-layout                 | 3.0     | both          | ACTIVE |
+| ZAI-STS-006 | zai-ui-composer            | 1.1.2   | sandbox       | ACTIVE |
+| ZAI-STS-007 | workflow-discipline        | 2.0     | both          | ACTIVE |
 
 ---
 
@@ -756,6 +754,7 @@ trigger: skill id, create skill, new skill
 **This skill's content has moved to STD-SKILL-001** in Z-ai-standards.
 
 For the authoritative skill format and identification specification, see:
+
 - `Z-ai-standards/standards/STD-SKILL-001-v1.0.md`
 - Or run: `cat $STANDARDS_ROOT/standards/STD-SKILL-001-v1.0.md`
 
@@ -777,6 +776,7 @@ The toolkit variant `ZAI-META-002` (~370 lines) focuses on
 trigger quality rules.
 
 A **hybrid** skill-creator can be built by:
+
 1. Starting from the Z.ai official version (preserve Apache 2.0 license)
 2. Adding a section "ID Assignment (Optional)" that references this standard
 3. Adding trigger quality rules from §7.3 of this standard
@@ -787,4 +787,4 @@ reference for maintainers who want a single unified skill-creator.
 
 ---
 
-*End of STD-SKILL-001 v1.1 — APPROVED 2026-06-17, §10A added 2026-06-18, §8.2/§10.1 V12a/V12b added 2026-06-21 (O-017 Phase D2: tiered hard caps for SKILL.md <=800 + CONTRACT.md <=500, replacing deferred PROC-LINECOUNT-004 with active `verify-skills.js` S10 enforcement), §8.2/§10.1 V12c added 2026-06-22 (S10c: README.md <=400, gepetto+react-dev remediated, HARD from day 1).*
+_End of STD-SKILL-001 v1.1 — APPROVED 2026-06-17, §10A added 2026-06-18, §8.2/§10.1 V12a/V12b added 2026-06-21 (O-017 Phase D2: tiered hard caps for SKILL.md <=800 + CONTRACT.md <=500, replacing deferred PROC-LINECOUNT-004 with active `verify-skills.js` S10 enforcement), §8.2/§10.1 V12c added 2026-06-22 (S10c: README.md <=400, gepetto+react-dev remediated, HARD from day 1)._

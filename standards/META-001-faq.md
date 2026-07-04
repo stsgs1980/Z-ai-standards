@@ -40,7 +40,7 @@ be; only the literal prefix differs.
 
 A: **No.** IDs are optional for skills. A skill needs an ID only when
 referenced by ID from a standard, rule, procedure, tool, or another
-skill's `Related:` field. Most personal `_sts` skills do not need an ID.
+skill's `Related:` field. Most personal skills do not need an ID.
 The runtime sandbox matches skills by `name:` field in frontmatter, not
 by ID. See STD-SKILL-001 §4.2 for the full criteria.
 
@@ -103,4 +103,3 @@ continue to resolve during the migration window." After Z-ai-skills v2.0.0,
 ZAI-META-001 is removed entirely.
 
 ---
-
