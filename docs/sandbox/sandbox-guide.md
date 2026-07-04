@@ -36,6 +36,7 @@ curl https://z-cdn.chatglm.cn/fullstack/init-fullstack_1775040338514.sh | bash
 ```
 
 This command:
+
 - Creates a Next.js 16 project structure
 - Installs base dependencies
 - Configures TypeScript, Tailwind CSS, shadcn/ui
@@ -75,6 +76,43 @@ git clone ... && cd subdir && npm install
 
 > **Why:** The sandbox manages the dev server itself through `.zscripts/dev.sh`. Manual startup breaks the Preview Panel - preview does not update and stops working.
 
+### Sandbox Agent Limitations
+
+The sandbox agent (GLM-5.2, M-5-Turbo) has security restrictions that affect command execution:
+
+| Command Type        | Agent Behavior | Reason                                    |
+| ------------------- | -------------- | ----------------------------------------- |
+| `curl ... \| bash`  | **BLOCKED**    | Executes remote code — high security risk |
+| `bash <(curl ...)`  | **BLOCKED**    | Executes remote code — high security risk |
+| `git clone`         | **ALLOWED**    | Downloads files only — low risk           |
+| `git pull`          | **ALLOWED**    | Downloads files only — low risk           |
+| `bun add`           | **ALLOWED**    | Package installation — expected behavior  |
+| `node scripts/*.js` | **ALLOWED**    | Local script execution — low risk         |
+
+**Workaround for bootstrap.sh:**
+
+If the agent refuses to run bootstrap.sh, use this alternative sequence:
+
+```bash
+# Agent will execute these commands:
+git clone --recurse-submodules https://github.com/stsgs1980/Z-ai-platform.git /home/z/my-project/Z-ai-platform
+cd /home/z/my-project/Z-ai-platform
+git config core.fileMode false
+git submodule foreach --recursive 'git config core.fileMode false'
+# Skills are already integrated — no symlink needed
+```
+
+**Why this works:**
+
+- `git clone` is safe (downloads files only)
+- `git config` is safe (modifies local config)
+- Skills are already present in the repo as inline directories
+
+**For fresh sandbox sessions:**
+The agent will typically find and execute the necessary commands on its own when given a clear goal. Provide context:
+
+> "I need to set up Z-ai-platform in this sandbox. Clone https://github.com/stsgs1980/Z-ai-platform.git with submodules into /home/z/my-project/Z-ai-platform and verify the skills are accessible."
+
 ---
 
 ## 2. Project Structure
@@ -111,13 +149,13 @@ git clone ... && cd subdir && npm install
 
 ### Important Files
 
-| File | Purpose |
-|------|---------|
-| `src/app/page.tsx` | **Single page** - all UI here |
-| `src/components/ui/` | Ready shadcn/ui components |
-| `prisma/schema.prisma` | Database definition |
-| `.zscripts/dev.log` | Dev server logs |
-| `next.config.ts` | Next.js configuration (including `allowedDevOrigins`) |
+| File                   | Purpose                                               |
+| ---------------------- | ----------------------------------------------------- |
+| `src/app/page.tsx`     | **Single page** - all UI here                         |
+| `src/components/ui/`   | Ready shadcn/ui components                            |
+| `prisma/schema.prisma` | Database definition                                   |
+| `.zscripts/dev.log`    | Dev server logs                                       |
+| `next.config.ts`       | Next.js configuration (including `allowedDevOrigins`) |
 
 ---
 
@@ -126,25 +164,24 @@ git clone ... && cd subdir && npm install
 ### [OK] DO
 
 1. **Write code only in `src/app/page.tsx`**
+
    ```tsx
-   'use client'
+   "use client";
 
    export default function Home() {
-     return (
-       <div className="min-h-screen">
-         {/* Your UI */}
-       </div>
-     )
+     return <div className="min-h-screen">{/* Your UI */}</div>;
    }
    ```
 
 2. **Use shadcn/ui components**
+
    ```tsx
-   import { Button } from '@/components/ui/button'
-   import { Card } from '@/components/ui/card'
+   import { Button } from "@/components/ui/button";
+   import { Card } from "@/components/ui/card";
    ```
 
 3. **Create additional components in `src/`**
+
    ```text
    src/
      app/
@@ -155,10 +192,11 @@ git clone ... && cd subdir && npm install
    ```
 
 4. **Use `'use client'` for interactive components**
-   ```tsx
-   'use client'
 
-   import { useState } from 'react'
+   ```tsx
+   "use client";
+
+   import { useState } from "react";
    ```
 
 5. **Check logs on errors**
@@ -169,6 +207,7 @@ git clone ... && cd subdir && npm install
 ### [FAIL] DO NOT
 
 1. **Do NOT start dev server manually**
+
    ```bash
    # [FAIL] DO NOT DO THIS
    npm run dev
@@ -177,6 +216,7 @@ git clone ... && cd subdir && npm install
    ```
 
 2. **Do NOT create other routes**
+
    ```bash
    # [FAIL] DO NOT DO THIS
    src/app/about/page.tsx
@@ -184,6 +224,7 @@ git clone ... && cd subdir && npm install
    ```
 
 3. **Do NOT use external URLs for preview**
+
    ```bash
    # [FAIL] DO NOT DO THIS
    http://localhost:3000
@@ -192,6 +233,7 @@ git clone ... && cd subdir && npm install
    ```
 
 4. **Do NOT create a project from scratch**
+
    ```bash
    # [FAIL] DO NOT DO THIS
    npx create-next-app
@@ -216,18 +258,19 @@ cd /home/z/my-project && bun add <package>
 
 ### Common Dependencies
 
-| Category | Packages |
-|----------|----------|
+| Category    | Packages                                     |
+| ----------- | -------------------------------------------- |
 | 3D Graphics | `three @react-three/fiber @react-three/drei` |
-| Animations | `framer-motion` |
-| Charts | `recharts` |
-| Forms | `react-hook-form @hookform/resolvers zod` |
-| Dates | `date-fns` |
-| Tables | `@tanstack/react-table` |
+| Animations  | `framer-motion`                              |
+| Charts      | `recharts`                                   |
+| Forms       | `react-hook-form @hookform/resolvers zod`    |
+| Dates       | `date-fns`                                   |
+| Tables      | `@tanstack/react-table`                      |
 
 ### Prisma (Database)
 
 1. Define the schema in `prisma/schema.prisma`:
+
    ```prisma
    model User {
      id    Int    @id @default(autoincrement())
@@ -237,15 +280,16 @@ cd /home/z/my-project && bun add <package>
    ```
 
 2. Apply the schema:
+
    ```bash
    bun run db:push
    ```
 
 3. Use in code:
    ```tsx
-   import { db } from '@/lib/db'
+   import { db } from "@/lib/db";
 
-   const users = await db.user.findMany()
+   const users = await db.user.findMany();
    ```
 
 ### If Prisma is Needed After Cloning a Project
@@ -287,11 +331,13 @@ Browser (chatglm.site / IM)
 ### If Preview is Not Working
 
 1. **Check logs:**
+
    ```bash
    cat /home/z/my-project/.zscripts/dev.log | tail -30
    ```
 
 2. **Check linter:**
+
    ```bash
    bun run lint
    ```
@@ -303,23 +349,25 @@ Browser (chatglm.site / IM)
 
 ### Other Reasons Preview is Not Working
 
-| Symptom | Cause | Solution |
-|---------|-------|----------|
-| Page 500 | Compilation error in code | `cat .zscripts/dev.log \| tail -30` - find the error |
-| White screen | Dev server crashed | Reinitialize the sandbox |
-| Preview shows old content | HMR broken | Reinitialize the sandbox |
-| Connection refused | No process on port 3000 | Reinitialize the sandbox |
-| Module not found | Forgot `bun add` | `bun add <package>` |
-| "sandbox is inactive" | Dev server killed on idle | See section 17.1 |
+| Symptom                   | Cause                     | Solution                                             |
+| ------------------------- | ------------------------- | ---------------------------------------------------- |
+| Page 500                  | Compilation error in code | `cat .zscripts/dev.log \| tail -30` - find the error |
+| White screen              | Dev server crashed        | Reinitialize the sandbox                             |
+| Preview shows old content | HMR broken                | Reinitialize the sandbox                             |
+| Connection refused        | No process on port 3000   | Reinitialize the sandbox                             |
+| Module not found          | Forgot `bun add`          | `bun add <package>`                                  |
+| "sandbox is inactive"     | Dev server killed on idle | See section 17.1                                     |
 
 ### For IM Users
 
 If you use Z.ai through IM (Telegram, etc.), the preview link is:
+
 ```text
 https://preview-<container-id>.space-z.ai/
 ```
 
 Where `<container-id>` can be found with:
+
 ```bash
 echo $FC_CONTAINER_ID
 # or
@@ -448,6 +496,7 @@ GET / 500 in 942ms (compile: 852ms, render: 90ms)
 ### Cause
 
 You changed/deleted files that Turbopack (HMR) tried to reload. For example:
+
 - Deleted a component that is imported in `page.tsx`
 - Renamed a folder
 - Added a submodule (deleted and recreated a folder)
@@ -478,13 +527,13 @@ Module not found: Can't resolve '@/lib/guided-tour/src'
 
 ### Causes and Solutions
 
-| Cause | Solution |
-|-------|----------|
-| Package not installed | `cd /home/z/my-project && bun add <package>` |
-| Wrong import path | Check path: file must exist at the specified path |
+| Cause                               | Solution                                                 |
+| ----------------------------------- | -------------------------------------------------------- |
+| Package not installed               | `cd /home/z/my-project && bun add <package>`             |
+| Wrong import path                   | Check path: file must exist at the specified path        |
 | Path ends with a file, not a folder | `@/lib/guided-tour` instead of `@/lib/guided-tour/index` |
-| Deleted file but import remains | Update import in `page.tsx` |
-| Submodule not downloaded | `git submodule update --init --recursive` |
+| Deleted file but import remains     | Update import in `page.tsx`                              |
+| Submodule not downloaded            | `git submodule update --init --recursive`                |
 
 ### How to Verify
 
@@ -591,21 +640,21 @@ git commit -m "chore: pin GuidedTour to <commit-hash>"
 
 ## 12. Common Errors and Solutions
 
-| N | Error | Cause | Solution |
-|---|-------|-------|----------|
-| 1 | `Module not found` | Package not installed | `bun add <package>` |
-| 2 | `EADDRINUSE` | Server already running | `pkill -f next` + reinitialize |
-| 3 | `GET / 500` | Code error | Check `.zscripts/dev.log` |
-| 4 | `GET / 200` but white screen | HMR broken | Reinitialize sandbox |
-| 5 | `Connection refused` | Server not running | Reinitialize sandbox |
-| 6 | Preview doesn't update | Dev server crashed | `cat .zscripts/dev.log` + reinitialize |
-| 7 | Submodule folder empty | Forgot `--recurse-submodules` | `git submodule update --init --recursive` |
-| 8 | TypeScript errors | Wrong types | `bunx tsc --noEmit` |
-| 9 | Imports not working | Wrong path | Use `@/` alias |
-| 10 | Turbopack panic | File deletion while server running | Reinitialize sandbox |
-| 11 | Cannot find module | Package not installed | `cd /home/z/my-project && bun add <package>` |
-| 12 | Port 3000 already in use | Dev server already running | Do NOT start server manually |
-| 13 | "sandbox is inactive" | Dev server killed on idle | See section 17.1 |
+| N   | Error                        | Cause                              | Solution                                     |
+| --- | ---------------------------- | ---------------------------------- | -------------------------------------------- |
+| 1   | `Module not found`           | Package not installed              | `bun add <package>`                          |
+| 2   | `EADDRINUSE`                 | Server already running             | `pkill -f next` + reinitialize               |
+| 3   | `GET / 500`                  | Code error                         | Check `.zscripts/dev.log`                    |
+| 4   | `GET / 200` but white screen | HMR broken                         | Reinitialize sandbox                         |
+| 5   | `Connection refused`         | Server not running                 | Reinitialize sandbox                         |
+| 6   | Preview doesn't update       | Dev server crashed                 | `cat .zscripts/dev.log` + reinitialize       |
+| 7   | Submodule folder empty       | Forgot `--recurse-submodules`      | `git submodule update --init --recursive`    |
+| 8   | TypeScript errors            | Wrong types                        | `bunx tsc --noEmit`                          |
+| 9   | Imports not working          | Wrong path                         | Use `@/` alias                               |
+| 10  | Turbopack panic              | File deletion while server running | Reinitialize sandbox                         |
+| 11  | Cannot find module           | Package not installed              | `cd /home/z/my-project && bun add <package>` |
+| 12  | Port 3000 already in use     | Dev server already running         | Do NOT start server manually                 |
+| 13  | "sandbox is inactive"        | Dev server killed on idle          | See section 17.1                             |
 
 ---
 
@@ -739,14 +788,17 @@ bun run lint
 7. **BROKEN** - don't fix manually, reinitialize
 
 **Main rule:**
+
 > Write code in `/home/z/my-project/src/app/page.tsx`, install dependencies via `bun add`, and the preview will appear on the right by itself.
 
 **Don't overcomplicate:**
+
 - Don't create new projects
 - Don't start the server manually
 - Don't look for external URLs
 
 **Trust the system:**
+
 - Preview Panel works automatically
 - Dev server starts itself
 - Hot reload works out of the box
@@ -787,6 +839,7 @@ When Next.js on port 3000 dies, the proxy on port 81 cannot forward the request 
 **Infrastructure limitation of the sandbox, NOT a code problem.**
 
 The sandbox infrastructure kills idle dev servers to save resources. The process disappears:
+
 - Without a crash log
 - Without OOM (Out of Memory) error
 - Without warning in system logs
@@ -809,6 +862,7 @@ In some configurations, the sandbox automatically restarts the dev server on the
 **Option 3: Preventive measures**
 
 To avoid idle time during long work sessions:
+
 - Periodically refresh the Preview Panel (every 2-3 minutes)
 - Use `watch` or a script that pings the dev server
 
@@ -819,12 +873,12 @@ while true; do curl -s http://localhost:3000 > /dev/null; sleep 60; done &
 
 #### How to Distinguish Infrastructure from Code Problems
 
-| Indicator | Infrastructure | Code Error |
-|-----------|----------------|------------|
-| Preview Panel error | "sandbox is inactive" | 500, 404, compilation error |
-| `.zscripts/dev.log` logs | Empty or cut off | Error with stack trace |
-| Reproducibility | After 2-5 minutes of idle | After code change |
-| Solution | Reinitialize | Fix the code |
+| Indicator                | Infrastructure            | Code Error                  |
+| ------------------------ | ------------------------- | --------------------------- |
+| Preview Panel error      | "sandbox is inactive"     | 500, 404, compilation error |
+| `.zscripts/dev.log` logs | Empty or cut off          | Error with stack trace      |
+| Reproducibility          | After 2-5 minutes of idle | After code change           |
+| Solution                 | Reinitialize              | Fix the code                |
 
 ---
 
@@ -860,14 +914,14 @@ Add `allowedDevOrigins` to `next.config.ts`:
 
 ```typescript
 // next.config.ts
-import type { NextConfig } from 'next';
+import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   // ... other settings
 
   // Allows cross-domain requests to the dev server from the sandbox
   // Without this, the browser on chatglm.site blocks requests to localhost:3000
-  allowedDevOrigins: ['*'],  // Allow all for development
+  allowedDevOrigins: ["*"], // Allow all for development
 
   // Alternative: explicitly specify sandbox domains
   // allowedDevOrigins: [
@@ -881,6 +935,7 @@ export default nextConfig;
 ```
 
 > **Important:**
+>
 > - `["*"]` allows everyone -- **safe only for development** in the sandbox
 > - In production, replace with specific domains
 > - After changing `next.config.ts`, reinitialization is needed:
@@ -907,14 +962,14 @@ cat /home/z/my-project/.zscripts/dev.log | tail -20
 
 ### 17.3. Comparison: Infrastructure vs Code
 
-| Problem | Infrastructure | Code |
-|---------|---------------|------|
-| Dev server dies on idle | [OK] Idle timeout | [FAIL] |
-| "sandbox is inactive" error | [OK] | [FAIL] |
-| CORS 502 without allowedDevOrigins | [OK] Next.js 16 requirement | [FAIL] |
-| HMR crashes after file deletion | [FAIL] | [OK] Turbopack |
-| Module not found | [FAIL] | [OK] |
-| EADDRINUSE | [FAIL] | [OK] (manual start) |
+| Problem                            | Infrastructure              | Code                |
+| ---------------------------------- | --------------------------- | ------------------- |
+| Dev server dies on idle            | [OK] Idle timeout           | [FAIL]              |
+| "sandbox is inactive" error        | [OK]                        | [FAIL]              |
+| CORS 502 without allowedDevOrigins | [OK] Next.js 16 requirement | [FAIL]              |
+| HMR crashes after file deletion    | [FAIL]                      | [OK] Turbopack      |
+| Module not found                   | [FAIL]                      | [OK]                |
+| EADDRINUSE                         | [FAIL]                      | [OK] (manual start) |
 
 ---
 
@@ -929,6 +984,7 @@ If Preview Panel is not working, check in this order:
 - [ ] Does reinitialization help? `curl ... init-fullstack ... | bash`
 
 **Golden rule for infrastructure problems:**
+
 > If the code works on Vercel but doesn't work in the sandbox -- **the problem is in the infrastructure**. Don't waste time debugging code, immediately apply solutions from section 17.
 
 ---
