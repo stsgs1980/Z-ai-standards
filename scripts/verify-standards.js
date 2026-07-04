@@ -740,6 +740,103 @@ function extractSection(content, sectionNumber) {
 })();
 
 // ============================================================================
+// V15 — If project worklog.md exists, it MUST follow WORKLOG_TEMPLATE structure
+//       (enforcement: project files match template invariants)
+//
+// Checks (only if worklog.md exists in repo root):
+//   (a) Has date-stamped entries (## YYYY-MM-DD or [YYYY-MM-DD HH:MM] pattern)
+//   (b) Has status tags ([OK], [FAIL], or [WIP])
+// ============================================================================
+(function V15() {
+  const worklogPath = path.join(REPO_ROOT, "worklog.md");
+  const content = readSafe(worklogPath);
+  if (!content) {
+    check(
+      "V15",
+      "If worklog.md exists, it follows WORKLOG_TEMPLATE structure",
+      true,
+      "worklog.md not found — skipping (not required at standards level)",
+    );
+    return;
+  }
+  const hasTimestamps =
+    /\[\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}\]/.test(content) || /##\s*\d{4}-\d{2}-\d{2}/.test(content);
+  const hasStatusTags = /\[(OK|FAIL|WIP)\]/.test(content);
+
+  check(
+    "V15",
+    "worklog.md follows WORKLOG_TEMPLATE: timestamps + status tags",
+    hasTimestamps && hasStatusTags,
+    `timestamps=${hasTimestamps}, status tags=${hasStatusTags}`,
+  );
+})();
+
+// ============================================================================
+// V16 — If project CHANGELOG.md exists, it MUST follow CHANGELOG_TEMPLATE structure
+//       (enforcement: project files match template invariants)
+//
+// Checks (only if CHANGELOG.md exists in repo root):
+//   (a) Has version headers (## [X.Y.Z] or ## X.Y.Z pattern)
+//   (b) Has at least one Keep a Changelog category (Added, Changed, Fixed, etc.)
+// ============================================================================
+(function V16() {
+  const changelogPath = path.join(REPO_ROOT, "CHANGELOG.md");
+  const content = readSafe(changelogPath);
+  if (!content) {
+    check(
+      "V16",
+      "If CHANGELOG.md exists, it follows CHANGELOG_TEMPLATE structure",
+      true,
+      "CHANGELOG.md not found — skipping (not required at standards level)",
+    );
+    return;
+  }
+  const hasVersionHeaders = /##\s*\[?\d+\.\d+\.\d+/.test(content);
+  const categories = ["Added", "Changed", "Deprecated", "Removed", "Fixed", "Security"];
+  const foundCategories = categories.filter((c) => new RegExp(`###?\\s+${c}`, "i").test(content));
+
+  check(
+    "V16",
+    "CHANGELOG.md follows CHANGELOG_TEMPLATE: version headers + Keep a Changelog categories",
+    hasVersionHeaders && foundCategories.length >= 1,
+    `version headers=${hasVersionHeaders}, categories found=[${foundCategories.join(", ")}]`,
+  );
+})();
+
+// ============================================================================
+// V17 — If project AGENT_RULES.md exists, it MUST follow AGENT_RULES_TEMPLATE structure
+//       (enforcement: project files match template invariants)
+//
+// Checks (only if AGENT_RULES.md exists in repo root):
+//   (a) Has Onboarding Protocol section (session start sequence)
+//   (b) Has Priority Order or conflict resolution section
+//   (c) Has Prohibitions section
+// ============================================================================
+(function V17() {
+  const agentRulesPath = path.join(REPO_ROOT, "AGENT_RULES.md");
+  const content = readSafe(agentRulesPath);
+  if (!content) {
+    check(
+      "V17",
+      "If AGENT_RULES.md exists, it follows AGENT_RULES_TEMPLATE structure",
+      true,
+      "AGENT_RULES.md not found — skipping (not required at standards level)",
+    );
+    return;
+  }
+  const hasOnboarding = /onboarding|session.start|step\s*1/i.test(content);
+  const hasPriorityOrder = /priority|conflict.resolution|when.*disagree/i.test(content);
+  const hasProhibitions = /prohibitions|must.never|never\s+/i.test(content);
+
+  check(
+    "V17",
+    "AGENT_RULES.md follows AGENT_RULES_TEMPLATE: onboarding + priority order + prohibitions",
+    hasOnboarding && hasPriorityOrder && hasProhibitions,
+    `onboarding=${hasOnboarding}, priority order=${hasPriorityOrder}, prohibitions=${hasProhibitions}`,
+  );
+})();
+
+// ============================================================================
 // Output
 // ============================================================================
 function printHuman() {
