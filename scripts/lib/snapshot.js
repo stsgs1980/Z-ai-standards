@@ -33,9 +33,9 @@
  * ============================================================================
  */
 
-'use strict';
+"use strict";
 
-const fs = require('fs');
+const fs = require("fs");
 
 /**
  * Compare the current graph (as emitted by emitJSON) to a baseline file.
@@ -53,7 +53,7 @@ function compareSnapshot(currentJSON, baselinePath, currentVersion) {
   const diffs = [];
   let baseline;
   try {
-    baseline = JSON.parse(fs.readFileSync(baselinePath, 'utf8'));
+    baseline = JSON.parse(fs.readFileSync(baselinePath, "utf8"));
   } catch (e) {
     return {
       ok: false,
@@ -62,23 +62,35 @@ function compareSnapshot(currentJSON, baselinePath, currentVersion) {
   }
 
   // Version mismatch warning (non-fatal)
-  if (baseline.snapshot_meta && baseline.snapshot_meta.script_version &&
-      baseline.snapshot_meta.script_version !== currentVersion) {
-    console.error(`[snapshot] WARNING: baseline was created with version ${baseline.snapshot_meta.script_version}, current is ${currentVersion}. Structure may still match.`);
+  if (
+    baseline.snapshot_meta &&
+    baseline.snapshot_meta.script_version &&
+    baseline.snapshot_meta.script_version !== currentVersion
+  ) {
+    console.error(
+      `[snapshot] WARNING: baseline was created with version ${baseline.snapshot_meta.script_version}, current is ${currentVersion}. Structure may still match.`,
+    );
   }
 
   // Compare summary
   const curSum = currentJSON.summary;
   const baseSum = baseline.summary || {};
-  for (const key of ['ids_extracted', 'related_edges', 'aligned_with_edges', 'hard_pass', 'hard_fail', 'warnings']) {
+  for (const key of [
+    "ids_extracted",
+    "related_edges",
+    "aligned_with_edges",
+    "hard_pass",
+    "hard_fail",
+    "warnings",
+  ]) {
     if (curSum[key] !== baseSum[key]) {
       diffs.push(`[snapshot] summary.${key}: baseline=${baseSum[key]}, current=${curSum[key]}`);
     }
   }
 
   // Compare checks (by id)
-  const curChecks = new Map((currentJSON.checks || []).map(c => [c.id, c]));
-  const baseChecks = new Map((baseline.checks || []).map(c => [c.id, c]));
+  const curChecks = new Map((currentJSON.checks || []).map((c) => [c.id, c]));
+  const baseChecks = new Map((baseline.checks || []).map((c) => [c.id, c]));
   const allCheckIds = new Set([...curChecks.keys(), ...baseChecks.keys()]);
   for (const id of [...allCheckIds].sort()) {
     const cur = curChecks.get(id);
@@ -101,21 +113,28 @@ function compareSnapshot(currentJSON, baselinePath, currentVersion) {
     const curDetails = (cur.details || []).slice().sort();
     const baseDetails = (base.details || []).slice().sort();
     if (JSON.stringify(curDetails) !== JSON.stringify(baseDetails)) {
-      diffs.push(`[snapshot] check ${id}.details differ (baseline ${baseDetails.length} entries, current ${curDetails.length})`);
+      diffs.push(
+        `[snapshot] check ${id}.details differ (baseline ${baseDetails.length} entries, current ${curDetails.length})`,
+      );
     }
   }
 
-  // Compare warnings (as sorted set of {code, message})
-  const normWarn = (w) => (w.code + '::' + (w.message || w.msg || JSON.stringify(w)));
+  // Compare warnings (as sorted set of {code/id, message/detail})
+  const normWarn = (w) =>
+    (w.code || w.id) + "::" + (w.message || w.detail || w.msg || JSON.stringify(w));
   const curWarn = (currentJSON.warnings || []).map(normWarn).sort();
   const baseWarn = (baseline.warnings || []).map(normWarn).sort();
   if (JSON.stringify(curWarn) !== JSON.stringify(baseWarn)) {
     const curSet = new Set(curWarn);
     const baseSet = new Set(baseWarn);
-    const added = curWarn.filter(w => !baseSet.has(w));
-    const removed = baseWarn.filter(w => !curSet.has(w));
-    if (added.length) diffs.push(`[snapshot] warnings ADDED: ${added.length} (first: ${added[0].slice(0, 100)})`);
-    if (removed.length) diffs.push(`[snapshot] warnings REMOVED: ${removed.length} (first: ${removed[0].slice(0, 100)})`);
+    const added = curWarn.filter((w) => !baseSet.has(w));
+    const removed = baseWarn.filter((w) => !curSet.has(w));
+    if (added.length)
+      diffs.push(`[snapshot] warnings ADDED: ${added.length} (first: ${added[0].slice(0, 100)})`);
+    if (removed.length)
+      diffs.push(
+        `[snapshot] warnings REMOVED: ${removed.length} (first: ${removed[0].slice(0, 100)})`,
+      );
   }
 
   return { ok: diffs.length === 0, diff: diffs };
