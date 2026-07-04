@@ -139,7 +139,10 @@ function findFiles(dir, ext) {
 const files = [
   ...findFiles(path.join(platformDir, 'standards', 'standards'), '.md'),
   ...findFiles(path.join(platformDir, 'guard', 'rules'), '.md'),
-  ...findFiles(path.join(platformDir, 'skills', 'skills'), '.md'),
+  ...findFiles(path.join(platformDir, 'guard', 'instructions'), '.md'),
+  ...findFiles(path.join(platformDir, 'guard', 'scripts'), '.sh'),
+  ...findFiles(path.join(platformDir, 'guard', 'tools'), '.sh'),
+  ...findFiles(path.join(platformDir, 'skills'), '.md'),
 ];
 
 // Extract: (id, prefix, layer, title) and edge list
