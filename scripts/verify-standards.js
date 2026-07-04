@@ -51,8 +51,8 @@
  * ============================================================================
  */
 
-const fs = require('fs');
-const path = require('path');
+const fs = require("fs");
+const path = require("path");
 
 // ---------------------------------------------------------------------------
 // Paths — RELATIVE to this script's location so the corpus works:
@@ -67,40 +67,43 @@ const path = require('path');
 //     docs/sandbox/                       (sandbox guides + cookbook)
 //     templates/                          (README_TEMPLATE.md, etc.)
 // ---------------------------------------------------------------------------
-const SCRIPT_DIR    = __dirname;
-const REPO_ROOT     = path.resolve(SCRIPT_DIR, '..');
-const STANDARDS_DIR = path.join(REPO_ROOT, 'standards');
-const DOCS_DIR      = path.join(REPO_ROOT, 'docs', 'sandbox');
-const TEMPLATES_DIR = path.join(REPO_ROOT, 'templates');
+const SCRIPT_DIR = __dirname;
+const REPO_ROOT = path.resolve(SCRIPT_DIR, "..");
+const STANDARDS_DIR = path.join(REPO_ROOT, "standards");
+const DOCS_DIR = path.join(REPO_ROOT, "docs", "sandbox");
+const TEMPLATES_DIR = path.join(REPO_ROOT, "templates");
 
 const PATHS = {
-  STD_ENV_002:    path.join(STANDARDS_DIR, 'ENV-002-zai-integration.md'),
-  STD_FE_001:     path.join(STANDARDS_DIR, 'FE-001-frontend.md'),
-  STD_META_001:   path.join(STANDARDS_DIR, 'META-001-standard-id-system.md'),
-  STD_DESIGN_001: path.join(STANDARDS_DIR, 'DESIGN-001-design-system.md'),
-  STD_DOC_003:    path.join(STANDARDS_DIR, 'DOC-003-unicode-policy.md'),
-  STD_ARCH_001:   path.join(STANDARDS_DIR, 'ARCH-002-implementation-order.md'),
-  HOOKS_GUIDE:    path.join(DOCS_DIR, 'sandbox-hooks-cookbook.md'),
+  STD_ENV_002: path.join(STANDARDS_DIR, "ENV-002-zai-integration.md"),
+  STD_FE_001: path.join(STANDARDS_DIR, "FE-001-frontend.md"),
+  STD_META_001: path.join(STANDARDS_DIR, "META-001-standard-id-system.md"),
+  STD_DESIGN_001: path.join(STANDARDS_DIR, "DESIGN-001-design-system.md"),
+  STD_DOC_003: path.join(STANDARDS_DIR, "DOC-003-unicode-policy.md"),
+  STD_ARCH_001: path.join(STANDARDS_DIR, "ARCH-002-implementation-order.md"),
+  HOOKS_GUIDE: path.join(DOCS_DIR, "sandbox-hooks-cookbook.md"),
   // Split-out parts of the cookbook (split 2026-06-19). Each part is a separate
   // .md file that must pass the same STD-DOC-003 / fence / ratio checks as the
   // INDEX file. Listed here so all 3 verifier phases (V04 unicode, V08 fences,
   // V09 ratio) include them automatically via the `...PATHS.HOOKS_GUIDE_PARTS`
   // spread in each phase's `targets` array.
   HOOKS_GUIDE_PARTS: [
-    path.join(DOCS_DIR, 'hooks-basic.md'),
-    path.join(DOCS_DIR, 'hooks-ai.md'),
-    path.join(DOCS_DIR, 'hooks-routes.md'),
-    path.join(DOCS_DIR, 'hooks-patterns.md'),
+    path.join(DOCS_DIR, "hooks-basic.md"),
+    path.join(DOCS_DIR, "hooks-ai.md"),
+    path.join(DOCS_DIR, "hooks-routes.md"),
+    path.join(DOCS_DIR, "hooks-patterns.md"),
   ],
   // Split-out parts of the commands cheatsheet (split 2026-06-19).
   CHEATSHEET_PARTS: [
-    path.join(DOCS_DIR, 'sandbox-commands-file.md'),
-    path.join(DOCS_DIR, 'sandbox-commands-system.md'),
-    path.join(DOCS_DIR, 'sandbox-commands-dev.md'),
-    path.join(DOCS_DIR, 'sandbox-commands-media.md'),
+    path.join(DOCS_DIR, "sandbox-commands-file.md"),
+    path.join(DOCS_DIR, "sandbox-commands-system.md"),
+    path.join(DOCS_DIR, "sandbox-commands-dev.md"),
+    path.join(DOCS_DIR, "sandbox-commands-media.md"),
   ],
-  SANDBOX_GUIDE:  path.join(DOCS_DIR, 'sandbox-guide.md'),
-  README_TEMPLATE: path.join(TEMPLATES_DIR, 'README_TEMPLATE.md'),
+  SANDBOX_GUIDE: path.join(DOCS_DIR, "sandbox-guide.md"),
+  README_TEMPLATE: path.join(TEMPLATES_DIR, "README_TEMPLATE.md"),
+  WORKLOG_TEMPLATE: path.join(TEMPLATES_DIR, "WORKLOG_TEMPLATE.md"),
+  CHANGELOG_TEMPLATE: path.join(TEMPLATES_DIR, "CHANGELOG_TEMPLATE.md"),
+  AGENT_RULES_TEMPLATE: path.join(TEMPLATES_DIR, "AGENT_RULES_TEMPLATE.md"),
 };
 
 // ---------------------------------------------------------------------------
@@ -113,15 +116,15 @@ const results = {
 };
 
 function check(id, description, condition, detail) {
-  const status = condition ? 'PASS' : 'FAIL';
-  results.checks.push({ id, description, status, detail: detail || '' });
+  const status = condition ? "PASS" : "FAIL";
+  results.checks.push({ id, description, status, detail: detail || "" });
   if (condition) results.passed++;
   else results.failed++;
 }
 
 function readSafe(filePath) {
   if (!fs.existsSync(filePath)) return null;
-  return fs.readFileSync(filePath, 'utf-8');
+  return fs.readFileSync(filePath, "utf-8");
 }
 
 /**
@@ -132,18 +135,18 @@ function readSafe(filePath) {
  * blocks are NOT mistaken for markdown headings.
  */
 function extractSection(content, sectionNumber) {
-  if (!content) return '';
+  if (!content) return "";
   // Match `## 5. Title` or `### 5.1 Title` etc.
   const pattern = new RegExp(
-    `(^|\\n)(#{2,4})\\s*${sectionNumber.replace(/\./g, '\\.')}[^\\n]*\\n`,
-    'm'
+    `(^|\\n)(#{2,4})\\s*${sectionNumber.replace(/\./g, "\\.")}[^\\n]*\\n`,
+    "m",
   );
   const match = content.match(pattern);
-  if (!match) return '';
+  if (!match) return "";
   const startIdx = match.index + match[1].length;
   const headingLevel = match[2].length;
   const afterStart = content.slice(startIdx);
-  const lines = afterStart.split('\n');
+  const lines = afterStart.split("\n");
 
   let inCodeFence = false;
   let endLineIdx = -1;
@@ -163,7 +166,7 @@ function extractSection(content, sectionNumber) {
   }
 
   if (endLineIdx === -1) return afterStart;
-  return lines.slice(0, endLineIdx).join('\n');
+  return lines.slice(0, endLineIdx).join("\n");
 }
 
 // ============================================================================
@@ -215,9 +218,10 @@ function extractSection(content, sectionNumber) {
 // ============================================================================
 (function V04() {
   const targets = [
-    ...fs.readdirSync(STANDARDS_DIR)
-      .filter(f => f.endsWith('.md'))
-      .map(f => path.join(STANDARDS_DIR, f)),
+    ...fs
+      .readdirSync(STANDARDS_DIR)
+      .filter((f) => f.endsWith(".md"))
+      .map((f) => path.join(STANDARDS_DIR, f)),
     PATHS.HOOKS_GUIDE,
     ...PATHS.HOOKS_GUIDE_PARTS,
     ...PATHS.CHEATSHEET_PARTS,
@@ -225,7 +229,8 @@ function extractSection(content, sectionNumber) {
   ].filter(Boolean);
 
   // STD-DOC-003 forbidden range: pictographs, dingbats, arrows, geometric shapes
-  const forbidden = /[\u{1F300}-\u{1F9FF}\u{2702}\u{2714}\u{2716}\u{274C}\u{274E}\u{2753}\u{2757}\u{2795}-\u{2797}\u{2B05}-\u{2B07}\u{2B1B}\u{2B1C}\u{2B50}\u{2B55}]/u;
+  const forbidden =
+    /[\u{1F300}-\u{1F9FF}\u{2702}\u{2714}\u{2716}\u{274C}\u{274E}\u{2753}\u{2757}\u{2795}-\u{2797}\u{2B05}-\u{2B07}\u{2B1B}\u{2B1C}\u{2B50}\u{2B55}]/u;
 
   // Strip BOTH fenced code blocks AND inline code spans before scanning.
   // DOC-003 (the Unicode policy standard itself) legitimately shows emoji
@@ -234,21 +239,21 @@ function extractSection(content, sectionNumber) {
   // that documents forbidden characters by example.
   const offenders = [];
   for (const file of targets) {
-    const raw = readSafe(file) || '';
+    const raw = readSafe(file) || "";
     const stripped = raw
-      .replace(/```[\s\S]*?```/g, '')   // fenced code blocks
-      .replace(/`[^`\n]+`/g, '');        // inline code spans (single-line)
+      .replace(/```[\s\S]*?```/g, "") // fenced code blocks
+      .replace(/`[^`\n]+`/g, ""); // inline code spans (single-line)
     if (forbidden.test(stripped)) {
-      const matches = stripped.match(new RegExp(forbidden.source, 'u')) || [];
+      const matches = stripped.match(new RegExp(forbidden.source, "u")) || [];
       offenders.push(`${path.basename(file)} (${matches.length} match(es))`);
     }
   }
-  check('V04',
+  check(
+    "V04",
     `No emoji/Unicode graphic chars in ${targets.length} .md files (STD-DOC-003) — code spans stripped`,
     offenders.length === 0,
-    offenders.length === 0
-      ? 'all clean'
-      : `offenders: ${offenders.join('; ')}`);
+    offenders.length === 0 ? "all clean" : `offenders: ${offenders.join("; ")}`,
+  );
 })();
 
 // ============================================================================
@@ -263,20 +268,26 @@ function extractSection(content, sectionNumber) {
 (function V05() {
   const meta = readSafe(PATHS.STD_META_001);
   if (!meta) {
-    check('V05', 'STD-META-001 registry includes STD-DESIGN-001 and STD-FE-001 v2.0+',
-      false, 'STD-META-001 file not found');
+    check(
+      "V05",
+      "STD-META-001 registry includes STD-DESIGN-001 and STD-FE-001 v2.0+",
+      false,
+      "STD-META-001 file not found",
+    );
     return;
   }
-  const hasDesign    = /STD-DESIGN-001/.test(meta);
+  const hasDesign = /STD-DESIGN-001/.test(meta);
   // Match STD-FE-001 followed by a version ≥ 2.0 (e.g., "STD-FE-001 | 1.5 | 2.3 |" or
   // "STD-FE-001 ... v2.0" — either registry row format or narrative).
   // Look for "STD-FE-001" appearing near a version like 2.0, 2.1, ..., 2.9, 3.x
   const feVersionMatch = meta.match(/STD-FE-001[^\n]*?\b(2\.[0-9]+|3\.[0-9]+)\b/);
   const hasFE20 = !!feVersionMatch;
-  check('V05',
-    'STD-META-001 registry includes STD-DESIGN-001 and STD-FE-001 v2.0+',
+  check(
+    "V05",
+    "STD-META-001 registry includes STD-DESIGN-001 and STD-FE-001 v2.0+",
     hasDesign && hasFE20,
-    `STD-DESIGN-001=${hasDesign}, STD-FE-001 v2.0+=${hasFE20}${feVersionMatch ? ` (matched: ${feVersionMatch[1]})` : ''}`);
+    `STD-DESIGN-001=${hasDesign}, STD-FE-001 v2.0+=${hasFE20}${feVersionMatch ? ` (matched: ${feVersionMatch[1]})` : ""}`,
+  );
 })();
 
 // ============================================================================
@@ -285,20 +296,26 @@ function extractSection(content, sectionNumber) {
 (function V06() {
   const fe = readSafe(PATHS.STD_FE_001);
   if (!fe) {
-    check('V06', 'STD-FE-001 §11/§12 delegate to STD-DESIGN-001',
-      false, 'STD-FE-001 file not found');
+    check(
+      "V06",
+      "STD-FE-001 §11/§12 delegate to STD-DESIGN-001",
+      false,
+      "STD-FE-001 file not found",
+    );
     return;
   }
-  const section11 = extractSection(fe, '11') || '';
-  const section12 = extractSection(fe, '12') || '';
-  const combined  = section11 + '\n' + section12;
+  const section11 = extractSection(fe, "11") || "";
+  const section12 = extractSection(fe, "12") || "";
+  const combined = section11 + "\n" + section12;
   const hasDelegation = /STD-DESIGN-001/.test(combined);
   // Forbidden: hardcoded hex colors as design tokens (allowed in code samples / examples)
   const hasHardcodedHex = /(?:background|color|border):\s*#[0-9a-fA-F]{3,8}\b/.test(combined);
-  check('V06',
-    'STD-FE-001 §11/§12 delegate to STD-DESIGN-001 (no hardcoded hex tokens)',
+  check(
+    "V06",
+    "STD-FE-001 §11/§12 delegate to STD-DESIGN-001 (no hardcoded hex tokens)",
     hasDelegation && !hasHardcodedHex,
-    `STD-DESIGN-001 ref=${hasDelegation}, hardcoded hex=${hasHardcodedHex}`);
+    `STD-DESIGN-001 ref=${hasDelegation}, hardcoded hex=${hasHardcodedHex}`,
+  );
 })();
 
 // ============================================================================
@@ -314,11 +331,15 @@ function extractSection(content, sectionNumber) {
 (function V07() {
   const fe = readSafe(PATHS.STD_FE_001);
   if (!fe) {
-    check('V07', 'STD-FE-001 §2 anti-monolith thresholds present',
-      false, 'STD-FE-001 file not found');
+    check(
+      "V07",
+      "STD-FE-001 §2 anti-monolith thresholds present",
+      false,
+      "STD-FE-001 file not found",
+    );
     return;
   }
-  const section2 = extractSection(fe, '2') || '';
+  const section2 = extractSection(fe, "2") || "";
 
   // §2.1 Size Constraints table — verify each row's recommended/hard pair.
   // Use LINE-based matching: find the row containing the unit name, then
@@ -326,7 +347,7 @@ function extractSection(content, sectionNumber) {
   // regex used `[^|]*` between the two numbers, which cannot span the `|`
   // cell separator and so never matched a multi-cell table row.)
   function rowHasPair(unitName, low, high) {
-    const lines = section2.split('\n');
+    const lines = section2.split("\n");
     for (const line of lines) {
       if (line.includes(unitName) && line.includes(String(low)) && line.includes(String(high))) {
         return true;
@@ -334,27 +355,36 @@ function extractSection(content, sectionNumber) {
     }
     return false;
   }
-  const hasComponent100200 = rowHasPair('Component function', 100, 200);
-  const hasFile150250      = rowHasPair('File (Module)',     150, 250);
-  const hasPage3050        = rowHasPair('Page / Route',      30,  50);
-  const hasHook50100       = rowHasPair('Custom hook',       50,  100);
-  const hasBarrel3050      = rowHasPair('Barrel index.ts',   30,  50);
+  const hasComponent100200 = rowHasPair("Component function", 100, 200);
+  const hasFile150250 = rowHasPair("File (Module)", 150, 250);
+  const hasPage3050 = rowHasPair("Page / Route", 30, 50);
+  const hasHook50100 = rowHasPair("Custom hook", 50, 100);
+  const hasBarrel3050 = rowHasPair("Barrel index.ts", 30, 50);
 
   // §2.2 useState rule: limit is 2 (3rd triggers extraction)
-  const hasUseState2Limit = /no more than 2\s*`?useState`?/i.test(section2)
-    || /2\s*`?useState`?\s*hooks/i.test(section2)
-    || /3rd\s*`?useState`?\s*triggers/i.test(section2);
+  const hasUseState2Limit =
+    /no more than 2\s*`?useState`?/i.test(section2) ||
+    /2\s*`?useState`?\s*hooks/i.test(section2) ||
+    /3rd\s*`?useState`?\s*triggers/i.test(section2);
 
   // Anti-monolith exception marker must exist
   const hasExceptionMarker = /ANTI-MONOLITH EXCEPTION/i.test(section2);
 
-  const ok = hasComponent100200 && hasFile150250 && hasPage3050 && hasHook50100
-    && hasBarrel3050 && hasUseState2Limit && hasExceptionMarker;
+  const ok =
+    hasComponent100200 &&
+    hasFile150250 &&
+    hasPage3050 &&
+    hasHook50100 &&
+    hasBarrel3050 &&
+    hasUseState2Limit &&
+    hasExceptionMarker;
 
-  check('V07',
-    'STD-FE-001 §2 anti-monolith thresholds present (File 150/250, Component 100/200, Page 30/50, hook 50/100, Barrel 30/50, useState 2, exception marker)',
+  check(
+    "V07",
+    "STD-FE-001 §2 anti-monolith thresholds present (File 150/250, Component 100/200, Page 30/50, hook 50/100, Barrel 30/50, useState 2, exception marker)",
     ok,
-    `Component 100/200=${hasComponent100200}, File 150/250=${hasFile150250}, Page 30/50=${hasPage3050}, hook 50/100=${hasHook50100}, Barrel 30/50=${hasBarrel3050}, useState 2=${hasUseState2Limit}, exception marker=${hasExceptionMarker}`);
+    `Component 100/200=${hasComponent100200}, File 150/250=${hasFile150250}, Page 30/50=${hasPage3050}, hook 50/100=${hasHook50100}, Barrel 30/50=${hasBarrel3050}, useState 2=${hasUseState2Limit}, exception marker=${hasExceptionMarker}`,
+  );
 })();
 
 // ============================================================================
@@ -372,9 +402,10 @@ function extractSection(content, sectionNumber) {
 // ============================================================================
 (function V08() {
   const targets = [
-    ...fs.readdirSync(STANDARDS_DIR)
-      .filter(f => f.endsWith('.md'))
-      .map(f => path.join(STANDARDS_DIR, f)),
+    ...fs
+      .readdirSync(STANDARDS_DIR)
+      .filter((f) => f.endsWith(".md"))
+      .map((f) => path.join(STANDARDS_DIR, f)),
     PATHS.HOOKS_GUIDE,
     ...PATHS.HOOKS_GUIDE_PARTS,
     ...PATHS.CHEATSHEET_PARTS,
@@ -385,8 +416,8 @@ function extractSection(content, sectionNumber) {
   const offenders = [];
 
   for (const file of targets) {
-    const content = readSafe(file) || '';
-    const lines = content.split('\n');
+    const content = readSafe(file) || "";
+    const lines = content.split("\n");
     let currentBackticks = 0;
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
@@ -397,14 +428,14 @@ function extractSection(content, sectionNumber) {
 
       if (currentBackticks === 0) {
         // Opening fence
-        if (count === 3 && rest.trim() === '') {
+        if (count === 3 && rest.trim() === "") {
           offenders.push(`${path.basename(file)}:L${i + 1}`);
         }
         currentBackticks = count;
       } else {
         // Inside a fence. Is this a closing fence?
         // Closing fence: count >= currentBackticks AND rest is empty/whitespace
-        if (count >= currentBackticks && rest.trim() === '') {
+        if (count >= currentBackticks && rest.trim() === "") {
           currentBackticks = 0;
         }
         // else: content line, skip
@@ -412,12 +443,14 @@ function extractSection(content, sectionNumber) {
     }
   }
 
-  check('V08',
+  check(
+    "V08",
     `All 3-backtick code fences have a language tag (STD-DOC-002 §4.3) — scanned ${targets.length} files`,
     offenders.length === 0,
     offenders.length === 0
-      ? 'all fences specify a language'
-      : `${offenders.length} plain fence(s): ${offenders.slice(0, 8).join(', ')}${offenders.length > 8 ? ` +${offenders.length - 8} more` : ''}`);
+      ? "all fences specify a language"
+      : `${offenders.length} plain fence(s): ${offenders.slice(0, 8).join(", ")}${offenders.length > 8 ? ` +${offenders.length - 8} more` : ""}`,
+  );
 })();
 
 // ============================================================================
@@ -435,9 +468,10 @@ function extractSection(content, sectionNumber) {
   // UNICODE_POLICY.md — those files no longer exist at those paths after the
   // 2026-06 migration to flat <DOMAIN>-<NNN>-<name>.md naming.)
   const targets = [
-    ...fs.readdirSync(STANDARDS_DIR)
-      .filter(f => f.endsWith('.md'))
-      .map(f => path.join(STANDARDS_DIR, f)),
+    ...fs
+      .readdirSync(STANDARDS_DIR)
+      .filter((f) => f.endsWith(".md"))
+      .map((f) => path.join(STANDARDS_DIR, f)),
     PATHS.HOOKS_GUIDE,
     ...PATHS.HOOKS_GUIDE_PARTS,
     ...PATHS.CHEATSHEET_PARTS,
@@ -449,9 +483,9 @@ function extractSection(content, sectionNumber) {
   const offenders = [];
 
   for (const file of targets) {
-    const content = readSafe(file) || '';
+    const content = readSafe(file) || "";
     // Strip fenced code blocks so that code samples do not skew the ratio
-    const stripped = content.replace(/```[\s\S]*?```/g, '');
+    const stripped = content.replace(/```[\s\S]*?```/g, "");
     const cyrCount = (stripped.match(/[\u0400-\u04FF]/g) || []).length;
     const latCount = (stripped.match(/[A-Za-z]/g) || []).length;
     const total = cyrCount + latCount;
@@ -462,12 +496,14 @@ function extractSection(content, sectionNumber) {
     }
   }
 
-  check('V09',
+  check(
+    "V09",
     `All ${targets.length} .md files in upload/ are English-only (< ${THRESHOLD_PCT}% Cyrillic)`,
     offenders.length === 0,
     offenders.length === 0
-      ? 'all files English-only'
-      : `${offenders.length} file(s) over threshold: ${offenders.join(', ')}`);
+      ? "all files English-only"
+      : `${offenders.length} file(s) over threshold: ${offenders.join(", ")}`,
+  );
 })();
 
 // ============================================================================
@@ -485,36 +521,42 @@ function extractSection(content, sectionNumber) {
 (function V10() {
   const readme = readSafe(PATHS.README_TEMPLATE);
   if (!readme) {
-    check('V10',
-      'STD-DOC-004 README_TEMPLATE.md has Badges guidance (§3 row + §5 example + §6 checklist)',
-      false, 'README_TEMPLATE.md file not found');
+    check(
+      "V10",
+      "STD-DOC-004 README_TEMPLATE.md has Badges guidance (§3 row + §5 example + §6 checklist)",
+      false,
+      "README_TEMPLATE.md file not found",
+    );
     return;
   }
 
   // (a) §3 Section Map table has a Badges row (Required or Optional — both
   // satisfy "the standard acknowledges badges as a section").
-  const section3 = extractSection(readme, '3') || '';
+  const section3 = extractSection(readme, "3") || "";
   const hasBadgesRow = /\|\s*\d+\s*\|\s*Badges\s*\|/i.test(section3);
 
   // (b) §5 Template has ≥1 shields.io badge URL
   const startIdx5 = readme.search(/^## 5\.\s/m);
-  const endIdx5   = readme.search(/^## 6\.\s/m);
-  let section5 = '';
+  const endIdx5 = readme.search(/^## 6\.\s/m);
+  let section5 = "";
   if (startIdx5 !== -1 && endIdx5 !== -1 && endIdx5 > startIdx5) {
     section5 = readme.slice(startIdx5, endIdx5);
   }
-  const templateBlock = (section5.match(/````markdown\r?\n([\s\S]*?)\r?\n````/) || [])[1] || '';
-  const badgeUrls = (templateBlock.match(/!\[([^\]]*)\]\(https:\/\/img\.shields\.io\/[^)]+\)/g) || []);
+  const templateBlock = (section5.match(/````markdown\r?\n([\s\S]*?)\r?\n````/) || [])[1] || "";
+  const badgeUrls =
+    templateBlock.match(/!\[([^\]]*)\]\(https:\/\/img\.shields\.io\/[^)]+\)/g) || [];
   const hasAtLeast1Badge = badgeUrls.length >= 1;
 
   // (c) §6 Checklist mentions badges
-  const section6 = extractSection(readme, '6') || '';
+  const section6 = extractSection(readme, "6") || "";
   const checklistMentionsBadges = /badge/i.test(section6);
 
-  check('V10',
-    'STD-DOC-004 README_TEMPLATE.md has Badges guidance (§3 row + ≥1 §5 example + §6 checklist mention)',
+  check(
+    "V10",
+    "STD-DOC-004 README_TEMPLATE.md has Badges guidance (§3 row + ≥1 §5 example + §6 checklist mention)",
     hasBadgesRow && hasAtLeast1Badge && checklistMentionsBadges,
-    `§3 Badges row=${hasBadgesRow}; §5 shields.io badges=${badgeUrls.length} (≥1=${hasAtLeast1Badge}); §6 checklist mentions badges=${checklistMentionsBadges}`);
+    `§3 Badges row=${hasBadgesRow}; §5 shields.io badges=${badgeUrls.length} (≥1=${hasAtLeast1Badge}); §6 checklist mentions badges=${checklistMentionsBadges}`,
+  );
 })();
 
 // ============================================================================
@@ -562,80 +604,191 @@ function extractSection(content, sectionNumber) {
 
   function listMd(dir) {
     if (!fs.existsSync(dir)) return [];
-    return fs.readdirSync(dir)
-      .filter(f => f.endsWith('.md'))
-      .map(f => path.join(dir, f));
+    return fs
+      .readdirSync(dir)
+      .filter((f) => f.endsWith(".md"))
+      .map((f) => path.join(dir, f));
   }
 
-  const targets = [
-    ...listMd(STANDARDS_DIR),
-    ...listMd(DOCS_DIR),
-    ...listMd(TEMPLATES_DIR),
-  ];
+  const targets = [...listMd(STANDARDS_DIR), ...listMd(DOCS_DIR), ...listMd(TEMPLATES_DIR)];
 
   const offenders = [];
   for (const file of targets) {
-    const content = readSafe(file) || '';
+    const content = readSafe(file) || "";
     // Line count: split on \n. Trailing newline does not add a phantom line
     // because split returns ['last', ''] for 'a\n' → 2 entries, but the
     // empty string is not a line of content. Use the same convention as
     // verify-id-graph.js (which uses `wc -l`-equivalent counting).
-    const lineCount = content === '' ? 0 : content.split('\n').length - (content.endsWith('\n') ? 1 : 0);
+    const lineCount =
+      content === "" ? 0 : content.split("\n").length - (content.endsWith("\n") ? 1 : 0);
     if (lineCount > HARD_CAP) {
-      offenders.push(`${path.basename(file)}: ${lineCount} lines (exceeds ${HARD_CAP}-line hard cap, split required)`);
+      offenders.push(
+        `${path.basename(file)}: ${lineCount} lines (exceeds ${HARD_CAP}-line hard cap, split required)`,
+      );
     }
   }
 
-  check('V11',
+  check(
+    "V11",
     `No .md file in standards/ + docs/sandbox/ + templates/ exceeds ${HARD_CAP} lines (hard promotion of W11 soft cap) — scanned ${targets.length} files`,
     offenders.length === 0,
     offenders.length === 0
       ? `all ${targets.length} files ≤ ${HARD_CAP} lines`
-      : `${offenders.length} file(s) over cap: ${offenders.join('; ')}`);
+      : `${offenders.length} file(s) over cap: ${offenders.join("; ")}`,
+  );
+})();
+
+// ============================================================================
+// V12 — WORKLOG_TEMPLATE.md must exist and have expected structure
+//       (non-normative companion)
+//
+// Checks:
+//   (a) File exists in templates/
+//   (b) Has "append-only" rule (core invariant: worklog is append-only)
+//   (c) Has "Entry Format" or "Template" section with example structure
+// ============================================================================
+(function V12() {
+  const content = readSafe(PATHS.WORKLOG_TEMPLATE);
+  if (!content) {
+    check(
+      "V12",
+      "WORKLOG_TEMPLATE.md exists in templates/ with expected structure",
+      false,
+      "WORKLOG_TEMPLATE.md not found",
+    );
+    return;
+  }
+  const hasAppendOnly = /append.only/i.test(content);
+  const hasEntryFormat =
+    /## 3\.\s*Entry Format/i.test(content) ||
+    /## 2\.\s*Template/i.test(content) ||
+    /## 3\.\s*Template/i.test(content);
+
+  check(
+    "V12",
+    "WORKLOG_TEMPLATE.md exists with append-only rule + entry format section",
+    hasAppendOnly && hasEntryFormat,
+    `append-only=${hasAppendOnly}, entry format=${hasEntryFormat}`,
+  );
+})();
+
+// ============================================================================
+// V13 — CHANGELOG_TEMPLATE.md must exist and have expected structure
+//       (STD-DOC-009, non-normative companion)
+//
+// Checks:
+//   (a) File exists in templates/
+//   (b) References "Keep a Changelog" format
+//   (c) Has version categories (Added, Changed, Deprecated, Removed, Fixed, Security)
+// ============================================================================
+(function V13() {
+  const content = readSafe(PATHS.CHANGELOG_TEMPLATE);
+  if (!content) {
+    check(
+      "V13",
+      "CHANGELOG_TEMPLATE.md exists in templates/ with expected structure",
+      false,
+      "CHANGELOG_TEMPLATE.md not found",
+    );
+    return;
+  }
+  const hasKeepAChangelog = /keep.a.changelog/i.test(content) || /keepachangelog/i.test(content);
+  const categories = ["Added", "Changed", "Deprecated", "Removed", "Fixed", "Security"];
+  const foundCount = categories.filter((c) => new RegExp(`## ${c}`, "i").test(content)).length;
+
+  check(
+    "V13",
+    "CHANGELOG_TEMPLATE.md exists with Keep a Changelog format (6 categories)",
+    hasKeepAChangelog && foundCount >= 4,
+    `Keep a Changelog ref=${hasKeepAChangelog}, categories found=${foundCount}/6`,
+  );
+})();
+
+// ============================================================================
+// V14 — AGENT_RULES_TEMPLATE.md must exist and have expected structure
+//       (non-normative companion)
+//
+// Checks:
+//   (a) File exists in templates/
+//   (b) Has Onboarding Protocol section (core: session start sequence)
+//   (c) Has Priority Order section (core: conflict resolution)
+//   (d) Has Sections table (structure definition)
+// ============================================================================
+(function V14() {
+  const content = readSafe(PATHS.AGENT_RULES_TEMPLATE);
+  if (!content) {
+    check(
+      "V14",
+      "AGENT_RULES_TEMPLATE.md exists in templates/ with expected structure",
+      false,
+      "AGENT_RULES_TEMPLATE.md not found",
+    );
+    return;
+  }
+  const hasOnboarding = /onboarding.protocol/i.test(content);
+  const hasPriorityOrder = /priority.order/i.test(content) || /conflict.resolution/i.test(content);
+  const hasSectionsTable =
+    /\|\s*Section\s*\|\s*Required/i.test(content) ||
+    /\|\s*Section\s*\|\s*Description/i.test(content);
+
+  check(
+    "V14",
+    "AGENT_RULES_TEMPLATE.md exists with Onboarding Protocol + Priority Order + Sections table",
+    hasOnboarding && hasPriorityOrder && hasSectionsTable,
+    `onboarding=${hasOnboarding}, priority order=${hasPriorityOrder}, sections table=${hasSectionsTable}`,
+  );
 })();
 
 // ============================================================================
 // Output
 // ============================================================================
 function printHuman() {
-  const width = Math.max(...results.checks.map(c => c.id.length));
-  console.log('PERMANENT STANDARDS VERIFIER — verify-standards.js');
-  console.log('='.repeat(72));
-  console.log('');
+  const width = Math.max(...results.checks.map((c) => c.id.length));
+  console.log("PERMANENT STANDARDS VERIFIER — verify-standards.js");
+  console.log("=".repeat(72));
+  console.log("");
   for (const c of results.checks) {
-    const icon = c.status === 'PASS' ? '[PASS]' : '[FAIL]';
+    const icon = c.status === "PASS" ? "[PASS]" : "[FAIL]";
     console.log(`${icon} ${c.id.padEnd(width)}  ${c.description}`);
     if (c.detail) console.log(`         ${c.detail}`);
   }
-  console.log('');
-  console.log('-'.repeat(72));
-  console.log(`Total: ${results.checks.length}  |  PASS: ${results.passed}  |  FAIL: ${results.failed}`);
-  console.log('');
+  console.log("");
+  console.log("-".repeat(72));
+  console.log(
+    `Total: ${results.checks.length}  |  PASS: ${results.passed}  |  FAIL: ${results.failed}`,
+  );
+  console.log("");
   if (results.failed > 0) {
-    console.log('ACTION REQUIRED:');
-    console.log('  At least one invariant was violated. Either:');
-    console.log('    (a) Revert the standard change that broke the invariant, OR');
-    console.log('    (b) Update the V## check in scripts/verify-standards.js to reflect');
-    console.log('        an intentional change to the invariant.');
-    console.log('  Then re-run: node scripts/verify-standards.js');
+    console.log("ACTION REQUIRED:");
+    console.log("  At least one invariant was violated. Either:");
+    console.log("    (a) Revert the standard change that broke the invariant, OR");
+    console.log("    (b) Update the V## check in scripts/verify-standards.js to reflect");
+    console.log("        an intentional change to the invariant.");
+    console.log("  Then re-run: node scripts/verify-standards.js");
   } else {
-    console.log('All invariants hold. Standards are consistent with the cascade plan.');
+    console.log("All invariants hold. Standards are consistent with the cascade plan.");
   }
 }
 
 function printJSON() {
-  console.log(JSON.stringify({
-    script: 'verify-standards.js',
-    generated: new Date().toISOString(),
-    passed: results.passed,
-    failed: results.failed,
-    total: results.checks.length,
-    checks: results.checks,
-  }, null, 2));
+  console.log(
+    JSON.stringify(
+      {
+        script: "verify-standards.js",
+        generated: new Date().toISOString(),
+        passed: results.passed,
+        failed: results.failed,
+        total: results.checks.length,
+        checks: results.checks,
+      },
+      null,
+      2,
+    ),
+  );
 }
 
-const mode = process.argv[2] || '';
-if (mode === '--json') printJSON();
+const mode = process.argv[2] || "";
+if (mode === "--json") printJSON();
 else printHuman();
 
 process.exit(results.failed > 0 ? 1 : 0);
