@@ -30,7 +30,7 @@ Z-ai-platform/                  (orchestrator)
 │       ├── verify-id-graph.js      (G01-G15, cross-repo ID graph)
 │       ├── check-md.sh             (3-layer markdown compliance)
 │       └── graph-deps.sh           (dot/svg graph generator)
-├── guard/                      (submodule: RULE-MONOLITH-001..017)
+├── guard/                      (submodule: RULE-*)
 ├── skills/                     (submodule: 36 skills + CONTRACT.md pilot)
 │   └── skills/commit-work/
 │       ├── CONTRACT.md             (5-tuple execution contract, Phase B)
@@ -43,7 +43,7 @@ Three verifier layers run at different times:
 | Layer                               | When                                           | What                                                                                         | Blocks?                          |
 | ----------------------------------- | ---------------------------------------------- | -------------------------------------------------------------------------------------------- | -------------------------------- |
 | **L0 — pre-commit**                 | Every `git commit`                             | Worklog freshness (Phase 0), `verify-standards.js` (Phase 1), `verify-id-graph.js` (Phase 2) | YES (Phase 1+2) / WARN (Phase 0) |
-| **L0.5 — commit-msg**               | Every `git commit` (after pre-commit)          | Conventional Commits format (RULE-MONOLITH-004)                                              | YES                              |
+| **L0.5 — commit-msg**               | Every `git commit` (after pre-commit)          | Conventional Commits format (RULE-COMMIT-004)                                                | YES                              |
 | **L1 — commit-work contract**       | On demand (`run-contract.sh --commit '<msg>'`) | All L0 + L0.5 checks + creates the commit atomically                                         | YES                              |
 | **L2 — GitHub Actions**             | Push to main, PR, nightly                      | Same as L0 + L0.5, plus graph/svg generation + PR comment on failure                         | YES (PR blocking)                |
 | **L3 — skill validation**           | Manual                                         | `quick_validate.py` (only on `skill-creator` today)                                          | No (manual)                      |
@@ -118,7 +118,7 @@ Both scenarios are equally suspicious. Never commit on a FAIL.
 ### 2.4 Conventional Commits (commit-msg hook)
 
 The hook at `.githooks/commit-msg` (131 lines) validates commit
-message format per RULE-MONOLITH-004 + STD-GIT-001 §1.1-1.4:
+message format per RULE-COMMIT-004 + STD-GIT-001 §1.1-1.4:
 
 | Check | Pattern                             | Level |
 | ----- | ----------------------------------- | ----- |

@@ -3,7 +3,7 @@
 > ID: STD-DOC-005
 > Version: 1.0
 > Level: **[W] Warning**
-> Related: RULE-MONOLITH-002, META-001-standard-id-system
+> Related: RULE-WORKLOG-002, META-001-standard-id-system
 
 This template defines the structure for project `worklog.md` files.
 
@@ -18,12 +18,12 @@ It provides an audit trail for debugging, handoffs, and session recovery.
 
 ## 2. Rules
 
-| Rule                 | Description                                          |
-| -------------------- | ---------------------------------------------------- |
-| Append-only          | Never edit or reorder existing entries               |
-| Before/After         | Read before action, update after (RULE-MONOLITH-002) |
-| One entry per action | Each meaningful action gets its own entry            |
-| No deletion          | Entries are permanent; mark as superseded if needed  |
+| Rule                 | Description                                         |
+| -------------------- | --------------------------------------------------- |
+| Append-only          | Never edit or reorder existing entries              |
+| Before/After         | Read before action, update after (RULE-WORKLOG-002) |
+| One entry per action | Each meaningful action gets its own entry           |
+| No deletion          | Entries are permanent; mark as superseded if needed |
 
 ---
 

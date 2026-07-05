@@ -23,7 +23,7 @@ moved to companion files to bring STD-META-001 under the soft cap while
 preserving all section numbers and content verbatim.
 
 §4.18 (File Size Limits) STAYS in the parent standard because it is the
-active enforcement source for RULE-MONOLITH-012 and PROC-LINECOUNT-004 —
+active enforcement source for RULE-MONOLITH-012 (unchanged) and PROC-LINECOUNT-004 —
 it must be in the parser-bound file.
 
 ## How cross-references resolve
@@ -73,7 +73,7 @@ verbatim (no renumbering) to keep all existing references stable.
 | ------------------------- | -------------------------------------- | ------- | ----- | -------------------------------------------------------------------------------------------------------- |
 | PROC-SETUP-001            | Z-ai-guard/setup.sh                    | 2.0     | [C]   | ACTIVE (planned) — file not yet created                                                                  |
 | PROC-UPDATE-002           | Z-ai-guard/update.sh                   | 2.1     | [C]   | ACTIVE (planned) — file not yet created                                                                  |
-| PROC-COCHANGE-003         | Z-ai-guard/scripts/co-change-check.sh  | 1.0     | [C]   | ACTIVE — file created 2026-06-22 (implements RULE-MONOLITH-010)                                          |
+| PROC-COCHANGE-003         | Z-ai-guard/scripts/co-change-check.sh  | 1.0     | [C]   | ACTIVE — file created 2026-06-22 (implements RULE-DOC-010)                                               |
 | PROC-LINECOUNT-004        | Z-ai-guard/scripts/line-count-check.sh | 1.0     | [C]   | ACTIVE — file created 2026-06-22 (implements RULE-MONOLITH-012, delegates to TOOL-VERIFY-002/004)        |
 | PROC-PLATFORM-INSTALL-005 | Z-ai-platform/install.sh               | 1.0     | [C]   | RETIRED 2026-06-19 (superseded by `bootstrap.sh` — single entry point covers install + update + restore) |
 | PROC-PLATFORM-UPDATE-006  | Z-ai-platform/update.sh                | 1.0     | [C]   | RETIRED 2026-06-19 (superseded by `bootstrap.sh`)                                                        |

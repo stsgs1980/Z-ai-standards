@@ -95,11 +95,11 @@ What agents must never do:
 Use HTML comments for metadata inside AGENT_RULES.md:
 
 ```markdown
-<!-- RULE-MONOLITH-001: Answer before act -->
+<!-- RULE-ANSWER-001: Answer before act -->
 
 Do not start work without confirming the task.
 
-<!-- RULE-MONOLITH-002: Worklog before/after -->
+<!-- RULE-WORKLOG-002: Worklog before/after -->
 
 Append to worklog.md before AND after every action.
 ```

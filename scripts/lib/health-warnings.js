@@ -52,10 +52,10 @@
  * ============================================================================
  */
 
-'use strict';
+"use strict";
 
-const fs = require('fs');
-const path = require('path');
+const fs = require("fs");
+const path = require("path");
 
 // ----------------------------------------------------------------------------
 // W13 whitelist — known false-positive references that have no real file to
@@ -69,55 +69,55 @@ const path = require('path');
 // ----------------------------------------------------------------------------
 const W13_WHITELIST = new Set([
   // Generic file-type names (not specific files)
-  'SKILL.md',                 // generic skill-format filename (not a specific file)
-  'CONTRACT.md',              // generic contract filename (any skill's contract)
-  'README.md',                // generic README filename
-  'INDEX.md',                 // generic INDEX.md — disambiguate via context
-  'CHANGELOG.md',             // replaced by MIGRATIONS.md in this repo
+  "SKILL.md", // generic skill-format filename (not a specific file)
+  "CONTRACT.md", // generic contract filename (any skill's contract)
+  "README.md", // generic README filename
+  "INDEX.md", // generic INDEX.md — disambiguate via context
+  "CHANGELOG.md", // replaced by MIGRATIONS.md in this repo
   // Historical extraction sources (no longer exist as files)
-  'AGENT_RULES.md',           // historical extraction source (referenced in ENV-002 v1.0 changelog)
-  'STANDARDS.md',             // historical root index, replaced by README.md
+  "AGENT_RULES.md", // historical extraction source (referenced in ENV-002 v1.0 changelog)
+  "STANDARDS.md", // historical root index, replaced by README.md
   // Historical timestamp-pinned Z.ai infra scripts (won't be recreated)
-  'init-fullstack_1775040338514.sh',
-  'init-fullstack_*.sh',
+  "init-fullstack_1775040338514.sh",
+  "init-fullstack_*.sh",
   // Planned scripts (tracked in ARCH-001, not yet shipped)
-  'validate.sh',
-  'install.sh',
-  'doctor.sh',
-  'install-hooks.sh',
-  'line-count-check.sh',
-  'scripts/setup-git.sh',
+  "validate.sh",
+  "install.sh",
+  "doctor.sh",
+  "install-hooks.sh",
+  "line-count-check.sh",
+  "scripts/setup-git.sh",
   // Cross-repo MIGRATIONS.md — each repo MAY have one but not required
-  'Z-ai-platform/MIGRATIONS.md',
-  'Z-ai-guard/MIGRATIONS.md',
-  'Z-ai-skills/MIGRATIONS.md',
+  "Z-ai-platform/MIGRATIONS.md",
+  "Z-ai-guard/MIGRATIONS.md",
+  "Z-ai-skills/MIGRATIONS.md",
   // Skills tree paths referenced for documentation but not required to exist
-  'Z-ai-skills/skills/INDEX.md',
-  'Z-ai-skills/skills/skill-id-system/SKILL.md',
-  'Z-ai-skills/skills/skill-creator/SKILL.md',
-  'skills/INDEX.md',                  // skills tree index, lives in Z-ai-skills/skills/INDEX.md
+  "Z-ai-skills/skills/INDEX.md",
+  "Z-ai-skills/skills/skill-id-system/SKILL.md",
+  "Z-ai-skills/skills/skill-creator/SKILL.md",
+  "skills/INDEX.md", // skills tree index, lives in Z-ai-skills/skills/INDEX.md
   // Templates referenced for context but not yet shipped
-  'agents/templates/context-handoff-template.md',
+  "agents/templates/context-handoff-template.md",
   // Pre-restructure filename still referenced in historical context
-  'Z-ai-standards/standards/SKILL_ID_SYSTEM_STANDARD.md',
-  'Z-ai-standards/known-issues.md',
-  // RULE-MONOLITH-016 lives in Z-ai-guard/rules/, not Z-ai-platform/
-  'Z-ai-platform/RULE-MONOLITH-016.md',
+  "Z-ai-standards/standards/SKILL_ID_SYSTEM_STANDARD.md",
+  "Z-ai-standards/known-issues.md",
+  // RULE-ARCH-016 lives in Z-ai-guard/rules/, not Z-ai-platform/
+  "Z-ai-platform/RULE-ARCH-016.md",
   // skill-creator.md is a planning reference, not yet shipped
-  'Z-ai-platform/skill-creator.md',
+  "Z-ai-platform/skill-creator.md",
   // v1.1.2 additions: planned/historical refs surfaced by ARCH-001 §5A cascade section
-  'Z-ai-platform/doctor.sh',          // planned diagnostics script
-  'Z-ai-guard/rules/RULE-ENV-008.md', // planned rule for bootstrap enforcement
-  'guard/rules/RULE-ENV-008.md',      // same, relative form
-  'RULE-ENV-008.md',                  // bare form, see ARCH-001 §8 recovery procedures
+  "Z-ai-platform/doctor.sh", // planned diagnostics script
+  "Z-ai-guard/rules/RULE-ENV-008.md", // planned rule for bootstrap enforcement
+  "guard/rules/RULE-ENV-008.md", // same, relative form
+  "RULE-ENV-008.md", // bare form, see ARCH-001 §8 recovery procedures
   // v1.1.3 additions: planned companion file referenced in DESIGN-001-profile-terminal-dashboard.md TDP-002
-  'DESIGN-001-cards-reference.md',    // planned split target if companion grows past 1200 lines
+  "DESIGN-001-cards-reference.md", // planned split target if companion grows past 1200 lines
   // v1.1.6 additions (O-018): historical e2e test file, mentioned in CI-AND-TESTING.md §9.2.3 narrative
-  '_e2e_test_v11.md',
+  "_e2e_test_v11.md",
   // v1.1.6 additions (O-018): run-contract.sh is a real script but lives in skills/skills/commit-work/scripts/
   // — path-like form `commit-work/scripts/run-contract.sh` resolves via candidates list,
   //   but bare `run-contract.sh` in prose cannot resolve unambiguously (which skill's script?)
-  'run-contract.sh',
+  "run-contract.sh",
 ]);
 
 // ----------------------------------------------------------------------------
@@ -131,7 +131,7 @@ const W13_WHITELIST = new Set([
 const CHANGE_HISTORY_RE = /^##\s+\d+\.?\s*(Version History|Change History|Changelog)\s*$/im;
 
 function stripChangeHistory(txt) {
-  const lines = txt.split('\n');
+  const lines = txt.split("\n");
   const out = [];
   let skipping = false;
   for (const line of lines) {
@@ -149,7 +149,7 @@ function stripChangeHistory(txt) {
       }
     }
   }
-  return out.join('\n');
+  return out.join("\n");
 }
 
 // ----------------------------------------------------------------------------
@@ -158,8 +158,19 @@ function stripChangeHistory(txt) {
 // STD-/RULE-/PROC-/TOOL- domain prefixes used in standards/ filenames.
 // ----------------------------------------------------------------------------
 const VALID_DOMAINS = new Set([
-  'META', 'ARCH', 'DOC', 'SKILL', 'ENV', 'GIT', 'DESIGN',
-  'FE', 'A11Y', 'ERR', 'SEC', 'TEST', 'AGENT',
+  "META",
+  "ARCH",
+  "DOC",
+  "SKILL",
+  "ENV",
+  "GIT",
+  "DESIGN",
+  "FE",
+  "A11Y",
+  "ERR",
+  "SEC",
+  "TEST",
+  "AGENT",
 ]);
 
 // ----------------------------------------------------------------------------
@@ -176,24 +187,24 @@ function buildCandidates(refPath, standardsTreeRoot, filePath, platformRoot) {
     // From standards/ repo root (e.g. standards/docs/sandbox/x.md)
     path.join(standardsTreeRoot, refPath),
     // From standards/ subdir
-    path.join(standardsTreeRoot, 'standards', refPath),
+    path.join(standardsTreeRoot, "standards", refPath),
     // From docs/
-    path.join(standardsTreeRoot, 'docs', refPath),
+    path.join(standardsTreeRoot, "docs", refPath),
     // From scripts/
-    path.join(standardsTreeRoot, 'scripts', refPath),
+    path.join(standardsTreeRoot, "scripts", refPath),
     // From templates/
-    path.join(standardsTreeRoot, 'templates', refPath),
+    path.join(standardsTreeRoot, "templates", refPath),
     // From guides/
-    path.join(standardsTreeRoot, 'guides', refPath),
+    path.join(standardsTreeRoot, "guides", refPath),
     // From current file's dir
     path.join(path.dirname(filePath), refPath),
 
     // Cross-repo resolution (v1.1.1) — original paths, kept for backward compat
-    path.join(platformRoot, refPath),                            // Z-ai-platform/<refpath>
-    path.join(platformRoot, refPath.replace(/^Z-ai-platform\//, '')),    // strip prefix
-    path.join(platformRoot, refPath.replace(/^Z-ai-standards\//, 'standards/')),
-    path.join(platformRoot, refPath.replace(/^Z-ai-guard\//, '../Z-ai-guard/')),
-    path.join(platformRoot, refPath.replace(/^Z-ai-skills\//, '../Z-ai-skills/')),
+    path.join(platformRoot, refPath), // Z-ai-platform/<refpath>
+    path.join(platformRoot, refPath.replace(/^Z-ai-platform\//, "")), // strip prefix
+    path.join(platformRoot, refPath.replace(/^Z-ai-standards\//, "standards/")),
+    path.join(platformRoot, refPath.replace(/^Z-ai-guard\//, "../Z-ai-guard/")),
+    path.join(platformRoot, refPath.replace(/^Z-ai-skills\//, "../Z-ai-skills/")),
 
     // v1.1.6 (O-018): correct submodule paths. Submodules are mounted
     // INSIDE Z-ai-platform/, not as siblings. .gitmodules shows:
@@ -201,15 +212,15 @@ function buildCandidates(refPath, standardsTreeRoot, filePath, platformRoot) {
     //   [submodule "guard"]   path = guard    -> Z-ai-platform/guard/
     //   [submodule "standards"] path = standards -> Z-ai-platform/standards/
     // So Z-ai-skills/<x> resolves to Z-ai-platform/skills/<x>, not ../Z-ai-skills/<x>.
-    path.join(platformRoot, 'skills', refPath.replace(/^Z-ai-skills\//, '')),
-    path.join(platformRoot, 'skills', 'skills', refPath.replace(/^Z-ai-skills\/skills\//, '')),
-    path.join(platformRoot, 'guard', refPath.replace(/^Z-ai-guard\//, '')),
+    path.join(platformRoot, "skills", refPath.replace(/^Z-ai-skills\//, "")),
+    path.join(platformRoot, "skills", "skills", refPath.replace(/^Z-ai-skills\/skills\//, "")),
+    path.join(platformRoot, "guard", refPath.replace(/^Z-ai-guard\//, "")),
 
     // Special: worklog.md -> docs/session/worklog.md
-    path.join(platformRoot, 'docs', 'session', refPath),
+    path.join(platformRoot, "docs", "session", refPath),
 
     // Special: MIGRATIONS.md -> can be in any repo
-    path.join(platformRoot, refPath.replace(/^MIGRATIONS\.md$/, 'standards/MIGRATIONS.md')),
+    path.join(platformRoot, refPath.replace(/^MIGRATIONS\.md$/, "standards/MIGRATIONS.md")),
 
     // v1.1.6 (O-018 root-cause fix): skills/ tree resolution.
     // Path-like refs like `commit-work/CONTRACT.md`, `session-handoff/CONTRACT.md`,
@@ -217,7 +228,7 @@ function buildCandidates(refPath, standardsTreeRoot, filePath, platformRoot) {
     // in skills/skills/{name}/. Without this, every prose mention of a skills/
     // file path required a new W13_WHITELIST entry (unbounded growth, LESSON-001
     // anti-pattern). The root-cause fix: include skills/skills/ in candidates.
-    path.join(platformRoot, 'skills', 'skills', refPath),
+    path.join(platformRoot, "skills", "skills", refPath),
   ];
 }
 
@@ -240,14 +251,22 @@ function phase10_healthWarnings(repos, warnFn) {
   function walk(dir, depth) {
     if (depth > 8) return;
     let entries;
-    try { entries = fs.readdirSync(dir, { withFileTypes: true }); }
-    catch (e) { return; }
+    try {
+      entries = fs.readdirSync(dir, { withFileTypes: true });
+    } catch (e) {
+      return;
+    }
     for (const entry of entries) {
-      if (entry.name === 'node_modules' || entry.name === '.git' ||
-          entry.name === '_design' || entry.name === 'legacy') continue;
+      if (
+        entry.name === "node_modules" ||
+        entry.name === ".git" ||
+        entry.name === "_design" ||
+        entry.name === "legacy"
+      )
+        continue;
       const full = path.join(dir, entry.name);
       if (entry.isDirectory()) walk(full, depth + 1);
-      else if (entry.name.endsWith('.md')) mdFiles.push(full);
+      else if (entry.name.endsWith(".md")) mdFiles.push(full);
     }
   }
   walk(standardsTreeRoot, 0);
@@ -257,9 +276,12 @@ function phase10_healthWarnings(repos, warnFn) {
   for (const filePath of mdFiles) {
     const fileName = path.basename(filePath);
     let content;
-    try { content = fs.readFileSync(filePath, 'utf8'); }
-    catch (e) { continue; }
-    const lineCount = content.split('\n').length;
+    try {
+      content = fs.readFileSync(filePath, "utf8");
+    } catch (e) {
+      continue;
+    }
+    const lineCount = content.split("\n").length;
 
     // W15: naming drift — applies only to standards/standards/ (normative files)
     // Skip docs/, templates/, README.md, INDEX.md (non-normative).
@@ -273,26 +295,36 @@ function phase10_healthWarnings(repos, warnFn) {
     // Root-cause fix (LESSON-001 principle): refine isNormative scope.
     // See SESSION_NOTES.md §12.4 for the lesson that motivated this.
     const isCompanion = /^>\s*Companion to:/m.test(content);
-    const isNormative = filePath.includes(path.join('standards', 'standards') + path.sep) && !isCompanion;
+    const isNormative =
+      filePath.includes(path.join("standards", "standards") + path.sep) && !isCompanion;
     if (isNormative) {
       const nameMatch = fileName.match(/^([A-Z0-9]+)-(\d{3})-(.+)\.md$/);
       if (!nameMatch) {
-        if (fileName !== 'README.md' && fileName !== 'INDEX.md') {
-          warnFn('W15', `${fileName}: does not match <DOMAIN>-<NNN>-<name>.md naming convention`);
+        if (fileName !== "README.md" && fileName !== "INDEX.md") {
+          warnFn("W15", `${fileName}: does not match <DOMAIN>-<NNN>-<name>.md naming convention`);
         }
       } else {
         const domain = nameMatch[1];
         if (!VALID_DOMAINS.has(domain)) {
-          warnFn('W15', `${fileName}: unknown domain "${domain}" (valid: ${[...VALID_DOMAINS].join(', ')})`);
+          warnFn(
+            "W15",
+            `${fileName}: unknown domain "${domain}" (valid: ${[...VALID_DOMAINS].join(", ")})`,
+          );
         }
       }
     }
 
     // W11: size anomaly (applies to all .md files)
     if (lineCount > 1500) {
-      warnFn('W11', `${fileName}: ${lineCount} lines (CRITICAL — exceeds 1500-line cap, split required)`);
+      warnFn(
+        "W11",
+        `${fileName}: ${lineCount} lines (CRITICAL — exceeds 1500-line cap, split required)`,
+      );
     } else if (lineCount > 1000) {
-      warnFn('W11', `${fileName}: ${lineCount} lines (exceeds 1000-line soft cap, consider splitting)`);
+      warnFn(
+        "W11",
+        `${fileName}: ${lineCount} lines (exceeds 1000-line soft cap, consider splitting)`,
+      );
     }
 
     // W12: missing §XA Known Issues section (applies only to normative standards)
@@ -300,14 +332,20 @@ function phase10_healthWarnings(repos, warnFn) {
       // Pattern matches: ## 10A. Known Issues, ## 11A. Known Issues, ## XA. Known Issues
       const hasKnownIssues = /^\s*##\s+\d*[A-Z]\.?\s*Known\s+Issues/im.test(content);
       if (!hasKnownIssues) {
-        warnFn('W12', `${fileName}: no §XA Known Issues section (convention per ENV-002 v1.2 §10A)`);
+        warnFn(
+          "W12",
+          `${fileName}: no §XA Known Issues section (convention per ENV-002 v1.2 §10A)`,
+        );
       }
     }
 
     // W14: excessive OPEN Known Issues
     const openMatches = content.match(/\[OPEN\]/g);
     if (openMatches && openMatches.length > 5) {
-      warnFn('W14', `${fileName}: ${openMatches.length} OPEN Known Issues (exceeds 5-issue soft cap — debt accumulation signal)`);
+      warnFn(
+        "W14",
+        `${fileName}: ${openMatches.length} OPEN Known Issues (exceeds 5-issue soft cap — debt accumulation signal)`,
+      );
     }
 
     // W13: broken cross-doc file references
@@ -322,18 +360,30 @@ function phase10_healthWarnings(repos, warnFn) {
       if (seen.has(refPath)) continue;
       seen.add(refPath);
       // Skip URLs and absolute paths
-      if (refPath.startsWith('http://') || refPath.startsWith('https://')) continue;
-      if (refPath.startsWith('/home/') || refPath.startsWith('/tmp/') ||
-          refPath.startsWith('/usr/') || refPath.startsWith('/etc/')) continue;
+      if (refPath.startsWith("http://") || refPath.startsWith("https://")) continue;
+      if (
+        refPath.startsWith("/home/") ||
+        refPath.startsWith("/tmp/") ||
+        refPath.startsWith("/usr/") ||
+        refPath.startsWith("/etc/")
+      )
+        continue;
       // Skip whitelisted generic/historical references
       if (W13_WHITELIST.has(refPath)) continue;
       // Resolve against multiple candidate roots (v1.1.6: includes skills/ tree)
       const candidates = buildCandidates(refPath, standardsTreeRoot, filePath, platformRoot);
-      const exists = candidates.some(p => {
-        try { return fs.existsSync(p); } catch (e) { return false; }
+      const exists = candidates.some((p) => {
+        try {
+          return fs.existsSync(p);
+        } catch (e) {
+          return false;
+        }
       });
       if (!exists) {
-        warnFn('W13', `${fileName}: references "${refPath}" which does not exist in standards/ tree`);
+        warnFn(
+          "W13",
+          `${fileName}: references "${refPath}" which does not exist in standards/ tree`,
+        );
       }
     }
   }

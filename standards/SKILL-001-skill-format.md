@@ -439,9 +439,9 @@ issues are marked `[OPEN]`.
 This rule was correct when the standard was written (v1.0, 2026-06-17),
 but actual repo practice has diverged. As of 2026-06-18:
 
-- All 17 RULE files in `Z-ai-guard/rules/RULE-MONOLITH-*.md` declare
+- All 17 RULE files in `Z-ai-guard/rules/RULE-*.md` declare
   their `related:` edges as a YAML list in frontmatter (e.g.
-  `RULE-MONOLITH-001` has `related: [RULE-MONOLITH-006, RULE-MONOLITH-007]`
+  `RULE-ANSWER-001` has `related: [RULE-HONEST-006, RULE-STRUCT-007]`
   in YAML, no `> Related:` blockquote line at all).
 - All 24 ZAI skills in `Z-ai-skills/skills/<name>/SKILL.md` declare their
   `related:` edges as a YAML list in frontmatter. The blockquote header

@@ -90,18 +90,18 @@ question carries an ID declared under STD-META-001.
 
 ## 3. Definitions
 
-| Term | Definition |
-|---|---|
-| **Orchestrator** | The `Z-ai-platform` repository. Layer L0. Pins the three submodules and runs cross-repo CI. |
-| **Submodule** | A git submodule pinned by the orchestrator. Three exist: `standards/`, `guard/`, `skills/`. |
-| **Layer** | One of L0 (orchestrator), L1 (standards), L2 (rules/procedures/tools), L3 (skills). Determines which `Related:` edges are legal. |
-| **Pointer** | The commit SHA recorded by git in the orchestrator's index for a given submodule. Bumping a pointer = recording a new SHA. |
-| **Pointer bump** | A commit in the orchestrator that changes exactly one submodule's recorded SHA. MUST be atomic per submodule. |
-| **Atomic per submodule** | A single orchestrator commit touches at most one submodule's pointer. The orchestrator's own files (README, CI, hooks) MAY be touched in the same commit. |
-| **Clean URL** | A submodule URL in `.gitmodules` that uses the `https://github.com/<owner>/<repo>.git` form with no embedded credentials. |
-| **Recursive clone** | `git clone --recurse-submodules <url>` — must produce a working tree with all three submodules checked out at the pinned SHAs. |
-| **ID form reference** | A cross-repo reference written as `<PREFIX>-<DOMAIN>-<NUMBER>` (e.g. `RULE-ARCH-016`), never as a bare file path or title. |
-| **Cross-repo path** | A filesystem path that starts in one repository and references a file in another. MUST NOT appear in `Related:`/`Aligned_with:` headers; MAY appear in prose with an ID anchor. |
+| Term                     | Definition                                                                                                                                                                      |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Orchestrator**         | The `Z-ai-platform` repository. Layer L0. Pins the three submodules and runs cross-repo CI.                                                                                     |
+| **Submodule**            | A git submodule pinned by the orchestrator. Three exist: `standards/`, `guard/`, `skills/`.                                                                                     |
+| **Layer**                | One of L0 (orchestrator), L1 (standards), L2 (rules/procedures/tools), L3 (skills). Determines which `Related:` edges are legal.                                                |
+| **Pointer**              | The commit SHA recorded by git in the orchestrator's index for a given submodule. Bumping a pointer = recording a new SHA.                                                      |
+| **Pointer bump**         | A commit in the orchestrator that changes exactly one submodule's recorded SHA. MUST be atomic per submodule.                                                                   |
+| **Atomic per submodule** | A single orchestrator commit touches at most one submodule's pointer. The orchestrator's own files (README, CI, hooks) MAY be touched in the same commit.                       |
+| **Clean URL**            | A submodule URL in `.gitmodules` that uses the `https://github.com/<owner>/<repo>.git` form with no embedded credentials.                                                       |
+| **Recursive clone**      | `git clone --recurse-submodules <url>` — must produce a working tree with all three submodules checked out at the pinned SHAs.                                                  |
+| **ID form reference**    | A cross-repo reference written as `<PREFIX>-<DOMAIN>-<NUMBER>` (e.g. `RULE-ARCH-016`), never as a bare file path or title.                                                      |
+| **Cross-repo path**      | A filesystem path that starts in one repository and references a file in another. MUST NOT appear in `Related:`/`Aligned_with:` headers; MAY appear in prose with an ID anchor. |
 
 ---
 
@@ -113,12 +113,12 @@ The Z-ai ecosystem consists of exactly four repositories. Adding or
 removing a repository requires a major-version bump of this standard
 (v1.x -> v2.0) and a migration entry in `Z-ai-platform/MIGRATIONS.md`.
 
-| Repository | URL | Layer | Purpose |
-|---|---|---|---|
-| `Z-ai-platform` | `https://github.com/stsgs1980/Z-ai-platform.git` | L0 | Orchestrator: pins submodules, runs cross-repo CI |
-| `Z-ai-standards` | `https://github.com/stsgs1980/Z-ai-standards.git` | L1 | Standards (`STD-*`), verifiers (`verify-standards.js`, `verify-id-graph.js`) |
-| `Z-ai-guard` | `https://github.com/stsgs1980/Z-ai-guard.git` | L2 | Rules (`RULE-*`), procedures (`PROC-*`), tools (`TOOL-*`) |
-| `Z-ai-skills` | `https://github.com/stsgs1980/Z-ai-skills.git` | L3 | Skills (`ZAI-*`), skill catalog, skill runtime integration |
+| Repository       | URL                                               | Layer | Purpose                                                                      |
+| ---------------- | ------------------------------------------------- | ----- | ---------------------------------------------------------------------------- |
+| `Z-ai-platform`  | `https://github.com/stsgs1980/Z-ai-platform.git`  | L0    | Orchestrator: pins submodules, runs cross-repo CI                            |
+| `Z-ai-standards` | `https://github.com/stsgs1980/Z-ai-standards.git` | L1    | Standards (`STD-*`), verifiers (`verify-standards.js`, `verify-id-graph.js`) |
+| `Z-ai-guard`     | `https://github.com/stsgs1980/Z-ai-guard.git`     | L2    | Rules (`RULE-*`), procedures (`PROC-*`), tools (`TOOL-*`)                    |
+| `Z-ai-skills`    | `https://github.com/stsgs1980/Z-ai-skills.git`    | L3    | Skills (`ZAI-*`), skill catalog, skill runtime integration                   |
 
 The orchestrator pins the three submodules via `.gitmodules`:
 
@@ -149,7 +149,7 @@ The 4-repo split exists so each layer can evolve independently:
    repositories pick it up via `git submodule update` on their own
    schedule. A monorepo would force every rule and skill to be
    re-validated on every standards change.
-2. **Guard can ship rule changes on its own cadence.** A new RULE-MONOLITH-NNN
+2. **Guard can ship rule changes on its own cadence.** A new RULE-NNN
    can land in `Z-ai-guard` and be deployed to consumer projects via a
    pointer bump, without dragging in unrelated standards or skills
    changes.
@@ -192,14 +192,14 @@ Each artifact in the Z-ai ecosystem belongs to exactly one layer.
 Layer membership is determined by the artifact's ID prefix per
 STD-META-001 §2.1:
 
-| ID prefix | Layer | Owning repository | Repository path |
-|---|---|---|---|
-| (none) | L0 | `Z-ai-platform` | top-level files (`.gitmodules`, `README.md`, `CONTRIBUTING.md`, `install-hooks.sh`, `.github/workflows/*`, `scripts/*`) |
-| `STD-` | L1 | `Z-ai-standards` | `standards/standards/*.md` |
-| `RULE-` | L2 | `Z-ai-guard` | `guard/rules/*.md` |
-| `PROC-` | L2 | `Z-ai-guard` | `guard/procedures/*.md` (currently inline in `rules/` per existing convention) |
-| `TOOL-` | L2 | `Z-ai-guard` | `guard/tools/*` and `standards/scripts/verify-*.js` |
-| `ZAI-` | L3 | `Z-ai-skills` | `skills/skills/<skill-name>/SKILL.md` |
+| ID prefix | Layer | Owning repository | Repository path                                                                                                         |
+| --------- | ----- | ----------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| (none)    | L0    | `Z-ai-platform`   | top-level files (`.gitmodules`, `README.md`, `CONTRIBUTING.md`, `install-hooks.sh`, `.github/workflows/*`, `scripts/*`) |
+| `STD-`    | L1    | `Z-ai-standards`  | `standards/standards/*.md`                                                                                              |
+| `RULE-`   | L2    | `Z-ai-guard`      | `guard/rules/*.md`                                                                                                      |
+| `PROC-`   | L2    | `Z-ai-guard`      | `guard/procedures/*.md` (currently inline in `rules/` per existing convention)                                          |
+| `TOOL-`   | L2    | `Z-ai-guard`      | `guard/tools/*` and `standards/scripts/verify-*.js`                                                                     |
+| `ZAI-`    | L3    | `Z-ai-skills`     | `skills/skills/<skill-name>/SKILL.md`                                                                                   |
 
 An artifact MUST NOT be moved between layers without a migration entry
 in `MIGRATIONS.md` of the losing repository. Migrations follow the
@@ -267,7 +267,7 @@ rectangle "L1: Standards (normative)" <<std>> as STD {
   rectangle "20 standards in standards/standards/" as STD_FILES
 }
 rectangle "L2: Guard rules (enforcement)" <<guard>> as GUARD {
-  rectangle "17 RULE-MONOLITH-* + RULE-ENV-* in Z-ai-guard/rules/" as GUARD_FILES
+  rectangle "17 RULE-* in Z-ai-guard/rules/" as GUARD_FILES
 }
 rectangle "L3: Skills (ZAI implementation)" <<skill>> as SKILL {
   rectangle "35 skill directories in Z-ai-skills/skills/" as SKILL_FILES
@@ -309,21 +309,21 @@ end note
 
 ### 5A.2. Direction rules
 
-| Rule | Statement | Enforcement |
-|------|-----------|-------------|
-| C-1 | Changes propagate **downward** only (L1 -> L2 -> L3 -> L4). | Code review; G04 layer matrix blocks upward edges. |
-| C-2 | No layer may redefine semantics declared by a layer above it. | G04 + W03 (dead-standard warning catches orphan lower-layer artifacts). |
-| C-3 | When a standard changes semantics, every RULE/ZAI/SKILL declaring `Related:` to it MUST be reviewed in the same release window. | Manual review checklist in PR template (TODO: link to CONTRIBUTING). |
-| C-4 | When a RULE changes its enforcement contract, every skill declaring `Related:` to that RULE MUST be reviewed. | Same as C-3. |
-| C-5 | Runtime projects MUST NOT carry local copies of standards or rules. They consume the orchestrator's pinned submodule pointers. | `verify-standards.js` V14 (planned) + manual review. |
-| C-6 | A lower layer MAY propose a change to an upper layer, but only via a PR to the upper repo — never via in-place edit at runtime. | Submodule immutability (RULE-MONOLITH-016) + pointer update protocol (§8 of this standard). |
+| Rule | Statement                                                                                                                       | Enforcement                                                                             |
+| ---- | ------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| C-1  | Changes propagate **downward** only (L1 -> L2 -> L3 -> L4).                                                                     | Code review; G04 layer matrix blocks upward edges.                                      |
+| C-2  | No layer may redefine semantics declared by a layer above it.                                                                   | G04 + W03 (dead-standard warning catches orphan lower-layer artifacts).                 |
+| C-3  | When a standard changes semantics, every RULE/ZAI/SKILL declaring `Related:` to it MUST be reviewed in the same release window. | Manual review checklist in PR template (TODO: link to CONTRIBUTING).                    |
+| C-4  | When a RULE changes its enforcement contract, every skill declaring `Related:` to that RULE MUST be reviewed.                   | Same as C-3.                                                                            |
+| C-5  | Runtime projects MUST NOT carry local copies of standards or rules. They consume the orchestrator's pinned submodule pointers.  | `verify-standards.js` V14 (planned) + manual review.                                    |
+| C-6  | A lower layer MAY propose a change to an upper layer, but only via a PR to the upper repo — never via in-place edit at runtime. | Submodule immutability (RULE-ARCH-016) + pointer update protocol (§8 of this standard). |
 
 ### 5A.3. Anti-patterns
 
 These patterns are **forbidden** by the cascade model:
 
 1. **Upward propagation.** A skill edit that silently changes the meaning of a standard. Blocked by G04 (STD <- ZAI is not allowed as a `Related:` edge — skills can declare Related: to standards, but standards cannot declare Related: to skills).
-2. **Local fork.** A runtime project that vendors a modified copy of a standard. Blocked by C-5 + RULE-MONOLITH-016.
+2. **Local fork.** A runtime project that vendors a modified copy of a standard. Blocked by C-5 + RULE-ARCH-016.
 3. **Silent enforcement.** A guard rule that enforces a standard the standard never declared. Caught by G02 (Related: must resolve) and W03 (orphan standard = no rule references it).
 4. **Stale pointer.** A runtime project pinned to an old submodule SHA while a newer standard has shipped. Caught by nightly CI trigger (§10.3) — nightly runs against latest `main` of submodules, surfacing drift.
 
@@ -332,12 +332,12 @@ These patterns are **forbidden** by the cascade model:
 When ENV-002 §3.0 Bootstrap Procedure was added (2026-06-18), the
 cascade produced these downstream reviews:
 
-| Layer | Artifact | Required review action | Result |
-|-------|----------|------------------------|--------|
-| L1 | `ENV-002-zai-integration.md` v1.3 | Author the new §3.0 + bump version | Done (commit `c0d1dbe`) |
-| L2 | `Z-ai-guard/rules/RULE-ENV-008.md` (if it enforces bootstrap) | Verify rule still enforces correct section number; update if section moved | No rule currently enforces bootstrap — no action needed |
-| L3 | Skills declaring `Related: STD-ENV-002` | Verify skill instructions still match new §3.0 | No skills currently declare this — no action needed |
-| L4 | Runtime projects using this standard | Re-read standard at next session start; new §3.0 is purely additive (no existing semantics changed) | Will be picked up at next pointer bump |
+| Layer | Artifact                                                      | Required review action                                                                              | Result                                                  |
+| ----- | ------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- | ------------------------------------------------------- |
+| L1    | `ENV-002-zai-integration.md` v1.3                             | Author the new §3.0 + bump version                                                                  | Done (commit `c0d1dbe`)                                 |
+| L2    | `Z-ai-guard/rules/RULE-ENV-008.md` (if it enforces bootstrap) | Verify rule still enforces correct section number; update if section moved                          | No rule currently enforces bootstrap — no action needed |
+| L3    | Skills declaring `Related: STD-ENV-002`                       | Verify skill instructions still match new §3.0                                                      | No skills currently declare this — no action needed     |
+| L4    | Runtime projects using this standard                          | Re-read standard at next session start; new §3.0 is purely additive (no existing semantics changed) | Will be picked up at next pointer bump                  |
 
 This example shows a **purely additive** L1 change — cascade produced
 zero downstream edits because no L2/L3 artifact declared a dependency
@@ -346,14 +346,14 @@ on the specific section number that moved.
 ### 5A.5. Cross-references
 
 - §5 of this standard defines layer assignment; §5A defines the
-direction of propagation between those layers.
+  direction of propagation between those layers.
 - §10.2 of this standard defines cross-repo HARD checks (G01-G15);
-§5A.2 above explains how G04 enforces cascade direction.
+  §5A.2 above explains how G04 enforces cascade direction.
 - `verify-id-graph.js` W03 warning catches L1 standards that no L2/L3
-artifact references (dead-standard signal — cascade is broken at L1).
+  artifact references (dead-standard signal — cascade is broken at L1).
 - `verify-id-graph.js` W13 warning (v1.1.0+) catches broken cross-doc
-references that would prevent cascade propagation from being
-machine-traceable.
+  references that would prevent cascade propagation from being
+  machine-traceable.
 
 ---
 
@@ -402,13 +402,13 @@ This includes:
 
 - Copying `standards/scripts/verify-id-graph.js` to
   `Z-ai-platform/scripts/verify-id-graph.js`.
-- Copying `guard/rules/RULE-MONOLITH-016.md` to
-  `Z-ai-platform/RULE-MONOLITH-016.md`.
+- Copying `guard/rules/RULE-ARCH-016.md` to
+  `Z-ai-platform/RULE-ARCH-016.md`.
 - Copying `skills/skills/skill-creator/SKILL.md` to
   `Z-ai-platform/skill-creator.md`.
 
 Inlined copies drift from the canonical source within days. They are
-FORBIDDEN. This rule extends RULE-MONOLITH-016 (submodule immutability)
+FORBIDDEN. This rule extends RULE-ARCH-016 (submodule immutability)
 to the orchestrator's own layout.
 
 ### 6.4. Submodule Internal Layout
@@ -416,11 +416,11 @@ to the orchestrator's own layout.
 Each submodule MUST expose a predictable internal layout so that
 `verify-id-graph.js` can find artifacts without per-repo configuration:
 
-| Submodule | Required paths | Notes |
-|---|---|---|
-| `standards/` | `standards/*.md`, `scripts/verify-*.js`, `MIGRATIONS.md` | All `STD-*` files live in `standards/standards/` |
-| `guard/` | `rules/*.md`, `INDEX.md` | All `RULE-*` files live in `guard/rules/` |
-| `skills/` | `skills/<skill-name>/SKILL.md`, `skills/INDEX.md` | All `ZAI-*` skills live one level under `skills/skills/` (note the doubled `skills/` — this is intentional: `skills/` is the submodule path, `skills/` inside it is the skill catalog root) |
+| Submodule    | Required paths                                           | Notes                                                                                                                                                                                       |
+| ------------ | -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `standards/` | `standards/*.md`, `scripts/verify-*.js`, `MIGRATIONS.md` | All `STD-*` files live in `standards/standards/`                                                                                                                                            |
+| `guard/`     | `rules/*.md`, `INDEX.md`                                 | All `RULE-*` files live in `guard/rules/`                                                                                                                                                   |
+| `skills/`    | `skills/<skill-name>/SKILL.md`, `skills/INDEX.md`        | All `ZAI-*` skills live one level under `skills/skills/` (note the doubled `skills/` — this is intentional: `skills/` is the submodule path, `skills/` inside it is the skill catalog root) |
 
 The doubled `skills/skills/` path is a known wrinkle. It exists because
 the submodule name is `skills` (matching the path) and the skill
@@ -435,7 +435,7 @@ conventions.
 ### 7.1. ID Form is Mandatory in Headers
 
 In `Related:` and `Aligned_with:` header fields, references MUST use
-ID form (`RULE-ARCH-016`), never file paths (`guard/rules/RULE-MONOLITH-016.md`).
+ID form (`RULE-ARCH-016`), never file paths (`guard/rules/RULE-ARCH-016.md`).
 This is enforced by `verify-id-graph.js` G02 (references must resolve)
 and G12 (format violations).
 
@@ -447,10 +447,12 @@ convenience, but the ID MUST be present:
 
 ```markdown
 <!-- GOOD -->
+
 This procedure implements **RULE-ENV-008** by enforcing the sandbox
 constraints declared in **STD-ENV-001**.
 
 <!-- BAD — file path alone, no ID -->
+
 This procedure implements `guard/rules/RULE-ENV-008.md` by enforcing
 the sandbox constraints declared in `standards/ENV-001-reproducibility.md`.
 ```
@@ -464,11 +466,11 @@ script's own location. The orchestrator root is the directory containing
 
 ```javascript
 // GOOD — resolve from orchestrator root
-const platformRoot = path.resolve(__dirname, '..', '..', '..');
-const verifyScript = path.join(platformRoot, 'standards', 'scripts', 'verify-id-graph.js');
+const platformRoot = path.resolve(__dirname, "..", "..", "..");
+const verifyScript = path.join(platformRoot, "standards", "scripts", "verify-id-graph.js");
 
 // BAD — assumes cwd, breaks when invoked from elsewhere
-const verifyScript = 'standards/scripts/verify-id-graph.js';
+const verifyScript = "standards/scripts/verify-id-graph.js";
 ```
 
 The `verify-id-graph.js` script itself follows this convention: it
@@ -591,7 +593,7 @@ of:
 
 In all three cases, the recovery is `git revert` followed by a corrected
 commit. DO NOT force-push to the orchestrator's `main` — branch
-protection should be enabled (per RULE-MONOLITH-017 §"Enforcement
+protection should be enabled (per RULE-ARCH-017 §"Enforcement
 layers").
 
 ### 9.2. Recursive Clone Fails
@@ -634,16 +636,16 @@ require `git revert`.
 
 Each repository runs its own per-repo checks in its own CI:
 
-| Repository | Check | Tool | Strictness |
-|---|---|---|---|
-| `Z-ai-standards` | Header format conforms to STD-META-001 §5 | `verify-standards.js` V05/V11 | HARD |
-| `Z-ai-standards` | Registry sync (§4 of each STD file) | `verify-standards.js` V05 extended | HARD |
-| `Z-ai-standards` | `Related:` references resolve within repo | `verify-standards.js` V12 | HARD |
-| `Z-ai-guard` | Rule headers conform to format | `verify-standards.js` V05 | HARD |
-| `Z-ai-guard` | Rule registry sync | `verify-standards.js` V05 extended | HARD |
-| `Z-ai-skills` | YAML frontmatter parses | `verify-standards.js` V13a | HARD |
-| `Z-ai-skills` | Required fields present | `verify-standards.js` V13b | HARD |
-| `Z-ai-skills` | `name` matches folder | `verify-standards.js` V11b | HARD |
+| Repository       | Check                                     | Tool                               | Strictness |
+| ---------------- | ----------------------------------------- | ---------------------------------- | ---------- |
+| `Z-ai-standards` | Header format conforms to STD-META-001 §5 | `verify-standards.js` V05/V11      | HARD       |
+| `Z-ai-standards` | Registry sync (§4 of each STD file)       | `verify-standards.js` V05 extended | HARD       |
+| `Z-ai-standards` | `Related:` references resolve within repo | `verify-standards.js` V12          | HARD       |
+| `Z-ai-guard`     | Rule headers conform to format            | `verify-standards.js` V05          | HARD       |
+| `Z-ai-guard`     | Rule registry sync                        | `verify-standards.js` V05 extended | HARD       |
+| `Z-ai-skills`    | YAML frontmatter parses                   | `verify-standards.js` V13a         | HARD       |
+| `Z-ai-skills`    | Required fields present                   | `verify-standards.js` V13b         | HARD       |
+| `Z-ai-skills`    | `name` matches folder                     | `verify-standards.js` V11b         | HARD       |
 
 ### 10.2. Cross-Repository Checks
 
@@ -652,15 +654,15 @@ The orchestrator runs cross-repo checks in its CI (the
 submodule's CI because they require all four repositories to be
 checked out simultaneously.
 
-| Check | Tool | Strictness | What it validates |
-|---|---|---|---|
-| G01: No duplicate IDs across repos | `verify-id-graph.js` | SOFT | Two artifacts in different repos don't claim the same ID |
-| G02: All `Related:` references resolve | `verify-id-graph.js` | HARD | Every `Related:` target exists somewhere in the 4-repo graph |
-| G03: No cycles in `Related:` graph | `verify-id-graph.js` | HARD | The directed graph has no cycles |
-| G04: Layer matrix respected | `verify-id-graph.js` | HARD | `Related:` edges conform to STD-META-001 §6.1 |
-| G07: No STD -> (RULE/PROC/TOOL/ZAI) | `verify-id-graph.js` | HARD | Standards are self-contained (this standard's §5.2) |
-| G14: Compatibility DAG valid for ZAI | `verify-id-graph.js` | HARD | Skill compatibility fields respect STD-META-001 §6.4 |
-| G15: Aligned_with has Related edge | `verify-id-graph.js` | HARD | Aligned_with declarations are backed by a dependency |
+| Check                                  | Tool                 | Strictness | What it validates                                            |
+| -------------------------------------- | -------------------- | ---------- | ------------------------------------------------------------ |
+| G01: No duplicate IDs across repos     | `verify-id-graph.js` | SOFT       | Two artifacts in different repos don't claim the same ID     |
+| G02: All `Related:` references resolve | `verify-id-graph.js` | HARD       | Every `Related:` target exists somewhere in the 4-repo graph |
+| G03: No cycles in `Related:` graph     | `verify-id-graph.js` | HARD       | The directed graph has no cycles                             |
+| G04: Layer matrix respected            | `verify-id-graph.js` | HARD       | `Related:` edges conform to STD-META-001 §6.1                |
+| G07: No STD -> (RULE/PROC/TOOL/ZAI)    | `verify-id-graph.js` | HARD       | Standards are self-contained (this standard's §5.2)          |
+| G14: Compatibility DAG valid for ZAI   | `verify-id-graph.js` | HARD       | Skill compatibility fields respect STD-META-001 §6.4         |
+| G15: Aligned_with has Related edge     | `verify-id-graph.js` | HARD       | Aligned_with declarations are backed by a dependency         |
 
 ### 10.3. CI Triggers
 
@@ -694,7 +696,7 @@ This section documents discovered inconsistencies, missing content, and proposed
 
 ### ARCH-001-002 `[OPEN]` — §5A.3 references planned verifier `verify-standards.js V14` that does not exist yet
 
-**Problem:** §5A.3 anti-pattern #2 says "Blocked by C-5 + RULE-MONOLITH-016". §5A.2 rule C-5 says "verify-standards.js V14 (planned) + manual review". The V14 check is planned but not implemented. As of 2026-06-18, only manual review catches local forks of standards in runtime projects.
+**Problem:** §5A.3 anti-pattern #2 says "Blocked by C-5 + RULE-ARCH-016". §5A.2 rule C-5 says "verify-standards.js V14 (planned) + manual review". The V14 check is planned but not implemented. As of 2026-06-18, only manual review catches local forks of standards in runtime projects.
 
 **Proposed solution:** Implement `verify-standards.js V14` — scan project tree for files matching `standards/<DOMAIN>-<NNN>-<name>.md` pattern that are NOT part of the orchestrator's submodule pin. Lower priority than W13 sweep (75 broken refs) and W11 CRITICAL (DESIGN-001 split).
 
@@ -707,6 +709,7 @@ This section documents discovered inconsistencies, missing content, and proposed
 ### ARCH-001-004 `[OPEN]` — §5A references planned artifacts not yet shipped (RULE-ENV-008, skills/INDEX.md, doctor.sh)
 
 **Problem:** §5A cascade diagram and worked example reference artifacts that do not exist yet:
+
 - `Z-ai-guard/rules/RULE-ENV-008.md` (planned rule for bootstrap enforcement)
 - `Z-ai-skills/skills/INDEX.md` (planned skills tree index)
 - `Z-ai-platform/doctor.sh` (planned diagnostics script)
@@ -728,13 +731,13 @@ These references are intentional — they describe the target state of the casca
 - **STD-DOC-002** — Documentation conventions (header formats, section
   ordering, cross-reference syntax). This standard follows STD-DOC-002
   for its own document structure.
-- **RULE-MONOLITH-016** (in `Z-ai-guard`) — Submodule immutability rule.
-  This standard formalizes the architecture that RULE-MONOLITH-016
+- **RULE-ARCH-016** (in `Z-ai-guard`) — Submodule immutability rule.
+  This standard formalizes the architecture that RULE-ARCH-016
   protects. The rule references this standard via its own `Related:`
   field (RULE -> STD is allowed per STD-META-001 §6.1).
-- **RULE-MONOLITH-017** (in `Z-ai-guard`) — Upstream write protection
+- **RULE-ARCH-017** (in `Z-ai-guard`) — Upstream write protection
   rule. This standard defines the submodule topology that
-  RULE-MONOLITH-017 governs write access to.
+  RULE-ARCH-017 governs write access to.
 - **`Z-ai-platform/README.md`** — Informal overview of the platform.
   When in conflict, this standard wins.
 - **`Z-ai-platform/CONTRIBUTING.md`** — Procedural guide for
@@ -746,10 +749,10 @@ These references are intentional — they describe the target state of the casca
 
 ## 12. Change History
 
-| Version | Date | Changes |
-|---|---|---|
-| 0.1.0 | 2026-06-17 | Stub. Reserved the ID. Listed intended scope. |
-| 1.0.0 | 2026-06-17 | Full normative standard. Adds: repository topology (§4), layer assignment (§5), submodule conventions (§6), cross-repo path references (§7), pointer update protocol (§8), recovery procedures (§9), validation matrix (§10). Promoted from `[B] Recommended` to `[C] Critical`. |
-| 1.1.0 | 2026-06-18 | Added §5A Cascade State and Propagation Direction (cascade diagram, 6 direction rules C-1..C-6, 4 anti-patterns, worked example for STD-ENV-002 v1.2 -> v1.3 bump). Added §10A Known Issues (ARCH-001-001 resolved, ARCH-001-002/003 open). Closes W12 warning on this file. |
-| 1.1.1 | 2026-06-18 | Added ARCH-001-004 Known Issue (§5A references to planned artifacts documented, W13 whitelist in verify-id-graph.js v1.1.2 covers them). |
-| 1.1.2 | 2026-06-18 | Retired dead scripts. Dropped `verify-cascade.js` from §4.1 L1 verifier list (TOOL-VERIFY-003 RETIRED in META-001 §4.15). Dropped `scripts/*.js` from §5 L0 layout (parent `scripts/` directory removed — was empty after `cross-validator-test.js` deletion). Replaced §6.2 reference to `cross-validator-test.js` with the actual live verifiers (`verify-standards.js` + `verify-id-graph.js` run by pre-commit hook + CI). |
+| Version | Date       | Changes                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| ------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 0.1.0   | 2026-06-17 | Stub. Reserved the ID. Listed intended scope.                                                                                                                                                                                                                                                                                                                                                                                  |
+| 1.0.0   | 2026-06-17 | Full normative standard. Adds: repository topology (§4), layer assignment (§5), submodule conventions (§6), cross-repo path references (§7), pointer update protocol (§8), recovery procedures (§9), validation matrix (§10). Promoted from `[B] Recommended` to `[C] Critical`.                                                                                                                                               |
+| 1.1.0   | 2026-06-18 | Added §5A Cascade State and Propagation Direction (cascade diagram, 6 direction rules C-1..C-6, 4 anti-patterns, worked example for STD-ENV-002 v1.2 -> v1.3 bump). Added §10A Known Issues (ARCH-001-001 resolved, ARCH-001-002/003 open). Closes W12 warning on this file.                                                                                                                                                   |
+| 1.1.1   | 2026-06-18 | Added ARCH-001-004 Known Issue (§5A references to planned artifacts documented, W13 whitelist in verify-id-graph.js v1.1.2 covers them).                                                                                                                                                                                                                                                                                       |
+| 1.1.2   | 2026-06-18 | Retired dead scripts. Dropped `verify-cascade.js` from §4.1 L1 verifier list (TOOL-VERIFY-003 RETIRED in META-001 §4.15). Dropped `scripts/*.js` from §5 L0 layout (parent `scripts/` directory removed — was empty after `cross-validator-test.js` deletion). Replaced §6.2 reference to `cross-validator-test.js` with the actual live verifiers (`verify-standards.js` + `verify-id-graph.js` run by pre-commit hook + CI). |

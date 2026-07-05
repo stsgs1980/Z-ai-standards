@@ -183,7 +183,7 @@ for (const file of files) {
     if (bqIdMatch) id = bqIdMatch[1];
   }
 
-  // Heading-based ID (e.g. `# RULE-MONOLITH-001: ...`)
+  // Heading-based ID (e.g. `# RULE-ANSWER-001: ...`)
   if (!id) {
     const hMatch = raw.match(/^#\s+(STD|RULE|PROC|TOOL|ZAI)-([A-Z]+)-(\d{3})\b/);
     if (hMatch) id = hMatch[0].match(/(STD|RULE|PROC|TOOL|ZAI)-[A-Z]+-\d{3}/)[0];
