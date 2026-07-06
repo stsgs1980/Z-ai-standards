@@ -5,7 +5,7 @@
 > Status: ACTIVE
 > Level: **[C] Critical**
 > Last Updated: 2026-06-19
-> Related: STD-FE-001 (frontend), STD-DESIGN-001 (design system), STD-TEST-001 (testing — forward reference; A11Y-001 installed at #13, TEST-001 at #18; see §11 for the testing cross-link), STD-META-001 (ID system), https://www.w3.org/TR/WCAG21/
+> Related: STD-FE-001 (frontend), STD-DESIGN-001 (design system), STD-META-001 (ID system), https://www.w3.org/TR/WCAG21/
 > Entry point: `bash scripts/check-md.sh [path]` (Markdown hygiene only — this standard has no a11y-specific CLI yet; see §8.2 for jest-axe + Lighthouse commands)
 
 ---
@@ -16,10 +16,10 @@
 
 Minimum contrast ratios:
 
-| Element type | Normal text (< 18px / < 14px bold) | Large text (>= 18px / >= 14px bold) |
-|---|---|---|
-| Minimum (AA) | 4.5:1 | 3:1 |
-| Enhanced (AAA) | 7:1 | 4.5:1 |
+| Element type   | Normal text (< 18px / < 14px bold) | Large text (>= 18px / >= 14px bold) |
+| -------------- | ---------------------------------- | ----------------------------------- |
+| Minimum (AA)   | 4.5:1                              | 3:1                                 |
+| Enhanced (AAA) | 7:1                                | 4.5:1                               |
 
 **Rule:** Every theme preset MUST pass AA for ALL token color pairs used in text.
 
@@ -43,7 +43,7 @@ Applies to:
 - Selection indicators, toggles, checkboxes
 - Icons used for state (not decorative)
 
-**Clarification on state components (checkboxes, toggles, radio buttons):** The 3:1 ratio applies to the **boundary or fill** of the component against the surrounding background, NOT to the internal symbol (checkmark, dot) against the component's own fill. The checkmark inside a checkbox only needs to be perceivable *given* the component is perceivable — the component's boundary is the user's first affordance.
+**Clarification on state components (checkboxes, toggles, radio buttons):** The 3:1 ratio applies to the **boundary or fill** of the component against the surrounding background, NOT to the internal symbol (checkmark, dot) against the component's own fill. The checkmark inside a checkbox only needs to be perceivable _given_ the component is perceivable — the component's boundary is the user's first affordance.
 
 ```text
   Surrounding background (page)
@@ -123,15 +123,15 @@ Content MUST remain readable when the user overrides text spacing via browser se
 
 All interactive elements MUST be operable via keyboard.
 
-| Element | Key | Action |
-|---|---|---|
-| Button/Link | Enter / Space | Activate |
-| Tab/Option | Tab | Move focus |
-| Tab list | Left/Right arrow | Switch tab |
-| Listbox | Up/Down arrow | Navigate options |
-| Dialog | Escape | Close |
-| Accordion | Enter / Space | Toggle |
-| Menu | Up/Down arrow, Escape | Navigate, close |
+| Element     | Key                   | Action           |
+| ----------- | --------------------- | ---------------- |
+| Button/Link | Enter / Space         | Activate         |
+| Tab/Option  | Tab                   | Move focus       |
+| Tab list    | Left/Right arrow      | Switch tab       |
+| Listbox     | Up/Down arrow         | Navigate options |
+| Dialog      | Escape                | Close            |
+| Accordion   | Enter / Space         | Toggle           |
+| Menu        | Up/Down arrow, Escape | Navigate, close  |
 
 **Rule:** No `onClick` without keyboard equivalent. If using `onClick` on non-interactive element, add `role="button"` + `tabIndex={0}` + `onKeyDown`.
 
@@ -173,23 +173,27 @@ All interactive elements MUST have minimum 44x44px touch target.
 Every page MUST have a skip navigation link as the first focusable element. The target MUST be a semantic landmark with a stable `id`, not a generic region name.
 
 ```tsx
-{/* Required: skip to main content */}
+{
+  /* Required: skip to main content */
+}
 <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute ...">
   Skip to main content
-</a>
+</a>;
 
-{/* Optional: skip to primary navigation — ONLY if the page has a <nav aria-label="Main"> landmark */}
+{
+  /* Optional: skip to primary navigation — ONLY if the page has a <nav aria-label="Main"> landmark */
+}
 <a href="#primary-nav" className="sr-only focus:not-sr-only ...">
   Skip to navigation
-</a>
+</a>;
 ```
 
 **Targets must be semantic landmarks:**
 
-| Skip link target | Required HTML | When to use |
-|------------------|---------------|-------------|
-| `#main-content` | `<main id="main-content">` | Always — every page MUST have this |
-| `#primary-nav` | `<nav id="primary-nav" aria-label="Main">` | Optional — only on pages with a primary navigation landmark |
+| Skip link target | Required HTML                              | When to use                                                 |
+| ---------------- | ------------------------------------------ | ----------------------------------------------------------- |
+| `#main-content`  | `<main id="main-content">`                 | Always — every page MUST have this                          |
+| `#primary-nav`   | `<nav id="primary-nav" aria-label="Main">` | Optional — only on pages with a primary navigation landmark |
 
 **DO NOT use generic region names** as skip targets. Specifically:
 
@@ -223,7 +227,9 @@ Form errors MUST be:
 ```tsx
 <div>
   <input aria-invalid="true" aria-describedby="email-error" />
-  <p id="email-error" role="alert">Email is required</p>
+  <p id="email-error" role="alert">
+    Email is required
+  </p>
 </div>
 ```
 
@@ -239,28 +245,28 @@ Navigation MUST appear in the same relative order on every page.
 
 All UI components MUST have programmatically determinable name and role.
 
-| Component | Required ARIA |
-|---|---|
-| Tab list | `role="tablist"`, tabs: `role="tab"`, panels: `role="tabpanel"` |
-| Tab | `aria-selected`, `aria-controls` (tab), `aria-labelledby` (panel) |
-| Accordion | `aria-expanded`, `aria-controls` |
-| Dialog | `role="dialog"`, `aria-modal="true"`, `aria-labelledby` |
-| Progress | `role="progressbar"`, `aria-valuenow`, `aria-valuemin`, `aria-valuemax` |
-| Toggle | `aria-pressed` |
-| Menu | `role="menu"`, items: `role="menuitem"` |
-| Listbox | `role="listbox"`, options: `role="option"`, `aria-selected` |
-| Slider | `role="slider"`, `aria-valuenow`, `aria-valuemin`, `aria-valuemax` |
-| Checkbox | `aria-checked` (if custom) |
-| Radio | `aria-checked` (if custom) |
+| Component | Required ARIA                                                           |
+| --------- | ----------------------------------------------------------------------- |
+| Tab list  | `role="tablist"`, tabs: `role="tab"`, panels: `role="tabpanel"`         |
+| Tab       | `aria-selected`, `aria-controls` (tab), `aria-labelledby` (panel)       |
+| Accordion | `aria-expanded`, `aria-controls`                                        |
+| Dialog    | `role="dialog"`, `aria-modal="true"`, `aria-labelledby`                 |
+| Progress  | `role="progressbar"`, `aria-valuenow`, `aria-valuemin`, `aria-valuemax` |
+| Toggle    | `aria-pressed`                                                          |
+| Menu      | `role="menu"`, items: `role="menuitem"`                                 |
+| Listbox   | `role="listbox"`, options: `role="option"`, `aria-selected`             |
+| Slider    | `role="slider"`, `aria-valuenow`, `aria-valuemin`, `aria-valuemax`      |
+| Checkbox  | `aria-checked` (if custom)                                              |
+| Radio     | `aria-checked` (if custom)                                              |
 
 **Library note — when these requirements are already satisfied:** The rules above apply to **custom-built components** (i.e., components you write from scratch with plain `<div>` / `<button>` / `<span>` elements). When using an accessibility-focused component library, the library's API is the contract — do NOT add ARIA attributes on top:
 
-| Library | How ARIA is provided | What you MUST do |
-|---------|---------------------|------------------|
-| **shadcn/ui** | Roles + states baked into the JSX primitives (Radix UI underneath) | Use the library's documented props (e.g., `Dialog`, `Tabs`, `Accordion`). Do NOT override `role`, `aria-modal`, etc. manually. |
-| **Radix UI** | Same as shadcn/ui (Radix is the primitive layer) | Follow the Radix API. Override only when the library exposes a prop for it (e.g., `aria-label` on `Trigger`). |
-| **React Aria (Adobe)** | Hooks (`useTab`, `useDialog`) return props spreads that include ARIA | Spread the hook's returned props onto your element. Do NOT add ARIA manually. |
-| **Headless UI** | Components ship with correct ARIA baked in | Same as shadcn/ui — use the documented API. |
+| Library                | How ARIA is provided                                                 | What you MUST do                                                                                                               |
+| ---------------------- | -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| **shadcn/ui**          | Roles + states baked into the JSX primitives (Radix UI underneath)   | Use the library's documented props (e.g., `Dialog`, `Tabs`, `Accordion`). Do NOT override `role`, `aria-modal`, etc. manually. |
+| **Radix UI**           | Same as shadcn/ui (Radix is the primitive layer)                     | Follow the Radix API. Override only when the library exposes a prop for it (e.g., `aria-label` on `Trigger`).                  |
+| **React Aria (Adobe)** | Hooks (`useTab`, `useDialog`) return props spreads that include ARIA | Spread the hook's returned props onto your element. Do NOT add ARIA manually.                                                  |
+| **Headless UI**        | Components ship with correct ARIA baked in                           | Same as shadcn/ui — use the documented API.                                                                                    |
 
 **Failure mode this prevents:** Copying a custom-component example from this standard and pasting `role="tab"` / `aria-controls` onto a `<TabsTrigger>` from shadcn/ui produces **duplicate or conflicting ARIA** — the library already sets these attributes, and the manual override either no-ops or breaks the library's internal state synchronization.
 
@@ -288,7 +294,9 @@ All animations MUST respect `prefers-reduced-motion`.
 
 ```css
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
+  *,
+  *::before,
+  *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
@@ -304,7 +312,7 @@ All animations MUST respect `prefers-reduced-motion`.
 const prefersReducedMotion = usePrefersReducedMotion();
 
 // Conditional animation
-<motion.div animate={prefersReducedMotion ? {} : { opacity: 1, y: 0 }} />
+<motion.div animate={prefersReducedMotion ? {} : { opacity: 1, y: 0 }} />;
 ```
 
 ---
@@ -332,13 +340,13 @@ Every component MUST pass this checklist before merge:
 
 Each theme preset MUST document its contrast ratios:
 
-| Token pair | Champagne | Cyan Night | Zinc | Champagne Light | Cyan Morning |
-|---|---|---|---|---|---|
-| foreground / background | | | | | |
-| muted / background | | | | | |
-| muted-foreground / card | | | | | |
-| destructive / background | | | | | |
-| ring / background | | | | | |
+| Token pair               | Champagne | Cyan Night | Zinc | Champagne Light | Cyan Morning |
+| ------------------------ | --------- | ---------- | ---- | --------------- | ------------ |
+| foreground / background  |           |            |      |                 |              |
+| muted / background       |           |            |      |                 |              |
+| muted-foreground / card  |           |            |      |                 |              |
+| destructive / background |           |            |      |                 |              |
+| ring / background        |           |            |      |                 |              |
 
 Filled values MUST show ratio >= 4.5:1 for normal text.
 
@@ -366,13 +374,13 @@ Filled values MUST show ratio >= 4.5:1 for normal text.
 
 ## 9. Cross-References
 
-| Standard | Relationship |
-|----------|-------------|
-| STD-FE-001 | Frontend Standard references this standard for theme contrast validation (Section 11.5) and component accessibility patterns. FE-001 §11.5 updated in sync with A11Y-001 v1.3 to reference the automated contrast report (§7) instead of the deprecated empty table. |
-| STD-TEST-001 | Testing Standard — §8.2 of this standard adds jest-axe + Lighthouse gates that complement the unit/integration coverage rules in STD-TEST-001. Recommended for inclusion in STD-TEST-001 §3 (test categories) in a future version. |
-| STD-DOC-005 | Accessible code examples in documentation |
-| STD-DESIGN-001 | Design System Standard: §4.2 Light/Dark Variants must satisfy WCAG AA ratios from §1.1 of this standard. §11 Animation tokens (P12) must respect the `prefers-reduced-motion` requirement in §5.1 of this standard. |
-| STD-META-001 | Standard ID System: registry entry for STD-A11Y-001 must be kept in sync with the version in this document's header. Previous registry listed this standard as DEPRECATED — corrected to ACTIVE in STD-META-001 v1.2 (see A11Y-001 below). |
+| Standard       | Relationship                                                                                                                                                                                                                                                         |
+| -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| STD-FE-001     | Frontend Standard references this standard for theme contrast validation (Section 11.5) and component accessibility patterns. FE-001 §11.5 updated in sync with A11Y-001 v1.3 to reference the automated contrast report (§7) instead of the deprecated empty table. |
+| STD-TEST-001   | Testing Standard — §8.2 of this standard adds jest-axe + Lighthouse gates that complement the unit/integration coverage rules in STD-TEST-001. Recommended for inclusion in STD-TEST-001 §3 (test categories) in a future version.                                   |
+| STD-DOC-005    | Accessible code examples in documentation                                                                                                                                                                                                                            |
+| STD-DESIGN-001 | Design System Standard: §4.2 Light/Dark Variants must satisfy WCAG AA ratios from §1.1 of this standard. §11 Animation tokens (P12) must respect the `prefers-reduced-motion` requirement in §5.1 of this standard.                                                  |
+| STD-META-001   | Standard ID System: registry entry for STD-A11Y-001 must be kept in sync with the version in this document's header. Previous registry listed this standard as DEPRECATED — corrected to ACTIVE in STD-META-001 v1.2 (see A11Y-001 below).                           |
 
 ---
 
@@ -388,7 +396,7 @@ This section documents discovered inconsistencies, missing content, and proposed
 
 ### A11Y-002 `[RESOLVED in v1.2]` — Stack Signature cited WCAG itself instead of project stack
 
-**Problem:** The footer of this file read "Built with: WCAG 2.1 AA + WAI-ARIA 1.2". Per STD-DOC-002 §8 (Stack Signature), the format is `Built with: <project technologies>`, where the technologies are the project's tech stack (e.g., "Next.js 16 + TypeScript + Tailwind CSS"). WCAG 2.1 AA and WAI-ARIA 1.2 are standards/specifications, not project technologies — they describe what this standard *complies with*, not what it is *built with*. Every other standard in the project uses the conventional Next.js stack signature.
+**Problem:** The footer of this file read "Built with: WCAG 2.1 AA + WAI-ARIA 1.2". Per STD-DOC-002 §8 (Stack Signature), the format is `Built with: <project technologies>`, where the technologies are the project's tech stack (e.g., "Next.js 16 + TypeScript + Tailwind CSS"). WCAG 2.1 AA and WAI-ARIA 1.2 are standards/specifications, not project technologies — they describe what this standard _complies with_, not what it is _built with_. Every other standard in the project uses the conventional Next.js stack signature.
 
 **Resolution:** Footer updated to "Built with: Next.js 16 + TypeScript + Tailwind CSS" to match the convention used by all other standards. The WCAG/WAI-ARIA compliance declaration is already implicit in the standard's title ("WCAG 2.1 AA Accessibility") and does not need to be repeated in the stack signature.
 
@@ -446,9 +454,10 @@ This section documents discovered inconsistencies, missing content, and proposed
 
 ## 10. Version History
 
-| Version | Date | Changes |
-|--------|------|---------|
-| 1.0 | 2025-05 | Initial version |
-| 1.1 | 2026-05 | Added §7 Theme Contrast Requirements table (template); added §8.2 Automated Testing placeholder |
-| 1.2 | 2026-06 | Status corrected from DEPRECATED to ACTIVE in STD-META-001 registry (see A11Y-001). Stack Signature footer updated from "WCAG 2.1 AA + WAI-ARIA 1.2" to "Next.js 16 + TypeScript + Tailwind CSS" to match convention (see A11Y-002). Added STD-DESIGN-001 to Related and Cross-References (contrast requirements delegation). Added §9A Known Issues documenting A11Y-001 through A11Y-004. |
-| 1.3 | 2026-06-19 | **Addressed external review (8.5/10):** Added §1.6 Text Spacing (1.4.12 AA) with hard rules against `overflow: hidden` on text containers, fixed `height`, and multi-column testing requirement (A11Y-005 [RESOLVED]). Clarified §1.2 Non-Text Contrast for state components: 3:1 applies to boundary/fill vs. surrounding background, NOT to internal symbol vs. component fill (A11Y-007 [RESOLVED]). Rewrote §2.5 Skip Navigation: `#sidebar` replaced with `#main-content` (always) + `#primary-nav` (optional, targets `<nav aria-label="Main">`); added table of semantic landmark targets and "DO NOT use generic region names" list (A11Y-008 [RESOLVED]). Added §4.1 Library note: ARIA requirements apply to custom-built components only; shadcn/ui / Radix / React Aria / Headless UI users follow library API instead (A11Y-006 [RESOLVED]). Replaced §7 empty contrast table with automated-report reference (`npx stsgs a11y audit`) (A11Y-003 [RESOLVED]). Activated §8.2: removed "(Future)", added jest-axe + Lighthouse commands, jest-axe usage pattern, quality gate (Lighthouse >= 90 blocks prod deploys), and `.github/workflows/a11y.yml` CI workflow example (A11Y-004 [RESOLVED]). Header: added `Status: ACTIVE` line (per review feedback to keep status out of version history entries). Added A11Y-009 [OPEN] documenting two remaining overlap points with DESIGN-001 and TEST-001 for separate PRs. FE-001 §11.5 updated in sync to reference the new §7 (automated report) instead of the deprecated empty table. |
+| Version | Date       | Changes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| ------- | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1.0     | 2025-05    | Initial version                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| 1.1     | 2026-05    | Added §7 Theme Contrast Requirements table (template); added §8.2 Automated Testing placeholder                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| 1.2     | 2026-06    | Status corrected from DEPRECATED to ACTIVE in STD-META-001 registry (see A11Y-001). Stack Signature footer updated from "WCAG 2.1 AA + WAI-ARIA 1.2" to "Next.js 16 + TypeScript + Tailwind CSS" to match convention (see A11Y-002). Added STD-DESIGN-001 to Related and Cross-References (contrast requirements delegation). Added §9A Known Issues documenting A11Y-001 through A11Y-004.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| 1.3     | 2026-06-19 | **Addressed external review (8.5/10):** Added §1.6 Text Spacing (1.4.12 AA) with hard rules against `overflow: hidden` on text containers, fixed `height`, and multi-column testing requirement (A11Y-005 [RESOLVED]). Clarified §1.2 Non-Text Contrast for state components: 3:1 applies to boundary/fill vs. surrounding background, NOT to internal symbol vs. component fill (A11Y-007 [RESOLVED]). Rewrote §2.5 Skip Navigation: `#sidebar` replaced with `#main-content` (always) + `#primary-nav` (optional, targets `<nav aria-label="Main">`); added table of semantic landmark targets and "DO NOT use generic region names" list (A11Y-008 [RESOLVED]). Added §4.1 Library note: ARIA requirements apply to custom-built components only; shadcn/ui / Radix / React Aria / Headless UI users follow library API instead (A11Y-006 [RESOLVED]). Replaced §7 empty contrast table with automated-report reference (`npx stsgs a11y audit`) (A11Y-003 [RESOLVED]). Activated §8.2: removed "(Future)", added jest-axe + Lighthouse commands, jest-axe usage pattern, quality gate (Lighthouse >= 90 blocks prod deploys), and `.github/workflows/a11y.yml` CI workflow example (A11Y-004 [RESOLVED]). Header: added `Status: ACTIVE` line (per review feedback to keep status out of version history entries). Added A11Y-009 [OPEN] documenting two remaining overlap points with DESIGN-001 and TEST-001 for separate PRs. FE-001 §11.5 updated in sync to reference the new §7 (automated report) instead of the deprecated empty table. |
+| 1.3.2   | 2026-07-06 | Removed forward reference to STD-TEST-001 (deleted). A11Y-009 overlap note kept for historical record. jest-axe + Lighthouse gates in §8.2 remain valid without STD-TEST-001.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |

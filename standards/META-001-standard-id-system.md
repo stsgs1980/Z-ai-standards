@@ -847,8 +847,6 @@ This section documents discovered inconsistencies, missing content, and proposed
 | STD-A11Y-001  | DEPRECATED | ACTIVE     | File v1.1 dated 2026-05, no deprecation notice in file |
 | STD-DOC-004   | FROZEN     | ACTIVE     | File v2.1 dated 2026-05, no freeze notice              |
 | STD-DOC-005   | FROZEN     | ACTIVE     | File v1.1 dated 2026-05, no freeze notice              |
-| STD-TEST-001  | FROZEN     | ACTIVE     | File v1.1 dated 2026-05, no freeze notice              |
-| STD-ERR-002   | FROZEN     | ACTIVE     | File v1.0 dated 2026-05, no freeze notice              |
 | STD-SEC-002   | FROZEN     | ACTIVE     | File v1.0 dated 2026-05, no freeze notice              |
 | STD-AGENT-001 | FROZEN     | ACTIVE     | File v1.0 dated 2026-05, no freeze notice              |
 | STD-AGENT-002 | FROZEN     | ACTIVE     | File v1.0 dated 2026-05, no freeze notice              |

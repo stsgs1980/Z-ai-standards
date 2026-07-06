@@ -42,16 +42,16 @@ Error
 
 ### 1.2 Error Categories
 
-| Category | HTTP Status | Recoverable | User Message |
-|----------|-------------|-------------|--------------|
-| Validation | 400 | Yes | Show specific field errors |
-| Authentication | 401 | Yes | Prompt login |
-| Authorization | 403 | No | Show permission message |
-| Not Found | 404 | No | Show not found message |
-| Conflict | 409 | Yes | Prompt resolution |
-| Rate Limit | 429 | Yes | Show retry time |
-| Server Error | 500 | No | Generic error, log details |
-| Service Unavailable | 503 | Yes | Show retry option |
+| Category            | HTTP Status | Recoverable | User Message               |
+| ------------------- | ----------- | ----------- | -------------------------- |
+| Validation          | 400         | Yes         | Show specific field errors |
+| Authentication      | 401         | Yes         | Prompt login               |
+| Authorization       | 403         | No          | Show permission message    |
+| Not Found           | 404         | No          | Show not found message     |
+| Conflict            | 409         | Yes         | Prompt resolution          |
+| Rate Limit          | 429         | Yes         | Show retry time            |
+| Server Error        | 500         | No          | Generic error, log details |
+| Service Unavailable | 503         | Yes         | Show retry option          |
 
 ---
 
@@ -63,30 +63,30 @@ Error
 // types/errors.ts
 interface ApplicationError {
   // Identity
-  id: string;           // Unique error ID for tracking
-  code: string;         // Machine-readable code (e.g., 'USER_NOT_FOUND')
-  name: string;         // Error class name
+  id: string; // Unique error ID for tracking
+  code: string; // Machine-readable code (e.g., 'USER_NOT_FOUND')
+  name: string; // Error class name
 
   // Context
-  message: string;      // User-friendly message
-  details?: unknown;    // Additional context
+  message: string; // User-friendly message
+  details?: unknown; // Additional context
 
   // Debugging
-  stack?: string;       // Stack trace (dev only)
-  cause?: Error;        // Original error (for wrapping)
+  stack?: string; // Stack trace (dev only)
+  cause?: Error; // Original error (for wrapping)
 
   // HTTP
-  statusCode: number;   // HTTP status code
+  statusCode: number; // HTTP status code
 
   // Metadata
-  timestamp: string;    // ISO 8601
-  path?: string;        // Request path
-  requestId?: string;   // Request correlation ID
+  timestamp: string; // ISO 8601
+  path?: string; // Request path
+  requestId?: string; // Request correlation ID
 
   // Recovery
   recoverable: boolean;
-  retryAfter?: number;  // Seconds until retry
-  helpUrl?: string;     // Documentation link
+  retryAfter?: number; // Seconds until retry
+  helpUrl?: string; // Documentation link
 }
 ```
 
@@ -134,7 +134,7 @@ export class ApplicationError extends Error {
       statusCode: this.statusCode,
       timestamp: this.timestamp,
       recoverable: this.recoverable,
-      ...(process.env.NODE_ENV === 'development' && {
+      ...(process.env.NODE_ENV === "development" && {
         stack: this.stack,
         cause: this.cause?.message,
       }),
@@ -150,7 +150,7 @@ export class ApplicationError extends Error {
 export class ValidationError extends ApplicationError {
   constructor(message: string, details?: FieldError[]) {
     super({
-      code: 'VALIDATION_ERROR',
+      code: "VALIDATION_ERROR",
       message,
       statusCode: 400,
       recoverable: true,
@@ -162,7 +162,7 @@ export class ValidationError extends ApplicationError {
 export class NotFoundError extends ApplicationError {
   constructor(resource: string, identifier?: string | number) {
     super({
-      code: 'NOT_FOUND',
+      code: "NOT_FOUND",
       message: `${resource} not found`,
       statusCode: 404,
       recoverable: false,
@@ -172,9 +172,9 @@ export class NotFoundError extends ApplicationError {
 }
 
 export class AuthenticationError extends ApplicationError {
-  constructor(message = 'Authentication required') {
+  constructor(message = "Authentication required") {
     super({
-      code: 'AUTHENTICATION_ERROR',
+      code: "AUTHENTICATION_ERROR",
       message,
       statusCode: 401,
       recoverable: true,
@@ -185,8 +185,8 @@ export class AuthenticationError extends ApplicationError {
 export class RateLimitError extends ApplicationError {
   constructor(retryAfter: number) {
     super({
-      code: 'RATE_LIMIT_EXCEEDED',
-      message: 'Too many requests. Please try again later.',
+      code: "RATE_LIMIT_EXCEEDED",
+      message: "Too many requests. Please try again later.",
       statusCode: 429,
       recoverable: true,
       retryAfter,
@@ -197,7 +197,7 @@ export class RateLimitError extends ApplicationError {
 export class ExternalServiceError extends ApplicationError {
   constructor(service: string, cause?: Error) {
     super({
-      code: 'EXTERNAL_SERVICE_ERROR',
+      code: "EXTERNAL_SERVICE_ERROR",
       message: `Service ${service} is temporarily unavailable`,
       statusCode: 503,
       recoverable: true,
@@ -220,7 +220,7 @@ async function getUser(id: string): Promise<User> {
   try {
     const user = await db.users.find(id);
     if (!user) {
-      throw new NotFoundError('User', id);
+      throw new NotFoundError("User", id);
     }
     return user;
   } catch (error) {
@@ -228,9 +228,9 @@ async function getUser(id: string): Promise<User> {
       throw error; // Re-throw known errors
     }
     if (error instanceof DatabaseError) {
-      throw new ExternalServiceError('Database', error);
+      throw new ExternalServiceError("Database", error);
     }
-    throw new InternalError('Failed to get user', error);
+    throw new InternalError("Failed to get user", error);
   }
 }
 
@@ -253,21 +253,21 @@ async function processPayment(order: Order): Promise<PaymentResult> {
   try {
     return await stripe.charges.create({
       amount: order.total,
-      currency: 'usd',
+      currency: "usd",
     });
   } catch (error) {
     if (error instanceof StripeCardError) {
-      throw new ValidationError('Payment failed', {
-        field: 'card',
+      throw new ValidationError("Payment failed", {
+        field: "card",
         message: error.message,
       });
     }
 
     if (error instanceof StripeAPIError) {
-      throw new ExternalServiceError('Stripe', error);
+      throw new ExternalServiceError("Stripe", error);
     }
 
-    throw new InternalError('Payment processing failed', {
+    throw new InternalError("Payment processing failed", {
       orderId: order.id,
       cause: error,
     });
@@ -302,7 +302,7 @@ function failure<E>(error: E): Failure<E> {
 // Usage
 function divide(a: number, b: number): Result<number, string> {
   if (b === 0) {
-    return failure('Division by zero');
+    return failure("Division by zero");
   }
   return success(a / b);
 }
@@ -322,45 +322,51 @@ if (result.ok) {
 
 ### 4.1 Log Levels
 
-| Level | When to Use | Contains |
-|-------|-------------|----------|
-| DEBUG | Development details | Stack traces, variables |
-| INFO | Business events | User actions, state changes |
-| WARN | Recoverable issues | Degraded service, fallbacks |
-| ERROR | Failures requiring attention | Full error context |
-| FATAL | Unrecoverable | System state, immediate action |
+| Level | When to Use                  | Contains                       |
+| ----- | ---------------------------- | ------------------------------ |
+| DEBUG | Development details          | Stack traces, variables        |
+| INFO  | Business events              | User actions, state changes    |
+| WARN  | Recoverable issues           | Degraded service, fallbacks    |
+| ERROR | Failures requiring attention | Full error context             |
+| FATAL | Unrecoverable                | System state, immediate action |
 
 ### 4.2 Structured Logging
 
 ```typescript
 // lib/logger.ts
-import pino from 'pino';
+import pino from "pino";
 
 export const logger = pino({
-  level: process.env.LOG_LEVEL || 'info',
+  level: process.env.LOG_LEVEL || "info",
   formatters: {
     level: (label) => ({ level: label }),
   },
-  redact: ['req.headers.authorization', 'req.body.password'],
+  redact: ["req.headers.authorization", "req.body.password"],
 });
 
 // Usage
-logger.info({
-  event: 'user_created',
-  userId: user.id,
-  email: user.email,
-  source: 'registration',
-}, 'User account created');
-
-logger.error({
-  event: 'payment_failed',
-  orderId: order.id,
-  error: {
-    code: error.code,
-    message: error.message,
-    stack: error.stack,
+logger.info(
+  {
+    event: "user_created",
+    userId: user.id,
+    email: user.email,
+    source: "registration",
   },
-}, 'Payment processing failed');
+  "User account created",
+);
+
+logger.error(
+  {
+    event: "payment_failed",
+    orderId: order.id,
+    error: {
+      code: error.code,
+      message: error.message,
+      stack: error.stack,
+    },
+  },
+  "Payment processing failed",
+);
 ```
 
 ### 4.3 Error Context Enrichment
@@ -372,7 +378,7 @@ export function errorLogger(error: Error, req: Request, res: Response, next: Nex
     timestamp: new Date().toISOString(),
     error: {
       id: error instanceof ApplicationError ? error.id : generateErrorId(),
-      code: error instanceof ApplicationError ? error.code : 'UNKNOWN_ERROR',
+      code: error instanceof ApplicationError ? error.code : "UNKNOWN_ERROR",
       name: error.name,
       message: error.message,
       stack: error.stack,
@@ -383,13 +389,13 @@ export function errorLogger(error: Error, req: Request, res: Response, next: Nex
       query: req.query,
       headers: sanitizeHeaders(req.headers),
       ip: req.ip,
-      userAgent: req.get('user-agent'),
+      userAgent: req.get("user-agent"),
     },
     user: req.user ? { id: req.user.id, role: req.user.role } : null,
     environment: process.env.NODE_ENV,
   };
 
-  logger.error(errorLog, 'Request error');
+  logger.error(errorLog, "Request error");
 
   next(error);
 }
@@ -436,12 +442,7 @@ export function errorLogger(error: Error, req: Request, res: Response, next: Nex
 
 ```typescript
 // middleware/error-handler.ts
-export function errorHandler(
-  error: Error,
-  req: Request,
-  res: Response,
-  next: NextFunction
-) {
+export function errorHandler(error: Error, req: Request, res: Response, next: NextFunction) {
   // Handle known application errors
   if (error instanceof ApplicationError) {
     return res.status(error.statusCode).json({
@@ -453,11 +454,11 @@ export function errorHandler(
   // Handle known external errors
   if (error instanceof ZodError) {
     const validationError = new ValidationError(
-      'Invalid input data',
-      error.errors.map(e => ({
-        field: e.path.join('.'),
+      "Invalid input data",
+      error.errors.map((e) => ({
+        field: e.path.join("."),
         message: e.message,
-      }))
+      })),
     );
     return res.status(400).json({
       success: false,
@@ -466,25 +467,28 @@ export function errorHandler(
   }
 
   // Handle unexpected errors
-  logger.fatal({
-    error: {
-      name: error.name,
-      message: error.message,
-      stack: error.stack,
+  logger.fatal(
+    {
+      error: {
+        name: error.name,
+        message: error.message,
+        stack: error.stack,
+      },
+      request: {
+        method: req.method,
+        path: req.path,
+      },
     },
-    request: {
-      method: req.method,
-      path: req.path,
-    },
-  }, 'Unhandled error');
+    "Unhandled error",
+  );
 
   // Don't leak internal details
   return res.status(500).json({
     success: false,
     error: {
       id: generateErrorId(),
-      code: 'INTERNAL_ERROR',
-      message: 'An unexpected error occurred',
+      code: "INTERNAL_ERROR",
+      message: "An unexpected error occurred",
       recoverable: false,
     },
   });
@@ -518,10 +522,13 @@ class ErrorBoundary extends React.Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    logger.error({
-      error: error.message,
-      stack: errorInfo.componentStack,
-    }, 'React error boundary caught');
+    logger.error(
+      {
+        error: error.message,
+        stack: errorInfo.componentStack,
+      },
+      "React error boundary caught",
+    );
 
     this.props.onError?.(error, errorInfo);
   }
@@ -537,7 +544,7 @@ class ErrorBoundary extends React.Component<Props, State> {
 // Usage
 <ErrorBoundary fallback={<ErrorPage onRetry={() => window.location.reload()} />}>
   <App />
-</ErrorBoundary>
+</ErrorBoundary>;
 ```
 
 ### 6.2 API Error Handling
@@ -550,7 +557,7 @@ class APIClient {
       const response = await fetch(config.url, {
         method: config.method,
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
           ...config.headers,
         },
         body: config.body ? JSON.stringify(config.body) : undefined,
@@ -570,17 +577,17 @@ class APIClient {
 
       if (error instanceof TypeError) {
         // Network error
-        throw new NetworkError('Unable to connect to server');
+        throw new NetworkError("Unable to connect to server");
       }
 
-      throw new UnknownError('An unexpected error occurred');
+      throw new UnknownError("An unexpected error occurred");
     }
   }
 }
 
 // Usage with React Query
 const { data, error, isError } = useQuery({
-  queryKey: ['user', userId],
+  queryKey: ["user", userId],
   queryFn: () => apiClient.request({ url: `/users/${userId}` }),
   retry: (failureCount, error) => {
     if (error instanceof AuthenticationError) return false;
@@ -595,13 +602,13 @@ const { data, error, isError } = useQuery({
 ```typescript
 // lib/errors/messages.ts
 const errorMessages: Record<string, string> = {
-  VALIDATION_ERROR: 'Please check your input and try again.',
-  AUTHENTICATION_ERROR: 'Please log in to continue.',
-  PERMISSION_DENIED: 'You do not have permission to perform this action.',
-  NOT_FOUND: 'The requested resource was not found.',
-  RATE_LIMIT_EXCEEDED: 'Too many requests. Please wait a moment.',
-  EXTERNAL_SERVICE_ERROR: 'Service temporarily unavailable. Please try again.',
-  INTERNAL_ERROR: 'Something went wrong. Our team has been notified.',
+  VALIDATION_ERROR: "Please check your input and try again.",
+  AUTHENTICATION_ERROR: "Please log in to continue.",
+  PERMISSION_DENIED: "You do not have permission to perform this action.",
+  NOT_FOUND: "The requested resource was not found.",
+  RATE_LIMIT_EXCEEDED: "Too many requests. Please wait a moment.",
+  EXTERNAL_SERVICE_ERROR: "Service temporarily unavailable. Please try again.",
+  INTERNAL_ERROR: "Something went wrong. Our team has been notified.",
 };
 
 export function getUserMessage(error: ApplicationError): string {
@@ -638,11 +645,12 @@ export function getUserMessage(error: ApplicationError): string {
 
 ## 8. Version History
 
-| Version | Date | Changes |
-|---------|------|---------|
-| 1.0 | 2025-01 | Initial version: error classification, structure, patterns, logging, API responses, frontend handling, recovery strategies, monitoring |
-| 2.0 | 2026-05 | Major restructuring: recovery strategies (retry, circuit breaker, fallback) and monitoring/alerting extracted to STD-ERR-002. Core retains error classification, structure, patterns, logging, API responses, frontend handling. |
-| 2.1 | 2026-06 | Added §8A Known Issues documenting ERR-001 through ERR-003 (validation message inconsistency, logger redact path-fragility, error boundary getDerivedStateFromError limitation). Added STD-META-001 to Related and Cross-References. No normative rule changes. |
+| Version | Date       | Changes                                                                                                                                                                                                                                                         |
+| ------- | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1.0     | 2025-01    | Initial version: error classification, structure, patterns, logging, API responses, frontend handling, recovery strategies, monitoring                                                                                                                          |
+| 2.0     | 2026-05    | Major restructuring: recovery strategies (retry, circuit breaker, fallback) and monitoring/alerting extracted to STD-ERR-002. Core retains error classification, structure, patterns, logging, API responses, frontend handling.                                |
+| 2.1     | 2026-06    | Added §8A Known Issues documenting ERR-001 through ERR-003 (validation message inconsistency, logger redact path-fragility, error boundary getDerivedStateFromError limitation). Added STD-META-001 to Related and Cross-References. No normative rule changes. |
+| 2.2     | 2026-07-06 | Folded recovery strategies (retry, circuit breaker, fallback) and monitoring/alerting back into ERR-001 (from deleted STD-ERR-002). ERR-002-001 finding marked RESOLVED-via-deletion. Cross-References updated.                                                 |
 
 ---
 
@@ -657,7 +665,7 @@ This section documents discovered inconsistencies, missing content, and proposed
 ```typescript
 export class ValidationError extends ApplicationError {
   constructor(message: string, details?: FieldError[]) {
-    super({ code: 'VALIDATION_ERROR', message, statusCode: 400, recoverable: true, details });
+    super({ code: "VALIDATION_ERROR", message, statusCode: 400, recoverable: true, details });
   }
 }
 ```
@@ -668,69 +676,27 @@ export class ValidationError extends ApplicationError {
 
 ```typescript
 interface FieldError {
-  field: string;        // Dot-notation path, e.g., "user.address.zipCode"
-  message: string;      // Human-readable error message
-  code?: string;        // Optional machine-readable code, e.g., "REQUIRED", "INVALID_FORMAT"
-  value?: unknown;      // Optional: the rejected value (omit for sensitive fields)
+  field: string; // Dot-notation path, e.g., "user.address.zipCode"
+  message: string; // Human-readable error message
+  code?: string; // Optional machine-readable code, e.g., "REQUIRED", "INVALID_FORMAT"
+  value?: unknown; // Optional: the rejected value (omit for sensitive fields)
 }
 ```
 
 Reference this type from §2.3 and §5.1.
 
-### ERR-002 `[OPEN]` — §4.2 Pino `redact` config uses fixed paths, breaks if request body shape changes
+### ERR-002 `[RESOLVED-via-deletion 2026-07-06]` — §4.2 Pino `redact` config (was in extracted STD-ERR-002, now deleted)
 
-**Problem:** §4.2 (Structured Logging) configures Pino with:
+**Note:** This finding originally referenced §4.2 in STD-ERR-002, which was extracted from ERR-001 v2.0 and deleted on 2026-07-06 as part of dead-standard cleanup. The redact concern is now addressed by ERR-001 §4.2 itself (Pino redaction has been folded back into ERR-001 core). If the redact list needs expansion, it should be filed as a new finding against ERR-001 §4.2.
 
-```typescript
-redact: ['req.headers.authorization', 'req.body.password'],
-```
+**Original problem (historical):** §4.2 (Structured Logging) configured Pino with `redact: ['req.headers.authorization', 'req.body.password']`, which redacts only one field. Sensitive fields like `req.body.newPassword`, `req.body.confirmPassword`, `req.body.token`, `req.body.apiKey` were NOT redacted.
 
-This redacts only `req.body.password`. If a different endpoint uses `req.body.newPassword`, `req.body.confirmPassword`, `req.body.currentPassword`, `req.body.secret`, `req.body.token`, `req.body.apiKey`, or any other sensitive field, it is NOT redacted and will appear in logs. The redaction list is hardcoded to one field name.
-
-**Proposed solution:** Either (a) expand the redact list to cover all common sensitive field names:
-
-```typescript
-redact: [
-  'req.headers.authorization',
-  'req.headers.cookie',
-  'req.body.password',
-  'req.body.newPassword',
-  'req.body.confirmPassword',
-  'req.body.currentPassword',
-  'req.body.secret',
-  'req.body.token',
-  'req.body.apiKey',
-  'req.body.creditCard',
-  'req.body.ssn',
-  'req.body[*]'  // wildcard — redact entire body if uncertain
-],
-```
-
-Or (b) use a censor function that scans for sensitive keys recursively:
-
-```typescript
-redact: {
-  paths: ['req.headers', 'req.body'],
-  censor: (value, path) => {
-    if (typeof value === 'object' && value !== null) {
-      const redacted = { ...value };
-      for (const key of Object.keys(redacted)) {
-        if (/password|secret|token|key|auth|cookie/i.test(key)) {
-          redacted[key] = '[REDACTED]';
-        }
-      }
-      return redacted;
-    }
-    return '[REDACTED]';
-  }
-}
-```
-
-Option (b) is more robust; option (a) is more explicit.
+**Historical proposed solution:** Expand the redact list to cover all common sensitive field names, or use a recursive censor function.
 
 ### ERR-003 `[OPEN]` — §6.1 React Error Boundary uses `getDerivedStateFromError` but does not handle async errors or errors in event handlers
 
 **Problem:** §6.1 (Error Boundaries) shows a React Error Boundary using `getDerivedStateFromError` and `componentDidCatch`. This pattern catches errors in rendering, lifecycle methods, and constructors — but it does NOT catch:
+
 - Errors in event handlers (e.g., `onClick` async errors)
 - Errors in `setTimeout` / `setInterval` callbacks
 - Errors in async/await code (unhandled promise rejections)
@@ -742,11 +708,11 @@ A team relying solely on §6.1's Error Boundary will miss these error classes. T
 ```typescript
 useEffect(() => {
   const handler = (event: PromiseRejectionEvent) => {
-    logger.error({ reason: event.reason }, 'Unhandled promise rejection');
+    logger.error({ reason: event.reason }, "Unhandled promise rejection");
     event.preventDefault();
   };
-  window.addEventListener('unhandledrejection', handler);
-  return () => window.removeEventListener('unhandledrejection', handler);
+  window.addEventListener("unhandledrejection", handler);
+  return () => window.removeEventListener("unhandledrejection", handler);
 }, []);
 ```
 
@@ -756,10 +722,9 @@ Event-handler errors should be caught locally with try/catch and reported via th
 
 ## 9. Cross-References
 
-| Standard | Relationship |
-|----------|-------------|
-| STD-ERR-002 | Recovery strategies (retry, circuit breaker, fallback, monitoring) |
-| STD-SEC-001 | Security error handling (no info leaks in error responses) |
-| STD-AGENT-001 | Subagent error contract (failure reporting) |
-| STD-AGENT-002 | Orchestration error propagation (escalation ladder) |
-| STD-META-001 | Standard ID System: registry entry for STD-ERR-001 must be kept in sync with the version in this document's header |
+| Standard      | Relationship                                                                                                       |
+| ------------- | ------------------------------------------------------------------------------------------------------------------ |
+| STD-SEC-001   | Security error handling (no info leaks in error responses)                                                         |
+| STD-AGENT-001 | Subagent error contract (failure reporting)                                                                        |
+| STD-AGENT-002 | Orchestration error propagation (escalation ladder)                                                                |
+| STD-META-001  | Standard ID System: registry entry for STD-ERR-001 must be kept in sync with the version in this document's header |

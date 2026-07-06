@@ -26,42 +26,42 @@ Rules that ensure the project starts identically on any machine.
 
 **No hardcoded personal paths.** Prohibited: developer-specific absolute paths and localhost URLs in source code. Environment-constant paths are allowed.
 
-| Category | Examples | Status | Reason |
-|----------|----------|--------|--------|
-| Personal/developer paths | `/home/<username>/`, `/Users/<name>/`, `C:\Users\` | **PROHIBITED** | Machine-specific, breaks on other machines |
-| Localhost URLs in source | `http://localhost:3000/api/...` | **PROHIBITED** | Use relative paths or XTransformPort |
-| Environment-constant paths | `/home/z/my-project/`, `/tmp/` | **ALLOWED** | Identical on all Z.ai sandbox instances |
-| Runtime-resolved paths | `path.resolve(process.cwd(), ...)` | **REQUIRED** | Produces correct path on any machine |
+| Category                   | Examples                                           | Status         | Reason                                     |
+| -------------------------- | -------------------------------------------------- | -------------- | ------------------------------------------ |
+| Personal/developer paths   | `/home/<username>/`, `/Users/<name>/`, `C:\Users\` | **PROHIBITED** | Machine-specific, breaks on other machines |
+| Localhost URLs in source   | `http://localhost:3000/api/...`                    | **PROHIBITED** | Use relative paths or XTransformPort       |
+| Environment-constant paths | `/home/z/my-project/`, `/tmp/`                     | **ALLOWED**    | Identical on all Z.ai sandbox instances    |
+| Runtime-resolved paths     | `path.resolve(process.cwd(), ...)`                 | **REQUIRED**   | Produces correct path on any machine       |
 
 **Principle:** if the path is identical on ALL machines running this code, it is allowed. If the path is specific to ONE developer's machine, it is prohibited.
 
 **Exception for Z.ai Sandbox** (see STD-ENV-002 section 3.1):
 
-| Path | Allowed in | Reason |
-|------|------------|--------|
-| `/home/z/my-project/` | Shell commands, sandbox configs | Designated sandbox working directory |
-| `/home/z/my-project/download/` | Output file writes | Designated output directory |
-| `/tmp/zdev.log` | Dev server log redirect | System temp, not in source code |
-| `/tmp/` | Backup operations | System temp, not committed to git |
+| Path                           | Allowed in                      | Reason                               |
+| ------------------------------ | ------------------------------- | ------------------------------------ |
+| `/home/z/my-project/`          | Shell commands, sandbox configs | Designated sandbox working directory |
+| `/home/z/my-project/download/` | Output file writes              | Designated output directory          |
+| `/tmp/zdev.log`                | Dev server log redirect         | System temp, not in source code      |
+| `/tmp/`                        | Backup operations               | System temp, not committed to git    |
 
 All other absolute paths remain prohibited. Outside Z.ai sandbox, this exception does not apply -- use relative paths exclusively.
 
 ```typescript
 // PROHIBITED -- developer-specific path
-fetch('http://localhost:3000/api/documents')
+fetch("http://localhost:3000/api/documents");
 
 // REQUIRED -- relative path
-fetch('/api/documents')
+fetch("/api/documents");
 ```
 
 For cross-port services -- only `XTransformPort`:
 
 ```typescript
 // PROHIBITED
-fetch('http://localhost:3003/api/chat')
+fetch("http://localhost:3003/api/chat");
 
 // REQUIRED
-fetch('/api/chat?XTransformPort=3003')
+fetch("/api/chat?XTransformPort=3003");
 ```
 
 ### 1.3 Binary Files
@@ -79,8 +79,8 @@ Rules that ensure the project runs without machine-specific dependencies.
 **Relative path via `path.resolve()`:**
 
 ```typescript
-const dbPath = resolve(process.cwd(), rawUrl.replace(/^file:/, ''))
-if (!existsSync(dir)) mkdirSync(dir, { recursive: true })
+const dbPath = resolve(process.cwd(), rawUrl.replace(/^file:/, ""));
+if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
 ```
 
 ### 2.2 Database Permissions
@@ -159,12 +159,13 @@ Everything violating this formula is a bug.
 
 ## 6. Version History
 
-| Version | Date | Changes |
-|--------|------|---------|
-| 2.0 | 2026-05-18 | Major restructuring: removed rules not directly ensuring reproducibility (dark theme, color palette, error handling, anti-fragility, dedup, push policy, deletion UI). These rules relocated to their domain-specific standards (STD-FE-001, STD-ERR-001, STD-GIT-001). Added Cross-References section. Renumbered sections. |
-| 1.1 | 2026-05-18 | K-01 fix: replaced categorical absolute path ban with nuanced rule. Added Z.ai sandbox exception. |
-| 1.0 | 2025-01 | Initial standard |
-| 2.1 | 2026-06 | File renamed from `ENV-001-reproducibility.md` to `ENV-001-reproducibility.md` (hyphen -> underscore) to match the naming convention used by all other standards. Added §6A Known Issues documenting REP-001 through REP-003. |
+| Version | Date       | Changes                                                                                                                                                                                                                                                                                                                      |
+| ------- | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2.0     | 2026-05-18 | Major restructuring: removed rules not directly ensuring reproducibility (dark theme, color palette, error handling, anti-fragility, dedup, push policy, deletion UI). These rules relocated to their domain-specific standards (STD-FE-001, STD-ERR-001, STD-GIT-001). Added Cross-References section. Renumbered sections. |
+| 1.1     | 2026-05-18 | K-01 fix: replaced categorical absolute path ban with nuanced rule. Added Z.ai sandbox exception.                                                                                                                                                                                                                            |
+| 1.0     | 2025-01    | Initial standard                                                                                                                                                                                                                                                                                                             |
+| 2.1     | 2026-06    | File renamed from `ENV-001-reproducibility.md` to `ENV-001-reproducibility.md` (hyphen -> underscore) to match the naming convention used by all other standards. Added §6A Known Issues documenting REP-001 through REP-003.                                                                                                |
+| 2.2     | 2026-07-06 | Removed Cross-References to deleted STD-ERR-002 and STD-TEST-001. Error recovery and testing concerns are now tracked under ERR-001 (recovery) and project-level test conventions respectively.                                                                                                                              |
 
 ---
 
@@ -177,6 +178,7 @@ This section documents discovered inconsistencies, missing content, and proposed
 **Problem:** Prior to v2.1, the file was named `ENV-001-reproducibility.md` (with a hyphen). Every other standard file in the directory uses underscore separators (`GIT-001-github.md`, `DOC-002-markdown-standard.md`, `ERR-001-error-handling.md`, etc.). The single hyphenated filename was an outlier that broke grep/glob patterns assuming the underscore convention.
 
 **Resolution:** File renamed to `ENV-001-reproducibility.md`. References in other standards updated:
+
 - `ARCH-002-implementation-order.md` Group B table: `ENV-001-reproducibility.md` -> `ENV-001-reproducibility.md` (see ARCH-004).
 - `ENV-002-zai-integration.md` §6 Related field: `REPRODUCIBILITY-STANDARD (STD-ENV-001)` -> `REPRODUCIBILITY_STANDARD (STD-ENV-001)` (see ZAI-001 in that file's Known Issues).
 
@@ -196,12 +198,10 @@ This section documents discovered inconsistencies, missing content, and proposed
 
 ## 7. Cross-References
 
-| Standard | Relationship |
-|----------|-------------|
-| STD-ERR-001 | Error handling: no internal error leaks (Section 5.2) |
-| STD-ERR-002 | Error recovery: fallback mechanisms (Section 4) |
-| STD-SEC-001 | Security: env validation (Section 2.1), .env management (Section 2.2) |
-| STD-GIT-001 | Git: push policy (Section 5), .gitignore (Section 8), versioning (Section 6) |
-| STD-FE-001 | Frontend: auto-backup (Section 10.5), deduplication (Section 10.6) |
+| Standard    | Relationship                                                                                                                                  |
+| ----------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| STD-ERR-001 | Error handling: no internal error leaks (Section 5.2)                                                                                         |
+| STD-SEC-001 | Security: env validation (Section 2.1), .env management (Section 2.2)                                                                         |
+| STD-GIT-001 | Git: push policy (Section 5), .gitignore (Section 8), versioning (Section 6)                                                                  |
+| STD-FE-001  | Frontend: auto-backup (Section 10.5), deduplication (Section 10.6)                                                                            |
 | STD-ENV-002 | Z.ai sandbox: project directory (Section 3), absolute path exception (Section 3.1) — authoritative source for sandbox path table; see REP-002 |
-| STD-TEST-001 | Testing: CI pipeline (Section 6), sandbox coverage (Section 11) |
