@@ -22,52 +22,57 @@
  * ============================================================================
  */
 
-'use strict';
+"use strict";
 
 // Allowed Related: edges per STD-META-001 §6.1
 // Matrix: source prefix → set of allowed target prefixes
 const LAYER_MATRIX = {
-  STD:  new Set(['STD']),
-  RULE: new Set(['STD', 'RULE', 'PROC', 'TOOL', 'ZAI']),
-  PROC: new Set(['STD', 'RULE', 'PROC', 'TOOL']),
-  TOOL: new Set(['STD', 'RULE', 'TOOL']),
-  ZAI:  new Set(['STD', 'RULE', 'TOOL', 'ZAI']),
+  STD: new Set(["STD"]),
+  RULE: new Set(["STD", "RULE", "PROC", "TOOL", "ZAI"]),
+  PROC: new Set(["STD", "RULE", "PROC", "TOOL"]),
+  TOOL: new Set(["STD", "RULE", "TOOL"]),
+  ZAI: new Set(["STD", "RULE", "TOOL", "ZAI"]),
 };
 
 // Compatibility DAG per STD-SKILL-001 §7.2
 // Source compatibility → allowed target compatibility
 const COMPAT_MATRIX = {
-  both:    new Set(['both']),
-  sandbox: new Set(['both', 'sandbox']),
-  ade:     new Set(['both', 'ade']),
+  both: new Set(["both"]),
+  sandbox: new Set(["both", "sandbox"]),
+  ade: new Set(["both", "ade"]),
 };
 
 // Forbidden layer edges (G07-G10)
 const FORBIDDEN_EDGES = {
-  G07: { from: 'STD',  to: ['RULE', 'PROC', 'TOOL', 'ZAI'] },
-  G08: { from: 'PROC', to: ['ZAI'] },
-  G09: { from: 'TOOL', to: ['PROC'] },
-  G10: { from: 'TOOL', to: ['ZAI'] },
+  G07: { from: "STD", to: ["RULE", "PROC", "TOOL", "ZAI"] },
+  G08: { from: "PROC", to: ["ZAI"] },
+  G09: { from: "TOOL", to: ["PROC"] },
+  G10: { from: "TOOL", to: ["ZAI"] },
 };
 
 // Repo discovery globs per spec §3.2
 const REPO_GLOBS = {
   standards: {
-    patterns: ['standards/**/*.md', 'STANDARDS.md', '*.md'],
-    prefix: 'STD',
+    patterns: ["standards/**/*.md", "STANDARDS.md", "*.md"],
+    prefix: "STD",
   },
   guard: {
-    patterns: ['AGENT_RULES.md', 'rules/**/*.md', 'instructions/**/*.md',
-               'scripts/**/*.{sh,js,ts}', 'tools/**/*.{md,ts,js}'],
-    prefixes: ['RULE', 'PROC', 'TOOL'],
+    patterns: [
+      "AGENT_RULES.md",
+      "rules/**/*.md",
+      "instructions/**/*.md",
+      "scripts/**/*.{sh,js,ts}",
+      "tools/**/*.{md,ts,js}",
+    ],
+    prefixes: ["RULE", "PROC", "TOOL"],
   },
   skills: {
-    patterns: ['skills/**/SKILL.md', 'skills/**/*.md'],
-    prefixes: ['ZAI'],
+    patterns: ["*/SKILL.md", "*.md"],
+    prefixes: ["ZAI"],
   },
   platform: {
-    patterns: ['*.md', 'docs/**/*.md', 'templates/**/*.md'],
-    prefixes: [],  // platform declares no IDs; only scanned for references
+    patterns: ["*.md", "docs/**/*.md", "templates/**/*.md"],
+    prefixes: [], // platform declares no IDs; only scanned for references
   },
 };
 
@@ -76,8 +81,19 @@ const ID_REGEX = /^(STD|RULE|PROC|TOOL|ZAI)-([A-Z]+)-(\d{3})$/;
 
 // Valid ZAI skill domains (per STD-SKILL-001 §4.3)
 const VALID_DOMAINS = new Set([
-  'MEM', 'FS', 'SESSION', 'DEV', 'ARCH', 'QA', 'REQ',
-  'META', 'STS', 'SDK', 'DOC', 'HEALTH', 'CHART',
+  "MEM",
+  "FS",
+  "SESSION",
+  "DEV",
+  "ARCH",
+  "QA",
+  "REQ",
+  "META",
+  "STS",
+  "SDK",
+  "DOC",
+  "HEALTH",
+  "CHART",
 ]);
 
 module.exports = {

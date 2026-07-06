@@ -50,10 +50,10 @@
  * ============================================================================
  */
 
-'use strict';
+"use strict";
 
-const fs = require('fs');
-const path = require('path');
+const fs = require("fs");
+const path = require("path");
 
 // ============================================================================
 // LIBRARY MODULES (O-018 modularization, 2026-06-21)
@@ -77,56 +77,68 @@ const {
   // side domain set (MEM/FS/SESSION/...), but verify-id-graph.js has its
   // own standards-side set (META/ARCH/DOC/...) defined inline at line ~897.
   // These are different sets and must not collide.
-} = require('./lib/constants');
+} = require("./lib/constants");
 
 const {
   parseYAMLFrontmatter,
   parseBlockquoteHeader,
   parseHTMLComment,
   extractReferences,
-} = require('./lib/parsers');
+} = require("./lib/parsers");
 
-const { tarjanSCC } = require('./lib/graph-algorithms');
-const { compareSnapshot: compareSnapshotLib } = require('./lib/snapshot');
-const { phase10_healthWarnings } = require('./lib/health-warnings');
-const { emitHumanReadable: emitHumanReadableLib, emitJSON: emitJSONLib } = require('./lib/output');
-const { listFiles, globFiles, matchesPattern, SUBMODULE_DIRS } = require('./lib/file-scanner');
-const { extractDeclaration, parseMigrations } = require('./lib/declarations');
+const { tarjanSCC } = require("./lib/graph-algorithms");
+const { compareSnapshot: compareSnapshotLib } = require("./lib/snapshot");
+const { phase10_healthWarnings } = require("./lib/health-warnings");
+const { emitHumanReadable: emitHumanReadableLib, emitJSON: emitJSONLib } = require("./lib/output");
+const { listFiles, globFiles, matchesPattern, SUBMODULE_DIRS } = require("./lib/file-scanner");
+const { extractDeclaration, parseMigrations } = require("./lib/declarations");
 
 // ============================================================================
 // CONSTANTS (script-level — not shared with other verifiers)
 // ============================================================================
 
-const VERSION = '1.1.6';
-const EFFECTIVE_DATE = '2026-06-21';
+const VERSION = "1.1.6";
+const EFFECTIVE_DATE = "2026-06-21";
 
 // ============================================================================
 // RESULTS STATE
 // ============================================================================
 
 const results = {
-  declarations: [],     // all ID declarations across all repos
+  declarations: [], // all ID declarations across all repos
   edges: {
-    related: [],        // directed edges from Related:
-    aligned_with: [],   // undirected edges from Aligned_with:
+    related: [], // directed edges from Related:
+    aligned_with: [], // undirected edges from Aligned_with:
   },
-  migrations: [],       // parsed MIGRATIONS.md entries
+  migrations: [], // parsed MIGRATIONS.md entries
   checks: {
-    G01: { status: 'PASS', description: 'No duplicate IDs across repos', details: [] },
-    G02: { status: 'PASS', description: 'All Related: references resolve to existing IDs', details: [] },
-    G03: { status: 'PASS', description: 'No cycles in Related: graph', details: [] },
-    G04: { status: 'PASS', description: 'All Related: edges conform to layer matrix', details: [] },
-    G05: { status: 'PASS', description: 'No deprecated ID referenced outside migration window', details: [] },
-    G07: { status: 'PASS', description: 'No STD → (RULE/PROC/TOOL/ZAI) edges', details: [] },
-    G08: { status: 'PASS', description: 'No PROC → ZAI edges', details: [] },
-    G09: { status: 'PASS', description: 'No TOOL → PROC edges', details: [] },
-    G10: { status: 'PASS', description: 'No TOOL → ZAI edges', details: [] },
-    G11: { status: 'PASS', description: 'No self-references', details: [] },
-    G12: { status: 'PASS', description: 'No typo-IDs (format violations)', details: [] },
-    G14: { status: 'PASS', description: 'Compatibility DAG valid for ZAI skills', details: [] },
-    G15: { status: 'PASS', description: 'Aligned_with: has corresponding Related: edge', details: [] },
+    G01: { status: "PASS", description: "No duplicate IDs across repos", details: [] },
+    G02: {
+      status: "PASS",
+      description: "All Related: references resolve to existing IDs",
+      details: [],
+    },
+    G03: { status: "PASS", description: "No cycles in Related: graph", details: [] },
+    G04: { status: "PASS", description: "All Related: edges conform to layer matrix", details: [] },
+    G05: {
+      status: "PASS",
+      description: "No deprecated ID referenced outside migration window",
+      details: [],
+    },
+    G07: { status: "PASS", description: "No STD → (RULE/PROC/TOOL/ZAI) edges", details: [] },
+    G08: { status: "PASS", description: "No PROC → ZAI edges", details: [] },
+    G09: { status: "PASS", description: "No TOOL → PROC edges", details: [] },
+    G10: { status: "PASS", description: "No TOOL → ZAI edges", details: [] },
+    G11: { status: "PASS", description: "No self-references", details: [] },
+    G12: { status: "PASS", description: "No typo-IDs (format violations)", details: [] },
+    G14: { status: "PASS", description: "Compatibility DAG valid for ZAI skills", details: [] },
+    G15: {
+      status: "PASS",
+      description: "Aligned_with: has corresponding Related: edge",
+      details: [],
+    },
   },
-  warnings: [],          // W01-W10 entries
+  warnings: [], // W01-W10 entries
   stats: {
     ids_extracted: 0,
     related_edges: 0,
@@ -136,7 +148,7 @@ const results = {
 };
 
 function fail(checkId, detail) {
-  results.checks[checkId].status = 'FAIL';
+  results.checks[checkId].status = "FAIL";
   results.checks[checkId].details.push(detail);
 }
 
@@ -162,16 +174,16 @@ function parseArgs(argv) {
     updateSnapshot: false,
   };
   for (const arg of argv.slice(2)) {
-    if (arg === '--help' || arg === '-h') opts.help = true;
-    else if (arg === '--json') opts.json = true;
-    else if (arg === '--ci') opts.ci = true;
-    else if (arg === '--fail-on-warnings') opts.failOnWarnings = true;
-    else if (arg === '--verbose') opts.verbose = true;
-    else if (arg === '--update-snapshot') opts.updateSnapshot = true;
-    else if (arg.startsWith('--root=')) opts.root = arg.slice(7);
-    else if (arg.startsWith('--repo=')) opts.repo = arg.slice(7);
-    else if (arg.startsWith('--snapshot=')) opts.snapshot = arg.slice(11);
-    else if (arg.startsWith('--compare=')) opts.compare = arg.slice(10);
+    if (arg === "--help" || arg === "-h") opts.help = true;
+    else if (arg === "--json") opts.json = true;
+    else if (arg === "--ci") opts.ci = true;
+    else if (arg === "--fail-on-warnings") opts.failOnWarnings = true;
+    else if (arg === "--verbose") opts.verbose = true;
+    else if (arg === "--update-snapshot") opts.updateSnapshot = true;
+    else if (arg.startsWith("--root=")) opts.root = arg.slice(7);
+    else if (arg.startsWith("--repo=")) opts.repo = arg.slice(7);
+    else if (arg.startsWith("--snapshot=")) opts.snapshot = arg.slice(11);
+    else if (arg.startsWith("--compare=")) opts.compare = arg.slice(10);
     else {
       console.error(`Unknown argument: ${arg}`);
       process.exit(2);
@@ -179,7 +191,7 @@ function parseArgs(argv) {
   }
   // --update-snapshot implies --snapshot=baseline.json if no path given
   if (opts.updateSnapshot && !opts.snapshot && !opts.compare) {
-    opts.snapshot = 'baseline.json';
+    opts.snapshot = "baseline.json";
   }
   return opts;
 }
@@ -256,10 +268,14 @@ function discoverPlatformRoot(opts) {
   // Priority 3: walk up from script __dirname looking for .gitmodules
   let dir = __dirname;
   for (let i = 0; i < 10; i++) {
-    const gitmodules = path.join(dir, '.gitmodules');
+    const gitmodules = path.join(dir, ".gitmodules");
     if (fs.existsSync(gitmodules)) {
-      const content = fs.readFileSync(gitmodules, 'utf8');
-      if (content.includes('Z-ai-standards') || content.includes('Z-ai-guard') || content.includes('Z-ai-skills')) {
+      const content = fs.readFileSync(gitmodules, "utf8");
+      if (
+        content.includes("Z-ai-standards") ||
+        content.includes("Z-ai-guard") ||
+        content.includes("Z-ai-skills")
+      ) {
         return dir;
       }
     }
@@ -273,9 +289,11 @@ function discoverPlatformRoot(opts) {
   dir = __dirname;
   for (let i = 0; i < 5; i++) {
     // Check if this looks like a platform root (has _design/ or standards/ or skills/)
-    if (fs.existsSync(path.join(dir, '_design')) ||
-        fs.existsSync(path.join(dir, 'standards')) ||
-        fs.existsSync(path.join(dir, 'skills'))) {
+    if (
+      fs.existsSync(path.join(dir, "_design")) ||
+      fs.existsSync(path.join(dir, "standards")) ||
+      fs.existsSync(path.join(dir, "skills"))
+    ) {
       return dir;
     }
     const parent = path.dirname(dir);
@@ -294,10 +312,10 @@ function findRepos(platformRoot, opts) {
 
   // Look for known repo directory names (case-insensitive)
   const candidates = {
-    standards: ['Z-ai-standards', 'standards'],
-    guard: ['Z-ai-guard', 'guard'],
-    skills: ['Z-ai-skills', 'skills'],
-    platform: ['Z-ai-platform', 'platform'],  // often == platformRoot
+    standards: ["Z-ai-standards", "standards"],
+    guard: ["Z-ai-guard", "guard"],
+    skills: ["Z-ai-skills", "skills"],
+    platform: ["Z-ai-platform", "platform"], // often == platformRoot
   };
 
   for (const [name, candidatesList] of Object.entries(candidates)) {
@@ -311,13 +329,16 @@ function findRepos(platformRoot, opts) {
         // Heuristic: a real Z-ai-skills repo has one of:
         //   - SKILLS.md (legacy marker)
         //   - skill-id-system/ at top level (older layout)
-        //   - skills/ subdir containing INDEX.md or skill-id-system/ (4-repo split layout,
-        //     where the submodule root contains skills/<name>/SKILL.md)
-        if (name === 'skills' && cand === 'skills' &&
-            !fs.existsSync(path.join(p, 'SKILLS.md')) &&
-            !fs.existsSync(path.join(p, 'skill-id-system')) &&
-            !fs.existsSync(path.join(p, 'skills', 'INDEX.md')) &&
-            !fs.existsSync(path.join(p, 'skills', 'skill-id-system'))) {
+        //   - INDEX.md at root (inline monorepo layout, skills since a3d358b)
+        //   - zai-* subdirectories (current layout)
+        if (
+          name === "skills" &&
+          cand === "skills" &&
+          !fs.existsSync(path.join(p, "SKILLS.md")) &&
+          !fs.existsSync(path.join(p, "skill-id-system")) &&
+          !fs.existsSync(path.join(p, "INDEX.md")) &&
+          !fs.readdirSync(p).some((d) => d.startsWith("zai-"))
+        ) {
           // This is the sandbox runtime skills dir, not the Z-ai-skills repo.
           // Skip unless explicitly requested.
           if (!opts.repo) continue;
@@ -330,8 +351,8 @@ function findRepos(platformRoot, opts) {
 
   // Always include _design/ if it exists (for draft standards during release)
   // This allows verify-id-graph.js to validate drafts before 4-repo migration
-  const designDir = path.join(platformRoot, '_design');
-  if (fs.existsSync(designDir) && (!opts.repo || opts.repo === '_design')) {
+  const designDir = path.join(platformRoot, "_design");
+  if (fs.existsSync(designDir) && (!opts.repo || opts.repo === "_design")) {
     repos._design = designDir;
   }
 
@@ -382,12 +403,13 @@ function findRepos(platformRoot, opts) {
 function phase1_extractIDs(repos) {
   // Phase 1: scan all files in each repo, extract declarations
   for (const [repoName, repoPath] of Object.entries(repos)) {
-    if (repoName === '_design') {
+    if (repoName === "_design") {
       // Special: scan _design/ for draft standards
       // List all .md files directly in _design/
-      const designFiles = fs.readdirSync(repoPath)
-        .filter(f => f.endsWith('.md'))
-        .map(f => path.join(repoPath, f));
+      const designFiles = fs
+        .readdirSync(repoPath)
+        .filter((f) => f.endsWith(".md"))
+        .map((f) => path.join(repoPath, f));
       for (const f of designFiles) {
         const decl = extractDeclaration(f, repoName);
         if (decl) results.declarations.push(decl);
@@ -399,7 +421,7 @@ function phase1_extractIDs(repos) {
     if (!config) continue;
     // When scanning the platform root, skip submodule directories to
     // prevent duplicate IDs (submodules are scanned separately).
-    const extraSkip = repoName === 'platform' ? SUBMODULE_DIRS : undefined;
+    const extraSkip = repoName === "platform" ? SUBMODULE_DIRS : undefined;
     const files = listFiles(repoPath, config.patterns, extraSkip);
     for (const f of files) {
       const decl = extractDeclaration(f, repoName);
@@ -422,8 +444,8 @@ function phase2_buildCatalog() {
   for (const [id, decls] of idMap) {
     if (decls.length > 1) {
       // Check if it's a duplicate (not just multiple references)
-      const files = decls.map(d => `${d.repo}:${path.basename(d.file)}`);
-      fail('G01', `Duplicate ID ${id} declared in: ${files.join(', ')}`);
+      const files = decls.map((d) => `${d.repo}:${path.basename(d.file)}`);
+      fail("G01", `Duplicate ID ${id} declared in: ${files.join(", ")}`);
     }
   }
   return idMap;
@@ -441,7 +463,7 @@ function phase3_buildEdges(idMap) {
         target,
         source_file: decl.file,
         source_repo: decl.repo,
-        kind: `${decl.prefix}→${(target.match(/^[A-Z]+/) || ['?'])[0]}`,
+        kind: `${decl.prefix}→${(target.match(/^[A-Z]+/) || ["?"])[0]}`,
       });
     }
 
@@ -450,9 +472,7 @@ function phase3_buildEdges(idMap) {
       const left = decl.id < target ? decl.id : target;
       const right = decl.id < target ? target : decl.id;
       // Check if edge already exists (declared by other side)
-      const existing = results.edges.aligned_with.find(e =>
-        e.left === left && e.right === right
-      );
+      const existing = results.edges.aligned_with.find((e) => e.left === left && e.right === right);
       if (existing) {
         existing.reciprocated = true;
       } else {
@@ -477,19 +497,28 @@ function phase4_validateReferences(idMap, migrations) {
 
     // G12: format check
     if (!ID_REGEX.test(target)) {
-      fail('G12', `${edge.source} → ${target}: target does not match ID format (typo?) in ${edge.source_file}`);
+      fail(
+        "G12",
+        `${edge.source} → ${target}: target does not match ID format (typo?) in ${edge.source_file}`,
+      );
       continue;
     }
 
     // G02: existence check
     if (!idMap.has(target)) {
       // Check if it's a migrated ID
-      const mig = migrations.find(m => m.old_id === target);
+      const mig = migrations.find((m) => m.old_id === target);
       if (mig) {
         // W01 or G05
-        warn('W01', `${edge.source} references ${target} (deprecated, action=${mig.action}); migration window: until ${mig.window_close_version}`);
+        warn(
+          "W01",
+          `${edge.source} references ${target} (deprecated, action=${mig.action}); migration window: until ${mig.window_close_version}`,
+        );
       } else {
-        fail('G02', `${edge.source} → ${target}: target ID does not exist (in ${edge.source_file})`);
+        fail(
+          "G02",
+          `${edge.source} → ${target}: target ID does not exist (in ${edge.source_file})`,
+        );
       }
     }
   }
@@ -506,7 +535,7 @@ function phase5_validateLayerEdges() {
   for (const edge of results.edges.related) {
     const sourceM = edge.source.match(ID_REGEX);
     const targetM = edge.target.match(ID_REGEX);
-    if (!sourceM || !targetM) continue;  // already flagged in Phase 4
+    if (!sourceM || !targetM) continue; // already flagged in Phase 4
 
     const sourcePrefix = sourceM[1];
     const targetPrefix = targetM[1];
@@ -514,13 +543,19 @@ function phase5_validateLayerEdges() {
     // Check allowed by matrix
     const allowed = LAYER_MATRIX[sourcePrefix];
     if (!allowed || !allowed.has(targetPrefix)) {
-      fail('G04', `${edge.source} → ${edge.target}: layer edge ${sourcePrefix}→${targetPrefix} not allowed by matrix`);
+      fail(
+        "G04",
+        `${edge.source} → ${edge.target}: layer edge ${sourcePrefix}→${targetPrefix} not allowed by matrix`,
+      );
     }
 
     // Check specific forbidden patterns
     for (const [gCode, rule] of Object.entries(FORBIDDEN_EDGES)) {
       if (sourcePrefix === rule.from && rule.to.includes(targetPrefix)) {
-        fail(gCode, `${edge.source} → ${edge.target}: forbidden ${gCode} edge (${rule.from}→${targetPrefix})`);
+        fail(
+          gCode,
+          `${edge.source} → ${edge.target}: forbidden ${gCode} edge (${rule.from}→${targetPrefix})`,
+        );
       }
     }
   }
@@ -531,19 +566,21 @@ function phase6_detectCycles() {
   // Self-references (G11)
   for (const edge of results.edges.related) {
     if (edge.source === edge.target) {
-      fail('G11', `Self-reference: ${edge.source} → ${edge.target} in ${edge.source_file}`);
+      fail("G11", `Self-reference: ${edge.source} → ${edge.target} in ${edge.source_file}`);
     }
   }
 
   // Cycles (G03) via Tarjan SCC
-  const nodes = [...new Set([
-    ...results.edges.related.map(e => e.source),
-    ...results.edges.related.map(e => e.target),
-  ])];
+  const nodes = [
+    ...new Set([
+      ...results.edges.related.map((e) => e.source),
+      ...results.edges.related.map((e) => e.target),
+    ]),
+  ];
   const sccs = tarjanSCC(nodes, results.edges.related);
   for (const scc of sccs) {
     if (scc.length > 1) {
-      fail('G03', `Cycle detected: ${scc.join(' → ')} → ${scc[0]}`);
+      fail("G03", `Cycle detected: ${scc.join(" → ")} → ${scc[0]}`);
     }
   }
 }
@@ -558,22 +595,29 @@ function phase7_alignedWithSymmetry(idMap) {
     // G07 in one direction and optional in the other, so requiring it
     // would conflict with G07 and is semantically wrong: Aligned_with
     // IS the cross-layer relationship, not a hint to look for Related.
-    const leftPrefix = (edge.left.match(/^[A-Z]+/) || ['?'])[0];
-    const rightPrefix = (edge.right.match(/^[A-Z]+/) || ['?'])[0];
+    const leftPrefix = (edge.left.match(/^[A-Z]+/) || ["?"])[0];
+    const rightPrefix = (edge.right.match(/^[A-Z]+/) || ["?"])[0];
 
     if (leftPrefix === rightPrefix) {
-      const hasRelated = results.edges.related.some(e =>
-        (e.source === edge.left && e.target === edge.right) ||
-        (e.source === edge.right && e.target === edge.left)
+      const hasRelated = results.edges.related.some(
+        (e) =>
+          (e.source === edge.left && e.target === edge.right) ||
+          (e.source === edge.right && e.target === edge.left),
       );
       if (!hasRelated) {
-        fail('G15', `Aligned_with: ${edge.left} ↔ ${edge.right} has no corresponding Related: edge (declared by ${edge.declared_by})`);
+        fail(
+          "G15",
+          `Aligned_with: ${edge.left} ↔ ${edge.right} has no corresponding Related: edge (declared by ${edge.declared_by})`,
+        );
       }
     }
 
     // W08: reciprocation (applies to ALL Aligned_with edges, regardless of layer)
     if (!edge.reciprocated) {
-      warn('W08', `${edge.declared_by} declares Aligned_with ${edge.right === edge.declared_by ? edge.left : edge.right}; not reciprocated (in ${edge.file})`);
+      warn(
+        "W08",
+        `${edge.declared_by} declares Aligned_with ${edge.right === edge.declared_by ? edge.left : edge.right}; not reciprocated (in ${edge.file})`,
+      );
     }
   }
 }
@@ -583,7 +627,7 @@ function phase8_compatibilityDAG(idMap) {
   // Get ZAI skills with compatibility field
   const zaiSkills = new Map();
   for (const decl of results.declarations) {
-    if (decl.prefix === 'ZAI' && decl.compatibility) {
+    if (decl.prefix === "ZAI" && decl.compatibility) {
       // W09: compatibility declared but no id (this shouldn't happen — if decl exists, id exists)
       // W09 is more for skills without ID that have compatibility — handled at extract time
       zaiSkills.set(decl.id, decl.compatibility);
@@ -595,7 +639,7 @@ function phase8_compatibilityDAG(idMap) {
     const sourceM = edge.source.match(ID_REGEX);
     const targetM = edge.target.match(ID_REGEX);
     if (!sourceM || !targetM) continue;
-    if (sourceM[1] !== 'ZAI' || targetM[1] !== 'ZAI') continue;
+    if (sourceM[1] !== "ZAI" || targetM[1] !== "ZAI") continue;
 
     const sourceCompat = zaiSkills.get(edge.source);
     const targetCompat = zaiSkills.get(edge.target);
@@ -607,18 +651,27 @@ function phase8_compatibilityDAG(idMap) {
 
     const allowed = COMPAT_MATRIX[sourceCompat];
     if (!allowed || !allowed.has(targetCompat)) {
-      fail('G14', `${edge.source} (compat=${sourceCompat}) → ${edge.target} (compat=${targetCompat}): incompatible (allowed targets for ${sourceCompat}: ${[...allowed].join(', ')})`);
+      fail(
+        "G14",
+        `${edge.source} (compat=${sourceCompat}) → ${edge.target} (compat=${targetCompat}): incompatible (allowed targets for ${sourceCompat}: ${[...allowed].join(", ")})`,
+      );
     }
   }
 
   // W07: frontmatter/blockquote disagreement (for ZAI skills with id)
   for (const decl of results.declarations) {
-    if (decl.prefix !== 'ZAI') continue;
+    if (decl.prefix !== "ZAI") continue;
     if (decl._fmId && decl._bqId && decl._fmId !== decl._bqId) {
-      warn('W07', `${decl.id}: frontmatter id="${decl._fmId}" disagrees with blockquote ID="${decl._bqId}"`);
+      warn(
+        "W07",
+        `${decl.id}: frontmatter id="${decl._fmId}" disagrees with blockquote ID="${decl._bqId}"`,
+      );
     }
     if (decl._fmVer && decl._bqVer && decl._fmVer !== decl._bqVer) {
-      warn('W07', `${decl.id}: frontmatter version="${decl._fmVer}" disagrees with blockquote Version="${decl._bqVer}"`);
+      warn(
+        "W07",
+        `${decl.id}: frontmatter version="${decl._fmVer}" disagrees with blockquote Version="${decl._bqVer}"`,
+      );
     }
   }
 }
@@ -638,21 +691,24 @@ function phase9_orphanWarnings(idMap) {
   for (const decl of results.declarations) {
     if (decl.malformed) continue;
 
-    if (decl.prefix === 'RULE' && decl.related.length === 0) {
-      warn('W02', `${decl.id} (${path.basename(decl.file)}): RULE with empty Related: (orphan)`);
+    if (decl.prefix === "RULE" && decl.related.length === 0) {
+      warn("W02", `${decl.id} (${path.basename(decl.file)}): RULE with empty Related: (orphan)`);
     }
-    if (decl.prefix === 'STD' && !referenced.has(decl.id) && !alignedTargets.has(decl.id)) {
-      warn('W03', `${decl.id}: STD not referenced by any RULE/ZAI (dead standard)`);
+    if (decl.prefix === "STD" && !referenced.has(decl.id) && !alignedTargets.has(decl.id)) {
+      warn("W03", `${decl.id}: STD not referenced by any RULE/ZAI (dead standard)`);
     }
-    if (decl.prefix === 'ZAI' && decl.related.length === 0 && decl.aligned_with.length === 0) {
+    if (decl.prefix === "ZAI" && decl.related.length === 0 && decl.aligned_with.length === 0) {
       // W04 only for ZAI WITH IDs (which is the case here since we have a decl)
-      warn('W04', `${decl.id} (${path.basename(decl.file)}): ZAI skill with empty Related: and Aligned_with: (rogue skill with ID)`);
+      warn(
+        "W04",
+        `${decl.id} (${path.basename(decl.file)}): ZAI skill with empty Related: and Aligned_with: (rogue skill with ID)`,
+      );
     }
-    if (decl.prefix === 'PROC' && decl.related.length === 0) {
-      warn('W05', `${decl.id}: PROC with empty Related: (orphan procedure)`);
+    if (decl.prefix === "PROC" && decl.related.length === 0) {
+      warn("W05", `${decl.id}: PROC with empty Related: (orphan procedure)`);
     }
-    if (decl.prefix === 'TOOL' && decl.related.length === 0) {
-      warn('W06', `${decl.id}: TOOL with empty Related: (orphan tool)`);
+    if (decl.prefix === "TOOL" && decl.related.length === 0) {
+      warn("W06", `${decl.id}: TOOL with empty Related: (orphan tool)`);
     }
   }
 }
@@ -730,24 +786,24 @@ function main() {
   results.stats.repos_scanned = Object.keys(repos).length;
 
   if (process.env.DEBUG_ID_GRAPH) {
-    console.error('[debug] platformRoot:', platformRoot);
-    console.error('[debug] repos:', JSON.stringify(repos, null, 2));
+    console.error("[debug] platformRoot:", platformRoot);
+    console.error("[debug] repos:", JSON.stringify(repos, null, 2));
   }
 
   if (results.stats.repos_scanned === 0) {
-    console.error('[verify-id-graph] No repos discovered. Use --root=<path>');
+    console.error("[verify-id-graph] No repos discovered. Use --root=<path>");
     process.exit(2);
   }
 
   // Parse migrations from each repo
   for (const [repoName, repoPath] of Object.entries(repos)) {
-    const migPath = path.join(repoPath, 'MIGRATIONS.md');
+    const migPath = path.join(repoPath, "MIGRATIONS.md");
     if (fs.existsSync(migPath)) {
       results.migrations.push(...parseMigrations(migPath));
     }
   }
   // Also check _design/MIGRATIONS.md
-  const designMig = path.join(platformRoot, '_design', 'MIGRATIONS.md');
+  const designMig = path.join(platformRoot, "_design", "MIGRATIONS.md");
   if (fs.existsSync(designMig)) {
     results.migrations.push(...parseMigrations(designMig));
   }
@@ -756,7 +812,7 @@ function main() {
   phase1_extractIDs(repos);
 
   if (process.env.DEBUG_ID_GRAPH) {
-    console.error('[debug] declarations extracted:', results.declarations.length);
+    console.error("[debug] declarations extracted:", results.declarations.length);
     for (const d of results.declarations) {
       console.error(`  ${d.id} (${d.prefix}) from ${path.basename(d.file)}`);
     }
@@ -775,7 +831,7 @@ function main() {
   // Emit output
   // For snapshot/compare modes we need the JSON payload regardless of
   // --json flag, so we always compute it.
-  const jsonPayload = JSON.parse(emitJSON({...opts, json: true}));
+  const jsonPayload = JSON.parse(emitJSON({ ...opts, json: true }));
 
   if (opts.json) {
     console.log(JSON.stringify(jsonPayload, null, 2));
@@ -789,10 +845,12 @@ function main() {
     const target = opts.snapshot || opts.compare;
     try {
       // Force snapshot_meta to be included in the written file
-      const withMeta = JSON.parse(emitJSON({snapshot: true}));
-      fs.writeFileSync(target, JSON.stringify(withMeta, null, 2) + '\n', 'utf8');
+      const withMeta = JSON.parse(emitJSON({ snapshot: true }));
+      fs.writeFileSync(target, JSON.stringify(withMeta, null, 2) + "\n", "utf8");
       if (!opts.json) {
-        console.error(`[snapshot] Wrote baseline to ${target} (${withMeta.summary.ids_extracted} IDs, ${withMeta.summary.related_edges} edges, ${withMeta.summary.warnings} warnings)`);
+        console.error(
+          `[snapshot] Wrote baseline to ${target} (${withMeta.summary.ids_extracted} IDs, ${withMeta.summary.related_edges} edges, ${withMeta.summary.warnings} warnings)`,
+        );
       }
     } catch (e) {
       console.error(`[snapshot] Could not write to ${target}: ${e.message}`);
@@ -804,14 +862,16 @@ function main() {
   if (opts.compare && !opts.updateSnapshot) {
     const result = compareSnapshot(jsonPayload, opts.compare);
     if (!result.ok) {
-      console.error(`[snapshot] MISMATCH vs ${opts.compare} (${result.diff.length} difference(s)):`);
+      console.error(
+        `[snapshot] MISMATCH vs ${opts.compare} (${result.diff.length} difference(s)):`,
+      );
       for (const d of result.diff) {
-        console.error('  ' + d);
+        console.error("  " + d);
       }
-      console.error('');
-      console.error('[snapshot] If this change is intentional, run:');
+      console.error("");
+      console.error("[snapshot] If this change is intentional, run:");
       console.error(`  node verify-id-graph.js --update-snapshot --compare=${opts.compare}`);
-      console.error('[snapshot] Then commit the updated baseline.');
+      console.error("[snapshot] Then commit the updated baseline.");
       process.exit(1);
     } else if (!opts.json) {
       console.error(`[snapshot] OK — current graph matches ${opts.compare}`);
@@ -819,7 +879,7 @@ function main() {
   }
 
   // Exit code
-  const hardFail = Object.values(results.checks).filter(c => c.status === 'FAIL').length;
+  const hardFail = Object.values(results.checks).filter((c) => c.status === "FAIL").length;
   if (hardFail > 0) {
     process.exit(1);
   }
