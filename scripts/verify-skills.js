@@ -267,6 +267,7 @@ const VALID_DOMAINS = new Set([
   "DOC",
   "HEALTH",
   "CHART",
+  "DEVTOOLS", // sandbox variant for skill-creator (originally ZAI-META-002)
 ]);
 
 const VALID_COMPAT = new Set(["both", "sandbox", "ade"]);

@@ -3,11 +3,11 @@
   "effective_date": "2026-06-21",
   "summary": {
     "ids_extracted": 53,
-    "related_edges": 97,
-    "aligned_with_edges": 2,
+    "related_edges": 107,
+    "aligned_with_edges": 0,
     "hard_pass": 13,
     "hard_fail": 0,
-    "warnings": 34
+    "warnings": 0
   },
   "checks": [
     {
@@ -43,25 +43,25 @@
     {
       "id": "G07",
       "status": "PASS",
-      "description": "No STD → (RULE/PROC/TOOL/ZAI) edges",
+      "description": "No STD тЖТ (RULE/PROC/TOOL/ZAI) edges",
       "details": []
     },
     {
       "id": "G08",
       "status": "PASS",
-      "description": "No PROC → ZAI edges",
+      "description": "No PROC тЖТ ZAI edges",
       "details": []
     },
     {
       "id": "G09",
       "status": "PASS",
-      "description": "No TOOL → PROC edges",
+      "description": "No TOOL тЖТ PROC edges",
       "details": []
     },
     {
       "id": "G10",
       "status": "PASS",
-      "description": "No TOOL → ZAI edges",
+      "description": "No TOOL тЖТ ZAI edges",
       "details": []
     },
     {
@@ -89,142 +89,5 @@
       "details": []
     }
   ],
-  "warnings": [
-    {
-      "id": "W08",
-      "detail": "STD-SKILL-001 declares Aligned_with ZAI-META-001; not reciprocated (in C:\\Users\\stsgr\\My Projects\\Z-ai-platform\\standards\\standards\\SKILL-001-skill-format.md)"
-    },
-    {
-      "id": "W08",
-      "detail": "STD-SKILL-001 declares Aligned_with ZAI-META-002; not reciprocated (in C:\\Users\\stsgr\\My Projects\\Z-ai-platform\\standards\\standards\\SKILL-001-skill-format.md)"
-    },
-    {
-      "id": "W04",
-      "detail": "ZAI-DEV-004 (SKILL.md): ZAI skill with empty Related: and Aligned_with: (rogue skill with ID)"
-    },
-    {
-      "id": "W04",
-      "detail": "ZAI-DOC-001 (SKILL.md): ZAI skill with empty Related: and Aligned_with: (rogue skill with ID)"
-    },
-    {
-      "id": "W04",
-      "detail": "ZAI-DEV-005 (SKILL.md): ZAI skill with empty Related: and Aligned_with: (rogue skill with ID)"
-    },
-    {
-      "id": "W04",
-      "detail": "ZAI-DEVTOOLS-001 (SKILL.md): ZAI skill with empty Related: and Aligned_with: (rogue skill with ID)"
-    },
-    {
-      "id": "W13",
-      "detail": "CI-AND-TESTING.md: references \"skills/skills/commit-work/CONTRACT.md\" which does not exist in standards/ tree"
-    },
-    {
-      "id": "W13",
-      "detail": "CI-AND-TESTING.md: references \"skills/docs/CATALOG.md\" which does not exist in standards/ tree"
-    },
-    {
-      "id": "W13",
-      "detail": "CI-AND-TESTING.md: references \"skills/docs/CONTRACT-TEMPLATE.md\" which does not exist in standards/ tree"
-    },
-    {
-      "id": "W13",
-      "detail": "CI-AND-TESTING.md: references \"commit-work/CONTRACT.md\" which does not exist in standards/ tree"
-    },
-    {
-      "id": "W13",
-      "detail": "CI-AND-TESTING.md: references \"session-handoff/CONTRACT.md\" which does not exist in standards/ tree"
-    },
-    {
-      "id": "W13",
-      "detail": "CI-AND-TESTING.md: references \"gepetto/README.md\" which does not exist in standards/ tree"
-    },
-    {
-      "id": "W13",
-      "detail": "CI-AND-TESTING.md: references \"react-dev/README.md\" which does not exist in standards/ tree"
-    },
-    {
-      "id": "W13",
-      "detail": "CI-AND-TESTING.md: references \"skills/skills/commit-work/scripts/run-contract.sh\" which does not exist in standards/ tree"
-    },
-    {
-      "id": "W13",
-      "detail": "verify-id-graph-spec-v1.0.md: references \"Z-ai-platform/install-hooks.sh\" which does not exist in standards/ tree"
-    },
-    {
-      "id": "W13",
-      "detail": "README.md: references \"Z-ai-platform/install-hooks.sh\" which does not exist in standards/ tree"
-    },
-    {
-      "id": "W13",
-      "detail": "ARCH-001-architecture-and-repo-layout.md: references \"skills/skills/skill-creator/SKILL.md\" which does not exist in standards/ tree"
-    },
-    {
-      "id": "W13",
-      "detail": "META-001-standard-id-system.md: references \"skills/skills/INDEX.md\" which does not exist in standards/ tree"
-    },
-    {
-      "id": "W13",
-      "detail": "META-001-standard-id-system.md: references \"phi-layout/references/grid-patterns.md\" which does not exist in standards/ tree"
-    },
-    {
-      "id": "W13",
-      "detail": "META-001-standard-id-system.md: references \"react-dev/references/react-router.md\" which does not exist in standards/ tree"
-    },
-    {
-      "id": "W13",
-      "detail": "META-001-standard-id-system.md: references \"phi-layout/references/golden-ratio-layouts.md\" which does not exist in standards/ tree"
-    },
-    {
-      "id": "W13",
-      "detail": "META-001-standard-id-system.md: references \"phi-layout/references/fibonacci-scale.md\" which does not exist in standards/ tree"
-    },
-    {
-      "id": "W13",
-      "detail": "META-001-standard-id-system.md: references \"react-dev/references/react-19-patterns.md\" which does not exist in standards/ tree"
-    },
-    {
-      "id": "W13",
-      "detail": "META-001-standard-id-system.md: references \"react-dev/references/tanstack-router.md\" which does not exist in standards/ tree"
-    },
-    {
-      "id": "W13",
-      "detail": "META-001-standard-id-system.md: references \"react-dev/references/event-handlers.md\" which does not exist in standards/ tree"
-    },
-    {
-      "id": "W13",
-      "detail": "META-001-standard-id-system.md: references \"mermaid-diagrams/references/advanced-features.md\" which does not exist in standards/ tree"
-    },
-    {
-      "id": "W13",
-      "detail": "META-001-standard-id-system.md: references \"mermaid-diagrams/references/erd-diagrams.md\" which does not exist in standards/ tree"
-    },
-    {
-      "id": "W13",
-      "detail": "META-001-standard-id-system.md: references \"react-dev/references/hooks.md\" which does not exist in standards/ tree"
-    },
-    {
-      "id": "W13",
-      "detail": "META-001-standard-id-system.md: references \"commit-work/CONTRACT.md\" which does not exist in standards/ tree"
-    },
-    {
-      "id": "W13",
-      "detail": "META-001-standard-id-system.md: references \"session-handoff/CONTRACT.md\" which does not exist in standards/ tree"
-    },
-    {
-      "id": "W13",
-      "detail": "META-001-standard-id-system.md: references \"skills/docs/CONTRACT-TEMPLATE.md\" which does not exist in standards/ tree"
-    },
-    {
-      "id": "W13",
-      "detail": "META-001-standard-id-system.md: references \"gepetto/README.md\" which does not exist in standards/ tree"
-    },
-    {
-      "id": "W13",
-      "detail": "META-001-standard-id-system.md: references \"react-dev/README.md\" which does not exist in standards/ tree"
-    },
-    {
-      "id": "W13",
-      "detail": "SKILL-001-skill-format.md: references \"skills/skills/skill-id-system/SKILL.md\" which does not exist in standards/ tree"
-    }
-  ]
+  "warnings": []
 }

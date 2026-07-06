@@ -17,13 +17,13 @@ This standard defines rules and best practices for AI agent operation within the
 
 The Z.ai sandbox has specific characteristics that affect all operations:
 
-| Constraint | Impact | Mitigation |
-|-----------|--------|------------|
-| Shared filesystem | Files from one chat visible in all chats | Use project-specific directories |
-| Chat = Shell process | Processes die when chat ends | Use `disown` for background processes |
-| Process mortality | Background processes die after ~5 min inactivity | Watchdog with cron every 5 min |
-| No cross-chat process sharing | Cannot control processes from other chats | File-based coordination |
-| Git lockup possible | Previous chat may leave git blocked | Recovery protocol defined below |
+| Constraint                    | Impact                                           | Mitigation                            |
+| ----------------------------- | ------------------------------------------------ | ------------------------------------- |
+| Shared filesystem             | Files from one chat visible in all chats         | Use project-specific directories      |
+| Chat = Shell process          | Processes die when chat ends                     | Use `disown` for background processes |
+| Process mortality             | Background processes die after ~5 min inactivity | Watchdog with cron every 5 min        |
+| No cross-chat process sharing | Cannot control processes from other chats        | File-based coordination               |
+| Git lockup possible           | Previous chat may leave git blocked              | Recovery protocol defined below       |
 
 ---
 
@@ -33,19 +33,20 @@ This subsection defines the canonical bootstrap flow when starting a new project
 
 ### 3.0.1. Seven-step bootstrap flow
 
-| Step | Action | Verify | Reference |
-|------|--------|--------|----------|
-| 1 | Confirm the sandbox shell is fresh: no stale `.git/rebase-merge`, no orphan `next dev` processes | `git status` reports clean; `pgrep -f 'next dev'` returns nothing | §4.3 below; `docs/sandbox/sandbox-guide.md` §8 |
-| 2 | Place the project under `/home/z/my-project/` (the designated sandbox root) | `pwd` starts with `/home/z/my-project/` | §3 below |
-| 3 | Install standards compliance layer: clone `Z-ai-platform` with submodules (recursive) so `standards/`, `guard/`, `skills/` are all present | `ls standards/standards/*.md \| wc -l` returns 20; `node standards/scripts/verify-id-graph.js` exits 0 | `ARCH-002-implementation-order.md` §1 install order; `ARCH-001-architecture-and-repo-layout.md` §3 submodule conventions |
-| 4 | Read `worklog.md` (tail 200 lines) to learn what prior sessions did, then append a new section with the bootstrap Task ID | `tail -200 worklog.md` shows recent context; your new section appears at end | §6.2 below; `AGENT-002-orchestration.md` |
-| 5 | For fullstack web-dev sessions only: run `init-fullstack_*.sh` from `https://z-cdn.chatglm.cn/`, then add `allowedDevOrigins` to `next.config.ts` manually (infra bug) | `next dev` returns HTTP 200 on `http://127.0.0.1:3000/`; `next.config.ts` contains `allowedDevOrigins` | `docs/sandbox/sandbox-guide.md` §1-5; `docs/sandbox/INDEX.md` §3 contradiction #3 |
-| 6 | For docs/methodology sessions (no Next.js): skip step 5, do NOT start dev server, do NOT create `src/app/` | `ls src/app/ 2>/dev/null` returns "No such file" | `docs/sandbox/INDEX.md` §2 scenario table |
-| 7 | Before declaring "project ready", run `docs/sandbox/verify-sandbox.sh` (fullstack only) or `verify-id-graph.js` (any session) | Both exit 0 | `docs/sandbox/verify-sandbox.sh`; §11 below |
+| Step | Action                                                                                                                                                                 | Verify                                                                                                 | Reference                                                                                                                |
+| ---- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------ |
+| 1    | Confirm the sandbox shell is fresh: no stale `.git/rebase-merge`, no orphan `next dev` processes                                                                       | `git status` reports clean; `pgrep -f 'next dev'` returns nothing                                      | §4.3 below; `docs/sandbox/sandbox-guide.md` §8                                                                           |
+| 2    | Place the project under `/home/z/my-project/` (the designated sandbox root)                                                                                            | `pwd` starts with `/home/z/my-project/`                                                                | §3 below                                                                                                                 |
+| 3    | Install standards compliance layer: clone `Z-ai-platform` with submodules (recursive) so `standards/`, `guard/`, `skills/` are all present                             | `ls standards/standards/*.md \| wc -l` returns 20; `node standards/scripts/verify-id-graph.js` exits 0 | `ARCH-002-implementation-order.md` §1 install order; `ARCH-001-architecture-and-repo-layout.md` §3 submodule conventions |
+| 4    | Read `worklog.md` (tail 200 lines) to learn what prior sessions did, then append a new section with the bootstrap Task ID                                              | `tail -200 worklog.md` shows recent context; your new section appears at end                           | §6.2 below; `AGENT-002-orchestration.md`                                                                                 |
+| 5    | For fullstack web-dev sessions only: run `init-fullstack_*.sh` from `https://z-cdn.chatglm.cn/`, then add `allowedDevOrigins` to `next.config.ts` manually (infra bug) | `next dev` returns HTTP 200 on `http://127.0.0.1:3000/`; `next.config.ts` contains `allowedDevOrigins` | `docs/sandbox/sandbox-guide.md` §1-5; `docs/sandbox/INDEX.md` §3 contradiction #3                                        |
+| 6    | For docs/methodology sessions (no Next.js): skip step 5, do NOT start dev server, do NOT create `src/app/`                                                             | `ls src/app/ 2>/dev/null` returns "No such file"                                                       | `docs/sandbox/INDEX.md` §2 scenario table                                                                                |
+| 7    | Before declaring "project ready", run `docs/sandbox/verify-sandbox.sh` (fullstack only) or `verify-id-graph.js` (any session)                                          | Both exit 0                                                                                            | `docs/sandbox/verify-sandbox.sh`; §11 below                                                                              |
 
 ### 3.0.2. What the bootstrap flow guarantees
 
 After steps 1-7 complete successfully:
+
 - The project lives in the designated sandbox root (no path drift).
 - The standards compliance layer is present and self-consistent (ID graph passes HARD checks G01-G15).
 - The worklog carries forward prior context — no "black box" between sessions.
@@ -72,14 +73,14 @@ All projects MUST reside in `/home/z/my-project/`:
 
 `/home/z/my-project/` and related sandbox paths are allowed as environment-constant exceptions in Z.ai sandbox code. All other absolute paths are prohibited by REPRODUCIBILITY_STANDARD (STD-ENV-001 v2.1, L1 Path Rules). This section (§3.1) is the authoritative source for the sandbox path table; STD-ENV-001 §1.2 mirrors it for self-contained readability.
 
-| Path | Status | Reason |
-|------|--------|--------|
-| `/home/z/my-project/` | Allowed | Designated sandbox working directory |
-| `/home/z/my-project/download/` | Allowed | Designated output directory |
-| `/tmp/zdev.log` | Allowed | Dev server log (not in source code) |
-| `/tmp/` (for backups) | Allowed | Temporary backups (not committed) |
+| Path                            | Status     | Reason                                    |
+| ------------------------------- | ---------- | ----------------------------------------- |
+| `/home/z/my-project/`           | Allowed    | Designated sandbox working directory      |
+| `/home/z/my-project/download/`  | Allowed    | Designated output directory               |
+| `/tmp/zdev.log`                 | Allowed    | Dev server log (not in source code)       |
+| `/tmp/` (for backups)           | Allowed    | Temporary backups (not committed)         |
 | `/home/user/`, `/Users/`, `C:\` | Prohibited | Platform-specific, breaks reproducibility |
-| `http://localhost:` in source | Prohibited | Use relative paths or XTransformPort |
+| `http://localhost:` in source   | Prohibited | Use relative paths or XTransformPort      |
 
 Relative paths are preferred when `process.cwd()` resolves to `/home/z/my-project/`. Use `path.resolve(process.cwd(), ...)` for database and file paths.
 
@@ -138,11 +139,11 @@ curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:3000/
 
 ### 5.3 Health Check Response Codes
 
-| Code | Action |
-|------|--------|
-| 200 | Server running, proceed |
-| 000 | Server down, restart |
-| 500 | Server error, check logs |
+| Code | Action                   |
+| ---- | ------------------------ |
+| 200  | Server running, proceed  |
+| 000  | Server down, restart     |
+| 500  | Server error, check logs |
 
 ---
 
@@ -171,12 +172,14 @@ When a session is interrupted or context is lost:
 ### 7.1 Auto-Backup
 
 Before any write mutation on critical files:
+
 - Create a backup copy in `/tmp/`
 - Log the backup location in worklog.md
 
 ### 7.2 Safe Delete
 
 Before deleting any entity:
+
 - Verify with user via confirmation dialog
 - Archive instead of hard-delete when possible
 
@@ -193,6 +196,7 @@ Before deleting any entity:
 ### 8.2 Retry Strategy
 
 When calling chat.z.ai:
+
 - Exponential backoff: 2s initial, 2x multiplier
 - Max 3 retries
 - Retryable: 502, 503, 504
@@ -223,12 +227,12 @@ When calling chat.z.ai:
 
 ## 10. Version History
 
-| Version | Date | Changes |
-|--------|------|---------|
-| 1.0 | 2026-05 | Initial standard extracted from AGENT_RULES.md |
-| 1.1 | 2026-05-14 | Added SDK Integration section with 10 usage rules |
-| 1.2 | 2026-06 | Updated §6 Related to reference `REPRODUCIBILITY_STANDARD` (was `REPRODUCIBILITY-STANDARD` — see ZAI-001). Updated §3.1 to reference STD-ENV-001 v2.1 (was v1.1 — see ZAI-002). Updated compliance footer to MARKDOWN_STANDARD v2.3 (was v2.1 — see ZAI-003). Added §3.1 authoritative-source note (see ZAI-004). Added §10A Known Issues. |
-| 1.3 | 2026-06-18 | Added §3.0 Bootstrap Procedure for a New Project (7-step flow, thin, references `docs/sandbox/`). Updated Related: field to include `ARCH-002-implementation-order.md` and `docs/sandbox/INDEX.md`. Added ZAI-008 to Known Issues. |
+| Version | Date       | Changes                                                                                                                                                                                                                                                                                                                                    |
+| ------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1.0     | 2026-05    | Initial standard extracted from AGENT_RULES.md                                                                                                                                                                                                                                                                                             |
+| 1.1     | 2026-05-14 | Added SDK Integration section with 10 usage rules                                                                                                                                                                                                                                                                                          |
+| 1.2     | 2026-06    | Updated §6 Related to reference `REPRODUCIBILITY_STANDARD` (was `REPRODUCIBILITY-STANDARD` — see ZAI-001). Updated §3.1 to reference STD-ENV-001 v2.1 (was v1.1 — see ZAI-002). Updated compliance footer to MARKDOWN_STANDARD v2.3 (was v2.1 — see ZAI-003). Added §3.1 authoritative-source note (see ZAI-004). Added §10A Known Issues. |
+| 1.3     | 2026-06-18 | Added §3.0 Bootstrap Procedure for a New Project (7-step flow, thin, references `docs/sandbox/`). Updated Related: field to include `ARCH-002-implementation-order.md` and `docs/sandbox/INDEX.md`. Added ZAI-008 to Known Issues.                                                                                                         |
 
 ---
 
@@ -288,7 +292,7 @@ This section documents discovered inconsistencies, missing content, and proposed
 
 ## 11. Cross-References
 
-| Standard | Relationship |
-|----------|-------------|
-| STD-ENV-001 | Reproducibility Standard: path rules (Section 1.2 mirrors §3.1 of this document; §3.1 is authoritative) |
+| Standard     | Relationship                                                                                                       |
+| ------------ | ------------------------------------------------------------------------------------------------------------------ |
+| STD-ENV-001  | Reproducibility Standard: path rules (Section 1.2 mirrors §3.1 of this document; §3.1 is authoritative)            |
 | STD-META-001 | Standard ID System: registry entry for STD-ENV-002 must be kept in sync with the version in this document's header |

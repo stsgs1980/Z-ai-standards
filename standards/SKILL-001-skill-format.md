@@ -8,7 +8,7 @@
 > Status: **APPROVED**
 > verified_by: scripts/verify-standards.js#V05,V11,V13,V14, scripts/verify-id-graph.js#G01,G02,G14 (when ID present)
 > Related: STD-META-001, STD-DOC-002
-> Aligned_with: ZAI-META-001 (legacy, kept as pointer), ZAI-META-002 (toolkit skill-creator)
+> Aligned_with: (none — legacy alignment entries removed 2026-07-06; see §12 migration history)
 > Implemented_by: RULE-MONOLITH-012 (anti-monolith line limit — see rule for the 250-line cap)
 
 > **Status: APPROVED.** This standard defines the **minimum required format**

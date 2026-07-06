@@ -118,6 +118,32 @@ const W13_WHITELIST = new Set([
   // — path-like form `commit-work/scripts/run-contract.sh` resolves via candidates list,
   //   but bare `run-contract.sh` in prose cannot resolve unambiguously (which skill's script?)
   "run-contract.sh",
+  // v1.1.7 additions (2026-07-06 cleanup): Z-ai-skills repo skills referenced from
+  // standards docs. These live in a separate repo and are not part of standards/ tree.
+  "skills/skills/commit-work/CONTRACT.md",
+  "skills/skills/commit-work/scripts/run-contract.sh",
+  "skills/docs/CATALOG.md",
+  "skills/docs/CONTRACT-TEMPLATE.md",
+  "commit-work/CONTRACT.md",
+  "session-handoff/CONTRACT.md",
+  "gepetto/README.md",
+  "react-dev/README.md",
+  "skills/skills/INDEX.md", // local skills/ has INDEX.md but reference is to nested skills/skills/INDEX.md
+  "skills/skills/skill-creator/SKILL.md",
+  "skills/skills/skill-id-system/SKILL.md",
+  // Z-ai-skills reference skills (in standards/ docs as examples)
+  "phi-layout/references/grid-patterns.md",
+  "phi-layout/references/golden-ratio-layouts.md",
+  "phi-layout/references/fibonacci-scale.md",
+  "react-dev/references/react-router.md",
+  "react-dev/references/react-19-patterns.md",
+  "react-dev/references/tanstack-router.md",
+  "react-dev/references/event-handlers.md",
+  "react-dev/references/hooks.md",
+  "mermaid-diagrams/references/advanced-features.md",
+  "mermaid-diagrams/references/erd-diagrams.md",
+  // Planned scripts (Z-ai-platform install-hooks.sh)
+  "Z-ai-platform/install-hooks.sh",
 ]);
 
 // ----------------------------------------------------------------------------
