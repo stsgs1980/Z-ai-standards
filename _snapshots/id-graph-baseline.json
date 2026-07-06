@@ -2,8 +2,8 @@
   "version": "1.1.6",
   "effective_date": "2026-06-21",
   "summary": {
-    "ids_extracted": 53,
-    "related_edges": 107,
+    "ids_extracted": 54,
+    "related_edges": 109,
     "aligned_with_edges": 0,
     "hard_pass": 13,
     "hard_fail": 0,
@@ -43,25 +43,25 @@
     {
       "id": "G07",
       "status": "PASS",
-      "description": "No STD тЖТ (RULE/PROC/TOOL/ZAI) edges",
+      "description": "No STD → (RULE/PROC/TOOL/ZAI) edges",
       "details": []
     },
     {
       "id": "G08",
       "status": "PASS",
-      "description": "No PROC тЖТ ZAI edges",
+      "description": "No PROC → ZAI edges",
       "details": []
     },
     {
       "id": "G09",
       "status": "PASS",
-      "description": "No TOOL тЖТ PROC edges",
+      "description": "No TOOL → PROC edges",
       "details": []
     },
     {
       "id": "G10",
       "status": "PASS",
-      "description": "No TOOL тЖТ ZAI edges",
+      "description": "No TOOL → ZAI edges",
       "details": []
     },
     {
