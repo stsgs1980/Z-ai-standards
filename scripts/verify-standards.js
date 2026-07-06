@@ -822,8 +822,12 @@ function extractSection(content, sectionNumber) {
 //   (c) Has Prohibitions section
 // ============================================================================
 (function V17() {
-  const agentRulesPath = path.join(REPO_ROOT, "AGENT_RULES.md");
-  const content = readSafe(agentRulesPath);
+  // Support both AGENT_RULES.md and AGENT-RULES.md (hyphen convention)
+  const possibleNames = ["AGENT_RULES.md", "AGENT-RULES.md"];
+  const agentRulesPath = possibleNames
+    .map((name) => path.join(REPO_ROOT, name))
+    .find((p) => fs.existsSync(p));
+  const content = agentRulesPath ? readSafe(agentRulesPath) : null;
   if (!content) {
     check(
       "V17",
@@ -839,7 +843,7 @@ function extractSection(content, sectionNumber) {
 
   check(
     "V17",
-    "AGENT_RULES.md follows AGENT_RULES_TEMPLATE: onboarding + priority order + prohibitions",
+    "AGENT_RULES.md (or AGENT-RULES.md) follows AGENT_RULES_TEMPLATE: onboarding + priority order + prohibitions",
     hasOnboarding && hasPriorityOrder && hasProhibitions,
     `onboarding=${hasOnboarding}, priority order=${hasPriorityOrder}, prohibitions=${hasProhibitions}`,
   );

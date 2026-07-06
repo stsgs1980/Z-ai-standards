@@ -59,6 +59,7 @@ const REPO_GLOBS = {
   guard: {
     patterns: [
       "AGENT_RULES.md",
+      "AGENT-RULES.md",
       "rules/**/*.md",
       "instructions/**/*.md",
       "scripts/**/*.{sh,js,ts}",
