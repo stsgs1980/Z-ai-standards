@@ -97,8 +97,8 @@ const { extractDeclaration, parseMigrations } = require("./lib/declarations");
 // CONSTANTS (script-level — not shared with other verifiers)
 // ============================================================================
 
-const VERSION = "1.1.6";
-const EFFECTIVE_DATE = "2026-06-21";
+const VERSION = "1.1.7";
+const EFFECTIVE_DATE = "2026-07-06";
 
 // ============================================================================
 // RESULTS STATE

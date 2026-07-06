@@ -111,14 +111,69 @@ function emitHumanReadable(results, version, effectiveDate, opts) {
  *               hard_pass, hard_fail, warnings }
  *   - checks [{ id, status, description, details }, ...]
  *   - warnings [{ id, detail }, ...]
+ *   - ids [{ id, prefix, domain, number, file, repo }, ...]    (v1.1.7+)
+ *   - related_edges [{ from, to, file }, ...]                  (v1.1.7+)
+ *   - aligned_with_edges [{ left, right, file }, ...]           (v1.1.7+)
  *   - snapshot_meta (only when opts.snapshot or opts.updateSnapshot)
  *
  * The snapshot_meta block lets consumers detect script-version drift
  * without parsing the version field separately.
+ *
+ * v1.1.7+: ids/related_edges/aligned_with_edges added so external tools
+ * (Z-ai-graph-viewer) can render the graph without re-parsing source files.
  */
 function emitJSON(results, version, effectiveDate, opts) {
   const hardPass = Object.values(results.checks).filter((c) => c.status === "PASS").length;
   const hardFail = Object.values(results.checks).filter((c) => c.status === "FAIL").length;
+
+  // Build the set of valid IDs (excluding malformed declarations) for edge filtering
+  const validIds = new Set();
+  for (const decl of results.declarations) {
+    if (!decl.malformed && decl.id) validIds.add(decl.id);
+  }
+
+  // Normalize paths in declarations and edges to repo-relative (cross-platform safe)
+  const normalizePath = (filePath) => {
+    if (!filePath) return filePath;
+    return String(filePath)
+      .replace(/\\/g, "/")
+      .replace(/.*(Z-ai-platform|Z-ai-standards|Z-ai-guard|Z-ai-skills)\//, "");
+  };
+
+  // Build ids array (skip malformed and no-id declarations)
+  const ids = results.declarations
+    .filter((d) => !d.malformed && d.id)
+    .map((d) => {
+      // Parse id into components: "STD-META-001" -> prefix=STD, domain=META, number=001
+      const m = d.id.match(/^([A-Z]+)-([A-Z]+)-(\d+)$/);
+      return {
+        id: d.id,
+        prefix: m ? m[1] : d.prefix,
+        domain: m ? m[2] : "",
+        number: m ? m[3] : "",
+        file: normalizePath(d.file),
+        repo: d.repo,
+      };
+    });
+
+  // Build related_edges: directed, source declares Related: target
+  // Only include edges where both endpoints are valid IDs
+  const relatedEdges = results.edges.related
+    .filter((e) => validIds.has(e.source) && validIds.has(e.target))
+    .map((e) => ({
+      from: e.source,
+      to: e.target,
+      file: normalizePath(e.source_file),
+    }));
+
+  // Build aligned_with_edges: undirected (stored as lex-ordered pairs)
+  const alignedWithEdges = results.edges.aligned_with
+    .filter((e) => validIds.has(e.left) && validIds.has(e.right))
+    .map((e) => ({
+      left: e.left,
+      right: e.right,
+      file: normalizePath(e.file),
+    }));
 
   const payload = {
     version,
@@ -138,6 +193,9 @@ function emitJSON(results, version, effectiveDate, opts) {
       details: c.details,
     })),
     warnings: results.warnings,
+    ids,
+    related_edges: relatedEdges,
+    aligned_with_edges: alignedWithEdges,
   };
 
   // When writing a snapshot, embed metadata so consumers can detect
