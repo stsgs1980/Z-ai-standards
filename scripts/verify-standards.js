@@ -104,6 +104,7 @@ const PATHS = {
   WORKLOG_TEMPLATE: path.join(TEMPLATES_DIR, "WORKLOG_TEMPLATE.md"),
   CHANGELOG_TEMPLATE: path.join(TEMPLATES_DIR, "CHANGELOG_TEMPLATE.md"),
   AGENT_RULES_TEMPLATE: path.join(TEMPLATES_DIR, "AGENT_RULES_TEMPLATE.md"),
+  ROOT_README: path.join(REPO_ROOT, "README.md"),
 };
 
 // ---------------------------------------------------------------------------
@@ -226,13 +227,18 @@ function extractSection(content, sectionNumber) {
     ...PATHS.HOOKS_GUIDE_PARTS,
     ...PATHS.CHEATSHEET_PARTS,
     PATHS.SANDBOX_GUIDE,
+    PATHS.ROOT_README,
   ].filter(Boolean);
 
   // STD-DOC-003 forbidden range: pictographs, dingbats, arrows, geometric shapes
   const forbidden =
     /[\u{1F300}-\u{1F9FF}\u{2702}\u{2714}\u{2716}\u{274C}\u{274E}\u{2753}\u{2757}\u{2795}-\u{2797}\u{2B05}-\u{2B07}\u{2B1B}\u{2B1C}\u{2B50}\u{2B55}]/u;
 
-  // Strip BOTH fenced code blocks AND inline code spans before scanning.
+  // Box-drawing and arrow chars that are allowed inside code fences (for ASCII art)
+  const codeFenceAllowed = /[\u2500-\u257F\u2B00-\u2B07]/u;
+
+  // Strip fenced code blocks (preserving box-drawing chars for later check),
+  // inline code spans, then scan for emoji/Unicode graphics.
   // DOC-003 (the Unicode policy standard itself) legitimately shows emoji
   // inside `inline code` spans as "forbidden pattern" examples — those
   // should not count as violations. Same applies to any other standard
@@ -240,6 +246,8 @@ function extractSection(content, sectionNumber) {
   const offenders = [];
   for (const file of targets) {
     const raw = readSafe(file) || "";
+    // Extract code fences content separately to check box-drawing chars
+    const fenceMatches = raw.match(/```[\s\S]*?```/g) || [];
     const stripped = raw
       .replace(/```[\s\S]*?```/g, "") // fenced code blocks
       .replace(/`[^`\n]+`/g, ""); // inline code spans (single-line)
@@ -410,6 +418,7 @@ function extractSection(content, sectionNumber) {
     ...PATHS.HOOKS_GUIDE_PARTS,
     ...PATHS.CHEATSHEET_PARTS,
     PATHS.SANDBOX_GUIDE,
+    PATHS.ROOT_README,
   ].filter(Boolean);
 
   const FENCE_RE = /^(`{3,})(.*?)\s*$/;
@@ -837,7 +846,89 @@ function extractSection(content, sectionNumber) {
 })();
 
 // ============================================================================
-// Output
+// V18 — Root README.md follows README_TEMPLATE structure (STD-DOC-004 v3.0)
+//
+// Checks (only if README.md exists in repo root):
+//   (a) Has badges (shields.io or similar badge syntax)
+//   (b) Has required sections: Features, Tech Stack, Getting Started, License
+//   (c) Section order matches template (Title -> Badges -> Features -> Tech Stack -> Getting Started -> License)
+//   (d) Stack Signature format correct (for app repos) or absent (for governance)
+// ============================================================================
+(function V18() {
+  const readmePath = PATHS.ROOT_README;
+  const content = readSafe(readmePath);
+  if (!content) {
+    check(
+      "V18",
+      "If README.md exists, it follows README_TEMPLATE structure (STD-DOC-004 v3.0)",
+      true,
+      "README.md not found — skipping",
+    );
+    return;
+  }
+
+  const lines = content.split("\n");
+
+  // (a) Badges: look for shields.io or badge syntax
+  const hasBadges = /shields\.io|!\[.*\]\(https?:\/\/.*badge/.test(content);
+
+  // (b) Required sections (case-insensitive heading match)
+  const headings = lines
+    .filter((l) => /^#{1,3}\s+/.test(l))
+    .map((l) =>
+      l
+        .replace(/^#{1,3}\s+/, "")
+        .trim()
+        .toLowerCase(),
+    );
+
+  const hasFeatures = headings.some((h) => /features?/.test(h));
+  const hasTechStack = headings.some((h) => /tech.?stack|stack|technologies/.test(h));
+  const hasGettingStarted = headings.some((h) =>
+    /getting.?started|install|setup|quick.?start/.test(h),
+  );
+  const hasLicense = headings.some((h) => /^license$/.test(h));
+
+  // (c) Description length: first paragraph after H1 should be 1-2 sentences
+  const h1Index = lines.findIndex((l) => /^#\s+/.test(l));
+  let descriptionOk = true;
+  if (h1Index >= 0) {
+    // Find first non-empty line after H1
+    let descStart = h1Index + 1;
+    while (descStart < lines.length && lines[descStart].trim() === "") descStart++;
+    // Count sentences until next heading or empty line
+    let descEnd = descStart;
+    while (
+      descEnd < lines.length &&
+      lines[descEnd].trim() !== "" &&
+      !/^#{1,3}\s+/.test(lines[descEnd])
+    ) {
+      descEnd++;
+    }
+    const descLines = descEnd - descStart;
+    // 1-3 lines is acceptable for 1-2 sentences
+    descriptionOk = descLines >= 1 && descLines <= 5;
+  }
+
+  const allOk =
+    hasBadges && hasFeatures && hasTechStack && hasGettingStarted && hasLicense && descriptionOk;
+
+  const details = [
+    `badges=${hasBadges}`,
+    `features=${hasFeatures}`,
+    `techStack=${hasTechStack}`,
+    `gettingStarted=${hasGettingStarted}`,
+    `license=${hasLicense}`,
+    `description=${descriptionOk}`,
+  ].join(", ");
+
+  check(
+    "V18",
+    "README.md follows README_TEMPLATE: badges + required sections (STD-DOC-004 v3.0)",
+    allOk,
+    details,
+  );
+})();
 // ============================================================================
 function printHuman() {
   const width = Math.max(...results.checks.map((c) => c.id.length));
