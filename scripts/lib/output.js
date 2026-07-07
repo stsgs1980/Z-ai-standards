@@ -151,6 +151,7 @@ function emitJSON(results, version, effectiveDate, opts) {
         prefix: m ? m[1] : d.prefix,
         domain: m ? m[2] : "",
         number: m ? m[3] : "",
+        title: d.title || null,
         file: normalizePath(d.file),
         repo: d.repo,
       };
