@@ -7,7 +7,7 @@
     "aligned_with_edges": 0,
     "hard_pass": 13,
     "hard_fail": 0,
-    "warnings": 0
+    "warnings": 2
   },
   "checks": [
     {
@@ -89,7 +89,16 @@
       "details": []
     }
   ],
-  "warnings": [],
+  "warnings": [
+    {
+      "id": "W13",
+      "detail": "META-001-id-registry.md: references \"status.sh\" which does not exist in standards/ tree"
+    },
+    {
+      "id": "W13",
+      "detail": "META-001-id-registry.md: references \"Z-ai-platform/status.sh\" which does not exist in standards/ tree"
+    }
+  ],
   "ids": [
     {
       "id": "STD-AGENT-001",
@@ -1101,7 +1110,7 @@
   "aligned_with_edges": [],
   "snapshot_meta": {
     "script_version": "1.1.7",
-    "created_at": "2026-07-07T07:54:59.160Z",
+    "created_at": "2026-07-07T08:13:07.802Z",
     "purpose": "Baseline for verify-id-graph.js --compare. Do not hand-edit; regenerate with --update-snapshot."
   }
 }
