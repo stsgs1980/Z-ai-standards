@@ -326,7 +326,6 @@ try {
   if (!response.ok) throw new Error(`HTTP ${response.status}`);
   return await response.json();
 } catch (err) {
-  // Keep showing last known good data
   setState((s) => ({ ...s, error: err.message }));
 }
 ```
@@ -334,15 +333,7 @@ try {
 ### Refresh timeline
 
 ```
-T+0:00   Developer pushes to Z-ai-platform main
-T+0:30   GitHub Actions CI starts
-T+1:00   verify-id-graph.js --json generates new data
-T+1:30   CI commits docs/_graph/id-graph.json
-T+2:00   raw.githubusercontent.com is updated
-T+2:30   graph-viewer's setInterval fires → fetches new data
-T+3:00   User sees updated graph in browser
-
-Total delay: ~3 minutes from push to visible.
+T+0:00 Push → T+1:00 CI generates → T+2:00 CDN updated → T+3:00 Visible (~3 min total)
 ```
 
 ---
@@ -399,12 +390,9 @@ This is useful for:
 ## Related
 
 - `docs/_graph/` — Visual graph artifacts (SVG/PNG/DOT)
-- `tests/governance-escalation-report.md` — Defect #12: compliance dashboard
 - `standards/scripts/verify-id-graph.js` — Source of the data
 - `standards/scripts/graph-deps.sh` — Generates visual graphs
-- AGENT_RULES.md §3 — Rule registry (rules enforced)
 
 ---
 
 **Last API contract update:** 2026-07-06
-**Maintained by:** Z-ai-platform governance scripts (CI-driven)
