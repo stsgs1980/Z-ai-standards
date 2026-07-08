@@ -1,57 +1,13 @@
 #!/usr/bin/env node
-/**
- * ============================================================================
- * verify-source-line-count.js — Anti-monolith Source File Verifier v1.0.0
- * ============================================================================
- *
- * ID: TOOL-VERIFY-SRC-001
- * Implements: RULE-MONOLITH-012 section 4.18.1 (file size by category)
- *
- * PURPOSE
- *   Enforces line-count limits per file category defined in RULE-MONOLITH-012.
- *   Scans the entire project (with exclusions) and fails if any file exceeds
- *   its category's hard limit.
- *
- * EXIT CODES
- *   0 — all files within limits (or --soft mode)
- *   1 — at least one file exceeds its limit
- *   2 — configuration error
- *
- * USAGE
- *   node standards/scripts/verify-source-line-count.js             # human-readable
- *   node standards/scripts/verify-source-line-count.js --json      # CI-friendly
- *   node standards/scripts/verify-source-line-count.js --soft      # warn-only
- *   node standards/scripts/verify-source-line-count.js --help      # show help
- *
- * ============================================================================
- */
-
 "use strict";
 
 const fs = require("fs");
 const path = require("path");
 
-const VERSION = "1.0.0";
-const EFFECTIVE_DATE = "2026-07-08";
-
-// ============================================================================
-// CLI PARSING
-// ============================================================================
-
-function parseArgs(argv) {
-  const opts = { json: false, help: false, root: null, soft: false };
-  for (const arg of argv.slice(2)) {
-    if (arg === "--help" || arg === "-h") opts.help = true;
-    else if (arg === "--json") opts.json = true;
-    else if (arg === "--soft") opts.soft = true;
-    else if (arg.startsWith("--root=")) opts.root = arg.slice(7);
-    else {
-      console.error(`Unknown argument: ${arg}`);
-      process.exit(2);
-    }
-  }
-  return opts;
-}
+const { VERSION, parseArgs, printJSON } = require("./lib/cli-utils");
+const { listFiles, countLines, discoverProjectRoot } = require("./lib/file-utils");
+const { CATEGORIES, categorizeFile } = require("./lib/category-utils");
+const { createResults, addCheck } = require("./lib/check-utils");
 
 function showHelp() {
   console.log(`
@@ -75,179 +31,26 @@ Exit codes:
 `);
 }
 
-// ============================================================================
-// PROJECT ROOT DISCOVERY
-// ============================================================================
-
-function discoverProjectRoot() {
-  if (process.env.ZAI_PLATFORM_ROOT && fs.existsSync(process.env.ZAI_PLATFORM_ROOT)) {
-    return process.env.ZAI_PLATFORM_ROOT;
+function printHuman(results) {
+  const w = Math.max(...results.checks.map((c) => c.id.length));
+  console.log(`verify-source-line-count.js v${VERSION}`);
+  console.log("=".repeat(72));
+  for (const c of results.checks) {
+    const icon = c.status === "PASS" ? "[PASS]" : "[FAIL]";
+    console.log(`${icon} ${c.id.padEnd(w)}  ${c.description}`);
+    if (c.detail) console.log(`         ${c.detail}`);
   }
-  let dir = __dirname;
-  for (let i = 0; i < 10; i++) {
-    if (fs.existsSync(path.join(dir, "package.json"))) {
-      return dir;
-    }
-    dir = path.dirname(dir);
-  }
-  return null;
+  console.log("-".repeat(72));
+  console.log(
+    `HARD: ${results.stats.hard_pass}/${results.stats.hard_pass + results.stats.hard_fail} PASS, ${results.stats.hard_fail} FAIL`,
+  );
 }
 
-// ============================================================================
-// EXCLUSIONS
-// ============================================================================
-
-const SKIP_DIRS = new Set(["node_modules", ".next", "Z-ai-governance", ".git"]);
-
-const SKIP_DIR_PATTERNS = ["src/components/ui"];
-
-const EXEMPT_EXTENSIONS = new Set([".json", ".yml", ".yaml", ".toml", ".ini"]);
-
-const EXEMPT_FILE_PATTERNS = [
-  /worklog\.md$/i,
-  /DECISIONS.*\.md$/i,
-  /SESSION.*\.md$/i,
-  /MIGRATIONS.*\.md$/i,
-  /^INDEX\.md$/i,
-];
-
-function shouldSkip(filePath, relativePath) {
-  const parts = relativePath.split(path.sep);
-
-  for (const part of parts) {
-    if (SKIP_DIRS.has(part)) return true;
-  }
-
-  for (const pattern of SKIP_DIR_PATTERNS) {
-    if (relativePath.startsWith(pattern) || relativePath.includes(path.sep + pattern + path.sep)) {
-      return true;
-    }
-  }
-
-  if (parts.includes("references")) return true;
-
-  const basename = path.basename(filePath);
-  for (const pattern of EXEMPT_FILE_PATTERNS) {
-    if (pattern.test(basename)) return true;
-  }
-
-  const ext = path.extname(filePath).toLowerCase();
-  if (EXEMPT_EXTENSIONS.has(ext)) return true;
-
-  return false;
-}
-
-// ============================================================================
-// FILE DISCOVERY
-// ============================================================================
-
-function listFiles(dir, root) {
-  const results = [];
-  if (!fs.existsSync(dir)) return results;
-
-  const entries = fs.readdirSync(dir, { withFileTypes: true });
-  for (const entry of entries) {
-    const fullPath = path.join(dir, entry.name);
-    const relativePath = path.relative(root, fullPath);
-
-    if (entry.isDirectory()) {
-      if (!shouldSkip(fullPath, relativePath)) {
-        results.push(...listFiles(fullPath, root));
-      }
-    } else if (entry.isFile()) {
-      if (!shouldSkip(fullPath, relativePath)) {
-        results.push(fullPath);
-      }
-    }
-  }
-
-  return results;
-}
-
-// ============================================================================
-// CATEGORY DETECTION (RULE-MONOLITH-012 section 4.18.1)
-// ============================================================================
-
-const CATEGORIES = {
-  SOURCE: { hard: 250, soft: 150, extensions: [".ts", ".tsx", ".js", ".jsx", ".py", ".sh"] },
-  CSS: { hard: 250, soft: 150, extensions: [".css"] },
-  TEST: { hard: 400, soft: 250, pattern: /\.(test|spec)\.[^.]+$/i },
-  SKILL: { hard: 800, soft: 400, pattern: /^SKILL\.md$/i },
-  README: { hard: 400, soft: 250, pattern: /^README\.md$/i },
-  STD: { hard: 1200, soft: 800, pattern: /^(STD|META)-.+\.md$/i },
-  RULE: { hard: 200, soft: 120, pattern: /^RULE-.+\.md$/i },
-  PROC: { hard: 400, soft: 250, pattern: /^(PROC|TOOL)-.+\.md$/i },
-  OTHER_MD: { hard: 400, soft: 250, extensions: [".md"] },
-};
-
-function categorizeFile(filePath) {
-  const basename = path.basename(filePath);
-  const ext = path.extname(filePath).toLowerCase();
-
-  // Check pattern-based categories first (more specific)
-  if (CATEGORIES.TEST.pattern.test(basename)) return "TEST";
-  if (CATEGORIES.SKILL.pattern.test(basename)) return "SKILL";
-  if (CATEGORIES.README.pattern.test(basename)) return "README";
-  if (CATEGORIES.STD.pattern.test(basename)) return "STD";
-  if (CATEGORIES.RULE.pattern.test(basename)) return "RULE";
-  if (CATEGORIES.PROC.pattern.test(basename)) return "PROC";
-
-  // Check extension-based categories
-  if (CATEGORIES.SOURCE.extensions.includes(ext)) return "SOURCE";
-  if (CATEGORIES.CSS.extensions.includes(ext)) return "CSS";
-  if (CATEGORIES.OTHER_MD.extensions.includes(ext)) return "OTHER_MD";
-
-  return null; // Not a recognized file type
-}
-
-// ============================================================================
-// LINE COUNTING
-// ============================================================================
-
-function countLines(content) {
-  if (content === "") return 0;
-  return content.split("\n").length - (content.endsWith("\n") ? 1 : 0);
-}
-
-// ============================================================================
-// RESULTS ACCUMULATOR
-// ============================================================================
-
-const results = {
-  checks: [],
-  stats: {
-    files_scanned: 0,
-    hard_pass: 0,
-    hard_fail: 0,
-    soft_warnings: 0,
-    exempt: 0,
-  },
-};
-
-function check(id, category, hardLimit, softLimit, passed, offenders, filesChecked) {
-  const status = passed ? "PASS" : "FAIL";
-  results.checks.push({
-    id,
-    status,
-    category,
-    hard_limit: hardLimit,
-    soft_limit: softLimit,
-    files_checked: filesChecked,
-    offenders,
-  });
-  if (passed) results.stats.hard_pass++;
-  else results.stats.hard_fail++;
-}
-
-// ============================================================================
-// MAIN CHECKS
-// ============================================================================
-
-function runChecks(projectRoot, opts) {
-  const soft = opts.soft;
+function runChecks(projectRoot) {
+  const results = createResults();
   const files = listFiles(projectRoot, projectRoot);
+  results.stats.files_scanned = files.length;
 
-  // Group files by category
   const byCategory = {};
   for (const file of files) {
     const cat = categorizeFile(file);
@@ -257,9 +60,6 @@ function runChecks(projectRoot, opts) {
     }
   }
 
-  results.stats.files_scanned = files.length;
-
-  // Run checks per category
   for (const [catName, catDef] of Object.entries(CATEGORIES)) {
     const catFiles = byCategory[catName] || [];
     if (catFiles.length === 0) continue;
@@ -269,9 +69,8 @@ function runChecks(projectRoot, opts) {
       const content = fs.readFileSync(file, "utf8");
       const lineCount = countLines(content);
       if (lineCount > catDef.hard) {
-        const relativePath = path.relative(projectRoot, file);
         offenders.push({
-          file: relativePath,
+          file: path.relative(projectRoot, file),
           lines: lineCount,
           limit: catDef.hard,
           excess: lineCount - catDef.hard,
@@ -279,84 +78,25 @@ function runChecks(projectRoot, opts) {
       }
     }
 
-    check(
+    const catDesc = catDef.pattern ? catDef.pattern.source : catDef.extensions.join(",");
+    const detail =
+      offenders.length === 0
+        ? `all ${catFiles.length} files within limit`
+        : offenders
+            .map((o) => `${o.file}: ${o.lines} lines (exceeds ${o.limit}, excess: ${o.excess})`)
+            .join("; ");
+
+    addCheck(
+      results,
       catName,
-      catDef.pattern ? catDef.pattern.source : catDef.extensions.join(","),
-      catDef.hard,
-      catDef.soft,
-      offenders.length === 0,
-      offenders,
-      catFiles.length,
+      offenders.length === 0 ? "PASS" : "FAIL",
+      `${catDesc} <= ${catDef.hard} lines`,
+      detail,
     );
   }
+
+  return results;
 }
-
-// ============================================================================
-// OUTPUT FORMATTING
-// ============================================================================
-
-function printHuman() {
-  const width = Math.max(...results.checks.map((c) => c.id.length));
-  console.log(`verify-source-line-count.js v${VERSION} — Anti-monolith Source File Verifier`);
-  console.log(`Effective date: ${EFFECTIVE_DATE}`);
-  console.log(`Files scanned: ${results.stats.files_scanned}`);
-  console.log("=".repeat(72));
-  console.log("");
-  console.log("--- Hard Checks (by category) ---");
-  for (const c of results.checks) {
-    const icon = c.status === "PASS" ? "[PASS]" : "[FAIL]";
-    console.log(`${icon} ${c.id.padEnd(width)}  ${c.category} <= ${c.hard_limit} lines`);
-    if (c.offenders.length > 0) {
-      for (const o of c.offenders) {
-        console.log(
-          `         ${o.file}: ${o.lines} lines (exceeds ${o.limit}-line cap, excess: ${o.excess})`,
-        );
-      }
-    } else {
-      console.log(`         all ${c.files_checked} files within limit`);
-    }
-  }
-  console.log("");
-  console.log("-".repeat(72));
-  console.log(
-    `HARD: ${results.stats.hard_pass}/${results.stats.hard_pass + results.stats.hard_fail} PASS, ${results.stats.hard_fail} FAIL`,
-  );
-  console.log("");
-  if (results.stats.hard_fail > 0) {
-    console.log("ACTION REQUIRED:");
-    console.log("  At least one file exceeds its category limit.");
-    console.log("  Split the file into smaller modules (see RULE-MONOLITH-012 section 3).");
-    console.log("  Then re-run: node standards/scripts/verify-source-line-count.js");
-  } else {
-    console.log("All files within category limits. RULE-MONOLITH-012 satisfied.");
-  }
-}
-
-function printJSON() {
-  console.log(
-    JSON.stringify(
-      {
-        script: "verify-source-line-count.js",
-        version: VERSION,
-        effective_date: EFFECTIVE_DATE,
-        generated: new Date().toISOString(),
-        summary: {
-          files_scanned: results.stats.files_scanned,
-          hard_pass: results.stats.hard_pass,
-          hard_fail: results.stats.hard_fail,
-          soft_warnings: results.stats.soft_warnings,
-        },
-        checks: results.checks,
-      },
-      null,
-      2,
-    ),
-  );
-}
-
-// ============================================================================
-// MAIN
-// ============================================================================
 
 function main() {
   const opts = parseArgs(process.argv);
@@ -365,23 +105,29 @@ function main() {
     process.exit(0);
   }
 
-  const projectRoot = opts.root || discoverProjectRoot();
-  if (!projectRoot) {
+  const root = opts.root || discoverProjectRoot(__dirname);
+  if (!root) {
     console.error("[verify-source-line-count] Could not discover project root.");
     console.error("[verify-source-line-count] Set ZAI_PLATFORM_ROOT or use --root=<path>.");
     process.exit(2);
   }
 
-  runChecks(projectRoot, opts);
+  const results = runChecks(root);
 
   if (opts.json) {
-    printJSON();
+    printJSON({
+      script: "verify-source-line-count.js",
+      version: VERSION,
+      generated: new Date().toISOString(),
+      summary: results.stats,
+      checks: results.checks,
+    });
   } else {
-    printHuman();
+    printHuman(results);
   }
 
-  const hardFail = results.checks.filter((c) => c.status === "FAIL").length;
-  process.exit(hardFail > 0 && !opts.soft ? 1 : 0);
+  const fail = results.checks.filter((c) => c.status === "FAIL").length;
+  process.exit(fail > 0 && !opts.soft ? 1 : 0);
 }
 
 main();
