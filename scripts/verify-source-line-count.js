@@ -165,6 +165,51 @@ function listFiles(dir, root) {
 }
 
 // ============================================================================
+// CATEGORY DETECTION (RULE-MONOLITH-012 section 4.18.1)
+// ============================================================================
+
+const CATEGORIES = {
+  SOURCE: { hard: 250, soft: 150, extensions: [".ts", ".tsx", ".js", ".jsx", ".py", ".sh"] },
+  CSS: { hard: 250, soft: 150, extensions: [".css"] },
+  TEST: { hard: 400, soft: 250, pattern: /\.(test|spec)\.[^.]+$/i },
+  SKILL: { hard: 800, soft: 400, pattern: /^SKILL\.md$/i },
+  README: { hard: 400, soft: 250, pattern: /^README\.md$/i },
+  STD: { hard: 1200, soft: 800, pattern: /^(STD|META)-.+\.md$/i },
+  RULE: { hard: 200, soft: 120, pattern: /^RULE-.+\.md$/i },
+  PROC: { hard: 400, soft: 250, pattern: /^(PROC|TOOL)-.+\.md$/i },
+  OTHER_MD: { hard: 400, soft: 250, extensions: [".md"] },
+};
+
+function categorizeFile(filePath) {
+  const basename = path.basename(filePath);
+  const ext = path.extname(filePath).toLowerCase();
+
+  // Check pattern-based categories first (more specific)
+  if (CATEGORIES.TEST.pattern.test(basename)) return "TEST";
+  if (CATEGORIES.SKILL.pattern.test(basename)) return "SKILL";
+  if (CATEGORIES.README.pattern.test(basename)) return "README";
+  if (CATEGORIES.STD.pattern.test(basename)) return "STD";
+  if (CATEGORIES.RULE.pattern.test(basename)) return "RULE";
+  if (CATEGORIES.PROC.pattern.test(basename)) return "PROC";
+
+  // Check extension-based categories
+  if (CATEGORIES.SOURCE.extensions.includes(ext)) return "SOURCE";
+  if (CATEGORIES.CSS.extensions.includes(ext)) return "CSS";
+  if (CATEGORIES.OTHER_MD.extensions.includes(ext)) return "OTHER_MD";
+
+  return null; // Not a recognized file type
+}
+
+// ============================================================================
+// LINE COUNTING
+// ============================================================================
+
+function countLines(content) {
+  if (content === "") return 0;
+  return content.split("\n").length - (content.endsWith("\n") ? 1 : 0);
+}
+
+// ============================================================================
 // MAIN
 // ============================================================================
 
