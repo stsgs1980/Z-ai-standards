@@ -54,6 +54,15 @@
 const fs = require("fs");
 const path = require("path");
 
+const { readSafe, extractSection } = require("./lib/standards-utils");
+
+function check(id, description, condition, detail) {
+  const status = condition ? "PASS" : "FAIL";
+  results.checks.push({ id, description, status, detail: detail || "" });
+  if (condition) results.passed++;
+  else results.failed++;
+}
+
 // ---------------------------------------------------------------------------
 // Paths — RELATIVE to this script's location so the corpus works:
 //   - standalone:     <standalone-checkout>/scripts/verify-standards.js
@@ -115,60 +124,6 @@ const results = {
   failed: 0,
   checks: [],
 };
-
-function check(id, description, condition, detail) {
-  const status = condition ? "PASS" : "FAIL";
-  results.checks.push({ id, description, status, detail: detail || "" });
-  if (condition) results.passed++;
-  else results.failed++;
-}
-
-function readSafe(filePath) {
-  if (!fs.existsSync(filePath)) return null;
-  return fs.readFileSync(filePath, "utf-8");
-}
-
-/**
- * Extract a numbered section from a markdown file.
- * Returns the section's text including the heading line, up to the next
- * heading of the same or higher level. Skips fenced code blocks so that
- * shell comments like `# Check if dev server is running` inside ```bash
- * blocks are NOT mistaken for markdown headings.
- */
-function extractSection(content, sectionNumber) {
-  if (!content) return "";
-  // Match `## 5. Title` or `### 5.1 Title` etc.
-  const pattern = new RegExp(
-    `(^|\\n)(#{2,4})\\s*${sectionNumber.replace(/\./g, "\\.")}[^\\n]*\\n`,
-    "m",
-  );
-  const match = content.match(pattern);
-  if (!match) return "";
-  const startIdx = match.index + match[1].length;
-  const headingLevel = match[2].length;
-  const afterStart = content.slice(startIdx);
-  const lines = afterStart.split("\n");
-
-  let inCodeFence = false;
-  let endLineIdx = -1;
-  const headingRe = new RegExp(`^#{1,${headingLevel}}\\s+\\S`);
-
-  for (let i = 1; i < lines.length; i++) {
-    const line = lines[i];
-    if (/^```/.test(line)) {
-      inCodeFence = !inCodeFence;
-      continue;
-    }
-    if (inCodeFence) continue;
-    if (headingRe.test(line)) {
-      endLineIdx = i;
-      break;
-    }
-  }
-
-  if (endLineIdx === -1) return afterStart;
-  return lines.slice(0, endLineIdx).join("\n");
-}
 
 // ============================================================================
 // V01 — RETIRED 2026-06-18 — ENV-002 §5.1 startup must NOT be `npx next dev`
