@@ -210,6 +210,88 @@ function countLines(content) {
 }
 
 // ============================================================================
+// RESULTS ACCUMULATOR
+// ============================================================================
+
+const results = {
+  checks: [],
+  stats: {
+    files_scanned: 0,
+    hard_pass: 0,
+    hard_fail: 0,
+    soft_warnings: 0,
+    exempt: 0,
+  },
+};
+
+function check(id, category, hardLimit, softLimit, passed, offenders, filesChecked) {
+  const status = passed ? "PASS" : "FAIL";
+  results.checks.push({
+    id,
+    status,
+    category,
+    hard_limit: hardLimit,
+    soft_limit: softLimit,
+    files_checked: filesChecked,
+    offenders,
+  });
+  if (passed) results.stats.hard_pass++;
+  else results.stats.hard_fail++;
+}
+
+// ============================================================================
+// MAIN CHECKS
+// ============================================================================
+
+function runChecks(projectRoot, opts) {
+  const soft = opts.soft;
+  const files = listFiles(projectRoot, projectRoot);
+
+  // Group files by category
+  const byCategory = {};
+  for (const file of files) {
+    const cat = categorizeFile(file);
+    if (cat) {
+      if (!byCategory[cat]) byCategory[cat] = [];
+      byCategory[cat].push(file);
+    }
+  }
+
+  results.stats.files_scanned = files.length;
+
+  // Run checks per category
+  for (const [catName, catDef] of Object.entries(CATEGORIES)) {
+    const catFiles = byCategory[catName] || [];
+    if (catFiles.length === 0) continue;
+
+    const offenders = [];
+    for (const file of catFiles) {
+      const content = fs.readFileSync(file, "utf8");
+      const lineCount = countLines(content);
+      if (lineCount > catDef.hard) {
+        const relativePath = path.relative(projectRoot, file);
+        offenders.push({
+          file: relativePath,
+          lines: lineCount,
+          limit: catDef.hard,
+          excess: lineCount - catDef.hard,
+        });
+      }
+    }
+
+    check(
+      catName,
+      catDef.pattern ? catDef.pattern.source : catDef.extensions.join(","),
+      catDef.hard,
+      catDef.soft,
+      offenders.length === 0,
+      offenders,
+      catFiles.length,
+    );
+  }
+}
+
+// ============================================================================
 // MAIN
 // ============================================================================
 
@@ -227,8 +309,30 @@ function main() {
     process.exit(2);
   }
 
-  const allFiles = listFiles(projectRoot, projectRoot);
-  console.log(`[verify-source-line-count] Found ${allFiles.length} files to check`);
+  runChecks(projectRoot, opts);
+
+  if (opts.json) {
+    console.log(JSON.stringify(results, null, 2));
+  } else {
+    console.log(`\nScanned ${results.stats.files_scanned} files`);
+    console.log(`Categories passed: ${results.stats.hard_pass}`);
+    console.log(`Categories failed: ${results.stats.hard_fail}`);
+
+    for (const check of results.checks) {
+      if (check.status === "FAIL") {
+        console.log(
+          `\nFAIL: ${check.id} (${check.files_checked} files, limit: ${check.hard_limit})`,
+        );
+        for (const o of check.offenders) {
+          console.log(`  ${o.file}: ${o.lines} lines (+${o.excess})`);
+        }
+      }
+    }
+  }
+
+  if (results.stats.hard_fail > 0 && !opts.soft) {
+    process.exit(1);
+  }
 }
 
 main();
