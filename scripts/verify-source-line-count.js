@@ -292,6 +292,69 @@ function runChecks(projectRoot, opts) {
 }
 
 // ============================================================================
+// OUTPUT FORMATTING
+// ============================================================================
+
+function printHuman() {
+  const width = Math.max(...results.checks.map((c) => c.id.length));
+  console.log(`verify-source-line-count.js v${VERSION} — Anti-monolith Source File Verifier`);
+  console.log(`Effective date: ${EFFECTIVE_DATE}`);
+  console.log(`Files scanned: ${results.stats.files_scanned}`);
+  console.log("=".repeat(72));
+  console.log("");
+  console.log("--- Hard Checks (by category) ---");
+  for (const c of results.checks) {
+    const icon = c.status === "PASS" ? "[PASS]" : "[FAIL]";
+    console.log(`${icon} ${c.id.padEnd(width)}  ${c.category} <= ${c.hard_limit} lines`);
+    if (c.offenders.length > 0) {
+      for (const o of c.offenders) {
+        console.log(
+          `         ${o.file}: ${o.lines} lines (exceeds ${o.limit}-line cap, excess: ${o.excess})`,
+        );
+      }
+    } else {
+      console.log(`         all ${c.files_checked} files within limit`);
+    }
+  }
+  console.log("");
+  console.log("-".repeat(72));
+  console.log(
+    `HARD: ${results.stats.hard_pass}/${results.stats.hard_pass + results.stats.hard_fail} PASS, ${results.stats.hard_fail} FAIL`,
+  );
+  console.log("");
+  if (results.stats.hard_fail > 0) {
+    console.log("ACTION REQUIRED:");
+    console.log("  At least one file exceeds its category limit.");
+    console.log("  Split the file into smaller modules (see RULE-MONOLITH-012 section 3).");
+    console.log("  Then re-run: node standards/scripts/verify-source-line-count.js");
+  } else {
+    console.log("All files within category limits. RULE-MONOLITH-012 satisfied.");
+  }
+}
+
+function printJSON() {
+  console.log(
+    JSON.stringify(
+      {
+        script: "verify-source-line-count.js",
+        version: VERSION,
+        effective_date: EFFECTIVE_DATE,
+        generated: new Date().toISOString(),
+        summary: {
+          files_scanned: results.stats.files_scanned,
+          hard_pass: results.stats.hard_pass,
+          hard_fail: results.stats.hard_fail,
+          soft_warnings: results.stats.soft_warnings,
+        },
+        checks: results.checks,
+      },
+      null,
+      2,
+    ),
+  );
+}
+
+// ============================================================================
 // MAIN
 // ============================================================================
 
@@ -312,27 +375,13 @@ function main() {
   runChecks(projectRoot, opts);
 
   if (opts.json) {
-    console.log(JSON.stringify(results, null, 2));
+    printJSON();
   } else {
-    console.log(`\nScanned ${results.stats.files_scanned} files`);
-    console.log(`Categories passed: ${results.stats.hard_pass}`);
-    console.log(`Categories failed: ${results.stats.hard_fail}`);
-
-    for (const check of results.checks) {
-      if (check.status === "FAIL") {
-        console.log(
-          `\nFAIL: ${check.id} (${check.files_checked} files, limit: ${check.hard_limit})`,
-        );
-        for (const o of check.offenders) {
-          console.log(`  ${o.file}: ${o.lines} lines (+${o.excess})`);
-        }
-      }
-    }
+    printHuman();
   }
 
-  if (results.stats.hard_fail > 0 && !opts.soft) {
-    process.exit(1);
-  }
+  const hardFail = results.checks.filter((c) => c.status === "FAIL").length;
+  process.exit(hardFail > 0 && !opts.soft ? 1 : 0);
 }
 
 main();
