@@ -1,38 +1,19 @@
 /**
- * ============================================================================
  * lib/declarations.js — header + migrations parsers for verify-id-graph.js
- * ============================================================================
  *
- * Extracted from verify-id-graph.js v1.1.5 as part of O-018 modularization
- * (continuation). Contains extractDeclaration() and parseMigrations() —
- * the impure (fs-reading) parsers that take a filePath and return a
- * declaration object or a migrations list.
+ * Extracted from verify-id-graph.js v1.1.5 (O-018).
+ * Contains extractDeclaration() and parseMigrations() — the impure (fs-reading) parsers.
  *
- * DEPENDENCIES
- *   - fs (for readFileSync, existsSync)
- *   - path (not used directly, but filePath comes from caller)
- *   - lib/parsers.js: parseYAMLFrontmatter, parseBlockquoteHeader,
- *     parseHTMLComment (pure parsers, imported here)
- *   - lib/constants.js: ID_REGEX
- *
- * DESIGN
- *   These functions are NOT pure — they call fs.readFileSync(). They are
- *   kept together in lib/declarations.js (rather than inlined in the main
- *   verifier) so that:
- *     (a) The main file is shorter and easier to scan for the orchestration
- *         logic (phases 1-9, main()).
- *     (b) A future test harness can mock fs and exercise edge cases
- *         (malformed YAML, missing blockquote, mixed-format headers).
- *
- *   The pure parsing primitives (parseYAMLFrontmatter etc.) live in
- *   lib/parsers.js and are reused by both this module and verify-skills.js.
- *
- * ============================================================================
+ * DEPENDENCIES: fs, lib/parsers.js, lib/constants.js
+ * DESIGN: NOT pure (fs.readFileSync()). Kept together for: (a) main file brevity, (b) testability.
  */
 
 "use strict";
 
 const fs = require("fs");
+const path = require("path");
+
+const { parseYAMLFrontmatter, parseBlockquoteHeader, parseHTMLComment } = require("./parsers");
 const { ID_REGEX } = require("./constants");
 const { parseYAMLFrontmatter, parseBlockquoteHeader, parseHTMLComment } = require("./parsers");
 
