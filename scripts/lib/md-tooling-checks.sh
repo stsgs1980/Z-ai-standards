@@ -37,7 +37,8 @@ run_eslint() {
     eslint_bin="npx --no-install eslint"
   fi
 
-  if $eslint_bin --max-warnings=0 --plugin markdown "${ALL_FILES[@]}"; then
+  # Use eval to handle paths with spaces
+  if eval "\"$eslint_bin\" --max-warnings=0 --plugin markdown \"${ALL_FILES[@]}\""; then
     ok "eslint: PASS"
   else
     fail "eslint: violations reported above (see STD-DOC-002 §10 for config)"

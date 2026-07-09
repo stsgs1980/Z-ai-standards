@@ -80,6 +80,9 @@ const results = {
   stats: {
     total_ids: 0,
     by_prefix: {},
+    passed: 0,
+    failed: 0,
+    warnings: 0,
   },
 };
 
