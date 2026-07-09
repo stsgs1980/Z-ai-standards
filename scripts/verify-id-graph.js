@@ -76,6 +76,22 @@ const W08 = require("./lib/warnings/id-graph/w08-aligned-symmetry");
 
 const VERSION = "1.1.7";
 
+// Parse CLI args
+const args = process.argv.slice(2);
+const opts = {
+  json: args.includes("--json"),
+  ci: args.includes("--ci"),
+  failOnWarnings: args.includes("--fail-on-warnings"),
+  verbose: args.includes("--verbose"),
+  help: args.includes("--help"),
+};
+
+if (opts.help) {
+  // print header + exit
+  console.log(`verify-id-graph.js v${VERSION}`);
+  process.exit(0);
+}
+
 // Paths
 const SCRIPT_DIR = __dirname;
 const PLATFORM_ROOT = process.env.ZAI_PLATFORM_ROOT || path.resolve(SCRIPT_DIR, "..", "..");
@@ -110,9 +126,11 @@ function addSoft(id, description, detail) {
 }
 
 // Phase 1: Extract all IDs
-console.log(`verify-id-graph.js v${VERSION}`);
-console.log(`Repos scanned: ${Object.keys(REPOS).length}`);
-console.log("");
+if (!opts.json) {
+  console.log(`verify-id-graph.js v${VERSION}`);
+  console.log(`Repos scanned: ${Object.keys(REPOS).length}`);
+  console.log("");
+}
 
 const allIds = [];
 for (const [repoName, repoPath] of Object.entries(REPOS)) {
@@ -122,7 +140,7 @@ for (const [repoName, repoPath] of Object.entries(REPOS)) {
   }
 
   const files = listFiles(repoPath, PATTERNS);
-  console.log(`Scanning ${repoName}: ${repoPath}`);
+  if (!opts.json) console.log(`Scanning ${repoName}: ${repoPath}`);
   for (const file of files) {
     const content = fs.readFileSync(file, "utf8");
     const extracted = extractDeclaration(file, repoName);
@@ -191,37 +209,68 @@ if (w08.detail !== "all reciprocated") {
 }
 
 // Output
-console.log(
-  `By prefix: ${Object.entries(results.stats.by_prefix)
-    .map(([k, v]) => `${k}=${v}`)
-    .join(", ")}`,
-);
-console.log("");
-console.log("--- Hard Checks (G01-G15) ---");
-results.hard.forEach((c) => {
-  const emoji = c.passed ? "[PASS]" : "[FAIL]";
-  console.log(`  ${emoji} ${c.id.padEnd(5)} ${c.description}`);
-  if (c.detail && !c.passed) {
-    console.log(`         ${c.detail}`);
+if (opts.json) {
+  // JSON mode: output only JSON to stdout (used by graph-deps.sh, CI)
+  // Transform results to match emitJSON expected structure
+  const checksObj = {};
+  for (const c of results.hard) {
+    checksObj[c.id] = {
+      status: c.passed ? "PASS" : "FAIL",
+      description: c.description,
+      details: c.detail ? [c.detail] : [],
+    };
   }
-});
-
-console.log("");
-console.log("--- Soft Warnings (W01-W15) ---");
-if (results.soft.length === 0) {
-  console.log("  (no warnings)");
+  const jsonResults = {
+    checks: checksObj,
+    warnings: results.soft,
+    declarations: allIds,
+    edges: { related: [], aligned_with: [] }, // edges extracted by graph-deps.sh
+    stats: {
+      ...results.stats,
+      repos_scanned: Object.keys(REPOS).length,
+      ids_extracted: allIds.length,
+      related_edges: 0,
+      aligned_with_edges: 0,
+      hard_pass: results.hard.filter((c) => c.passed).length,
+      hard_fail: results.hard.filter((c) => !c.passed).length,
+    },
+  };
+  const json = emitJSONLib(jsonResults, VERSION, new Date().toISOString().slice(0, 10), opts);
+  process.stdout.write(json + "\n");
 } else {
-  results.soft.forEach((w) => {
-    console.log(`  ${w.id.padEnd(5)} ${w.description}`);
-    if (w.detail) {
-      console.log(`         ${w.detail}`);
+  // Human-readable mode (default)
+  console.log(
+    `By prefix: ${Object.entries(results.stats.by_prefix)
+      .map(([k, v]) => `${k}=${v}`)
+      .join(", ")}`,
+  );
+  console.log("");
+  console.log("--- Hard Checks (G01-G15) ---");
+  results.hard.forEach((c) => {
+    const emoji = c.passed ? "[PASS]" : "[FAIL]";
+    console.log(`  ${emoji} ${c.id.padEnd(5)} ${c.description}`);
+    if (c.detail && !c.passed) {
+      console.log(`         ${c.detail}`);
     }
   });
-}
 
-console.log("");
-console.log(
-  `Result: ${results.stats.failed === 0 ? "PASS" : "FAIL"} (${results.hard.filter((c) => c.passed).length}/13 hard checks, ${results.soft.length} warnings)`,
-);
+  console.log("");
+  console.log("--- Soft Warnings (W01-W15) ---");
+  if (results.soft.length === 0) {
+    console.log("  (no warnings)");
+  } else {
+    results.soft.forEach((w) => {
+      console.log(`  ${w.id.padEnd(5)} ${w.description}`);
+      if (w.detail) {
+        console.log(`         ${w.detail}`);
+      }
+    });
+  }
+
+  console.log("");
+  console.log(
+    `Result: ${results.stats.failed === 0 ? "PASS" : "FAIL"} (${results.hard.filter((c) => c.passed).length}/${results.hard.length} hard checks, ${results.soft.length} warnings)`,
+  );
+}
 
 process.exit(results.stats.failed > 0 ? 1 : 0);
