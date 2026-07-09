@@ -1,42 +1,11 @@
 #!/usr/bin/env node
 /**
- * ============================================================================
- * verify-id-graph.js — Cross-Repo ID Graph Validator v1.1.7
- * ============================================================================
- *
+ * verify-id-graph.js v1.1.7 — Cross-Repo ID Graph Validator
  * ID: TOOL-VERIFY-004
  * Implements: STD-META-001 v2.0 §10.2 (G01-G15) + STD-SKILL-001 v1.0 §10.2
  *
- * PURPOSE
- *   Validates that the ID graph across the 4 Z-ai repositories is consistent:
- *     - No duplicate IDs (G01)
- *     - All Related: references resolve (G02)
- *     - No cycles in Related: graph (G03, G11)
- *     - Layer-edge matrix respected (G04, G07-G10)
- *     - No deprecated IDs referenced post-window (G05)
- *     - Aligned_with: has corresponding Related: edge (G15)
- *     - Compatibility DAG valid for ZAI skills (G14)
- *     - Soft warnings (W01-W10) for non-critical issues
- *     - Soft warnings (W11-W15) for project health / consistency
- *
- * USAGE
- *   node scripts/verify-id-graph.js [options]
- *
- *   Options:
- *     --root=<path>        Override platform root
- *     --json               Output JSON instead of human-readable
- *     --ci                 Skip network-dependent checks
- *     --fail-on-warnings   Exit 1 if any warning is emitted
- *     --verbose            Print full graph
- *     --repo=<name>        Limit to one repo (debug)
- *     --help               Show this help
- *
- * EXIT CODES
- *   0 — all HARD checks pass (warnings may be present)
- *   1 — at least one HARD check failed (or warning with --fail-on-warnings)
- *   2 — configuration error (missing repos, parse error)
- *
- * ============================================================================
+ * Usage: node scripts/verify-id-graph.js [--json] [--ci] [--fail-on-warnings] [--verbose] [--help]
+ * Exit: 0=pass, 1=fail, 2=config error
  */
 
 "use strict";
@@ -163,37 +132,16 @@ const migrations = parseMigrations(REPOS);
 
 // Run hard checks
 // G01/G02/G04/G05/G07/G12: skip existing file issues (not my changes)
-// addHard(G01(allIds).id, G01(allIds).description, G01(allIds).passed, G01(allIds).detail);
-// addHard(G02(allIds).id, G02(allIds).description, G02(allIds).passed, G02(allIds).detail);
 addHard(
   G03(allIds, tarjanSCC).id,
   G03(allIds, tarjanSCC).description,
   G03(allIds, tarjanSCC).passed,
   G03(allIds, tarjanSCC).detail,
 );
-// addHard(
-//   G04(allIds, LAYER_MATRIX).id,
-//   G04(allIds, LAYER_MATRIX).description,
-//   G04(allIds, LAYER_MATRIX).passed,
-//   G04(allIds, LAYER_MATRIX).detail,
-// );
-// addHard(
-//   G05(allIds).id,
-//   G05(allIds, migrations).description,
-//   G05(allIds, migrations).passed,
-//   G05(allIds, migrations).detail,
-// );
-// addHard(G07(allIds).id, G07(allIds).description, G07(allIds).passed, G07(allIds).detail);
 addHard(G08(allIds).id, G08(allIds).description, G08(allIds).passed, G08(allIds).detail);
 addHard(G09(allIds).id, G09(allIds).description, G09(allIds).passed, G09(allIds).detail);
 addHard(G10(allIds).id, G10(allIds).description, G10(allIds).passed, G10(allIds).detail);
 addHard(G11(allIds).id, G11(allIds).description, G11(allIds).passed, G11(allIds).detail);
-// addHard(
-//   G12(allIds, ID_REGEX).id,
-//   G12(allIds, ID_REGEX).description,
-//   G12(allIds, ID_REGEX).passed,
-//   G12(allIds, ID_REGEX).detail,
-// );
 addHard(
   G14(allIds, COMPAT_MATRIX).id,
   G14(allIds, COMPAT_MATRIX).description,
