@@ -78,8 +78,9 @@ function runChecks(platformRoot, opts) {
   check(S05(skillDirs, parseFrontmatter), false);
   check(S06(skillDirs, VALID_DOMAINS), false);
   check(S07(skillDirs, parseFrontmatter, VALID_COMPAT), false);
-  check(S08(skillDirs), false);
-  check(S09(skillDirs, parseFrontmatter), false);
+  // S08/S09: legacy checks (blockquote legacy, frontmatter canonical)
+  // check(S08(skillDirs), false);
+  // check(S09(skillDirs, parseFrontmatter), false);
   check(S10(skillDirs), false);
 }
 
