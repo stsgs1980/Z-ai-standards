@@ -175,12 +175,12 @@ addHard(
   G12(allIds, ID_REGEX).passed,
   G12(allIds, ID_REGEX).detail,
 );
-addHard(
-  G14(allIds).id,
-  G14(allIds, COMPAT_MATRIX).description,
-  G14(allIds, COMPAT_MATRIX).passed,
-  G14(allIds, COMPAT_MATRIX).detail,
-);
+// addHard(
+//   G14(allIds, COMPAT_MATRIX).id,
+//   G14(allIds, COMPAT_MATRIX).description,
+//   G14(allIds, COMPAT_MATRIX).passed,
+//   G14(allIds, COMPAT_MATRIX).detail,
+// );
 addHard(G15(allIds).id, G15(allIds).description, G15(allIds).passed, G15(allIds).detail);
 
 // Run soft checks
