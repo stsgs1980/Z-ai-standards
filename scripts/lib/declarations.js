@@ -15,7 +15,6 @@ const path = require("path");
 
 const { parseYAMLFrontmatter, parseBlockquoteHeader, parseHTMLComment } = require("./parsers");
 const { ID_REGEX } = require("./constants");
-const { parseYAMLFrontmatter, parseBlockquoteHeader, parseHTMLComment } = require("./parsers");
 
 // Regex to extract ID-shaped tokens (STD/RULE/PROC/TOOL/ZAI-<DOMAIN>-<NNN>)
 // from Related: and Aligned_with: prose fields. Used to filter out
