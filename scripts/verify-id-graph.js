@@ -152,7 +152,12 @@ addHard(
   G03(allIds, tarjanSCC).passed,
   G03(allIds, tarjanSCC).detail,
 );
-addHard(G04(allIds).id, G04(allIds).description, G04(allIds).passed, G04(allIds).detail);
+addHard(
+  G04(allIds, LAYER_MATRIX).id,
+  G04(allIds, LAYER_MATRIX).description,
+  G04(allIds, LAYER_MATRIX).passed,
+  G04(allIds, LAYER_MATRIX).detail,
+);
 addHard(
   G05(allIds).id,
   G05(allIds, migrations).description,
@@ -165,7 +170,7 @@ addHard(G09(allIds).id, G09(allIds).description, G09(allIds).passed, G09(allIds)
 addHard(G10(allIds).id, G10(allIds).description, G10(allIds).passed, G10(allIds).detail);
 addHard(G11(allIds).id, G11(allIds).description, G11(allIds).passed, G11(allIds).detail);
 addHard(
-  G12(allIds).id,
+  G12(allIds, ID_REGEX).id,
   G12(allIds, ID_REGEX).description,
   G12(allIds, ID_REGEX).passed,
   G12(allIds, ID_REGEX).detail,

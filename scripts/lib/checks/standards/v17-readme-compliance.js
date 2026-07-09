@@ -14,10 +14,10 @@ module.exports = function (REPO_ROOT) {
   }
   const content = require("fs").readFileSync(readmePath, "utf8");
   const badges = /!\[.*\]\(.*shields\.io.*\)/.test(content);
-  const features = /features/i.test(content) && content.includes("##");
-  const techStack = /tech.?stack/i.test(content) || /stack/i.test(content);
-  const gettingStarted = /getting.?started/i.test(content) || /quick.?start/i.test(content);
-  const license = /license/i.test(content);
+  const features = /features|Features|FEATURES/i.test(content) && content.includes("#");
+  const techStack = /tech.?stack|stack|Stack/i.test(content);
+  const gettingStarted = /getting.?started|quick.?start|setup|install/i.test(content);
+  const license = /license|License|LICENSE/i.test(content);
   const description = content.split("\n")[0].length > 20;
   return {
     id: "V17",

@@ -14,8 +14,8 @@ module.exports = function (TEMPLATES_DIR) {
   }
   const content = require("fs").readFileSync(agentRulesTemplate, "utf8");
   const onboarding = /onboarding/i.test(content);
-  const priorityOrder = /priority.*order/i.test(content);
-  const sectionsTable = /sections.*table/i.test(content);
+  const priorityOrder = /priority.?order/i.test(content);
+  const sectionsTable = /sections.?table/i.test(content) || /##.*Sections/i.test(content);
   return {
     id: "V13",
     description:

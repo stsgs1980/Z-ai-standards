@@ -2,6 +2,8 @@
  * S08 — frontmatter id matches blockquote ID
  */
 
+const { parseBlockquote } = require("../../parsers");
+
 module.exports = function(skillDirs) {
   const mismatched = [];
   for (const s of skillDirs) {

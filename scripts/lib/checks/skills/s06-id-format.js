@@ -4,7 +4,7 @@
 
 module.exports = function(skillDirs, VALID_DOMAINS) {
   const invalid = [];
-  const domains = Array.isArray(VALID_DOMAINS) ? VALID_DOMAINS : Object.keys(VALID_DOMAINS);
+  const domains = Array.from(VALID_DOMAINS); // Set -> Array
   for (const s of skillDirs) {
     const skillMdPath = require("path").join(s.path, "SKILL.md");
     if (!require("fs").existsSync(skillMdPath)) continue;

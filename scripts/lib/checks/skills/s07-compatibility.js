@@ -4,7 +4,7 @@
 
 module.exports = function(skillDirs, parseFrontmatter, VALID_COMPAT) {
   const invalid = [];
-  const compats = Array.isArray(VALID_COMPAT) ? VALID_COMPAT : Object.keys(VALID_COMPAT);
+  const compats = Array.from(VALID_COMPAT); // Set -> Array
   for (const s of skillDirs) {
     const skillMdPath = require("path").join(s.path, "SKILL.md");
     if (!require("fs").existsSync(skillMdPath)) continue;

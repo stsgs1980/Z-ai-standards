@@ -2,6 +2,8 @@
  * S09 — frontmatter version matches blockquote Version:
  */
 
+const { parseBlockquote } = require("../../parsers");
+
 module.exports = function(skillDirs, parseFrontmatter) {
   const mismatched = [];
   for (const s of skillDirs) {

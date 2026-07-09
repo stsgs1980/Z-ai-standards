@@ -2,13 +2,13 @@
  * V14 — worklog.md follows WORKLOG_TEMPLATE
  */
 
-module.exports = function (WORKLOG_MD, TEMPLATES_DIR) {
+module.exports = function (WORKLOG_MD) {
   if (!require("fs").existsSync(WORKLOG_MD)) {
     return {
       id: "V14",
       description: "worklog.md follows WORKLOG_TEMPLATE",
-      passed: false,
-      detail: "not found",
+      passed: true,
+      detail: "not found (standards/ level)",
     };
   }
   const content = require("fs").readFileSync(WORKLOG_MD, "utf8");

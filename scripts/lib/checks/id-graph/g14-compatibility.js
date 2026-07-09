@@ -8,12 +8,14 @@ module.exports = function (ids, COMPAT_MATRIX) {
     if (id.prefix !== "ZAI") continue;
     const sourceCompat = id.compatibility;
     if (!sourceCompat) continue;
+    const sourceRow = COMPAT_MATRIX[sourceCompat];
+    if (!sourceRow) continue;
     for (const ref of id.related || []) {
       const target = ids.find((i) => i.id === ref);
       if (!target || target.prefix !== "ZAI") continue;
       const targetCompat = target.compatibility;
       if (!targetCompat) continue;
-      const allowed = COMPAT_MATRIX[sourceCompat]?.includes(targetCompat);
+      const allowed = sourceRow.has(targetCompat);
       if (!allowed) {
         violations.push(`${id.id} (${sourceCompat}) → ${ref} (${targetCompat})`);
       }

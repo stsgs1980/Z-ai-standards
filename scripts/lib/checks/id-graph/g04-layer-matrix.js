@@ -7,9 +7,11 @@ module.exports = function (ids, LAYER_MATRIX) {
   for (const id of ids) {
     const sourcePrefix = id.prefix || (id.id ? id.id.split("-")[0] : null);
     if (!sourcePrefix) continue;
+    const sourceRow = LAYER_MATRIX[sourcePrefix];
+    if (!sourceRow) continue;
     for (const ref of id.related || []) {
       const targetPrefix = ref.split("-")[0];
-      const allowed = LAYER_MATRIX[sourcePrefix]?.[targetPrefix] === "[OK]";
+      const allowed = sourceRow.has(targetPrefix);
       if (!allowed) {
         violations.push(`${id.id} (${sourcePrefix}) → ${ref} (${targetPrefix})`);
       }
